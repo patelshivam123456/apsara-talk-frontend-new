@@ -1,0 +1,347 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-poppins);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), sans-serif;
+  @apply bg-[#0b0f2a] text-white;
+}
+
+/* ============================================================
+   THEME ROOT
+   ============================================================ */
+.theme-root {
+  min-height: 100vh;
+}
+
+/* DashboardPage radial background (moved from inline style) */
+.dashboard-bg {
+  background: radial-gradient(circle at top, #1a1446 0%, #050816 45%, #02030d 100%);
+}
+
+/* ============================================================
+   YELLOW THEME
+   ============================================================ */
+[data-theme="yellow"] {
+  background-color: #fef9c3;
+  color: #1c1917;
+}
+
+/* Page / sidebar / wrapper backgrounds */
+[data-theme="yellow"] .dashboard-bg                        { background: #fef9c3 !important; }
+[data-theme="yellow"] [class*="bg-[#0b0f2a]"]             { background-color: #fef9c3 !important; }
+[data-theme="yellow"] [class*="bg-[#050816]"]             { background-color: #fef9c3 !important; }
+[data-theme="yellow"] [class*="bg-[#070b1d]"]             { background-color: #fef9c3 !important; }
+
+/* Card backgrounds */
+[data-theme="yellow"] [class*="bg-[#0f1535]"]             { background-color: #fef08a !important; }
+[data-theme="yellow"] [class*="bg-[#121735]"]             { background-color: #fde047 !important; }
+[data-theme="yellow"] [class*="bg-[#25143d]"]             { background-color: #fde047 !important; }
+[data-theme="yellow"] [class*="bg-[#1a1f4a]"]            { background-color: #fef08a !important; }
+[data-theme="yellow"] [class*="bg-[#1b1b52]"]            { background-color: #fde047 !important; }
+[data-theme="yellow"] [class*="bg-[#0b1027]"]            { background-color: #fef08a !important; }
+[data-theme="yellow"] [class*="bg-white/5"]               { background-color: rgba(253,224,71,0.3) !important; }
+[data-theme="yellow"] [class*="bg-white/10"]              { background-color: rgba(253,224,71,0.4) !important; }
+
+/* Accent / buttons (purple → yellow) */
+[data-theme="yellow"] [class*="bg-purple-6"]              { background-color: #ca8a04 !important; }
+[data-theme="yellow"] [class*="bg-purple-8"]              { background-color: #a16207 !important; }
+[data-theme="yellow"] [class*="bg-purple-6"]:hover        { background-color: #a16207 !important; }
+[data-theme="yellow"] [class*="hover:bg-purple-7"]:hover  { background-color: #a16207 !important; }
+
+/* Gradient cards (Astrologers, DashboardPage free-chat) */
+[data-theme="yellow"] [class*="from-[#1a1f4a]"]          { background-image: none !important; background-color: #fef08a !important; }
+[data-theme="yellow"] [class*="from-[#1b1b52]"]          { background-image: none !important; background-color: #fde047 !important; }
+
+/* Hero overlay gradient */
+[data-theme="yellow"] [class*="from-[#0b0f2a]"]          { background-image: linear-gradient(to right, rgba(254,249,195,0.97), rgba(254,249,195,0.75), transparent) !important; }
+
+/* Hero wallet card gradient */
+[data-theme="yellow"] [class*="from-purple-7"]            { background-image: none !important; background-color: rgba(202,138,4,0.2) !important; }
+
+/* Text */
+[data-theme="yellow"] .text-white                         { color: #1c1917 !important; }
+[data-theme="yellow"] [class*="text-gray-3"]              { color: #44403c !important; }
+[data-theme="yellow"] [class*="text-gray-4"]              { color: #78716c !important; }
+[data-theme="yellow"] [class*="text-purple-"]             { color: #a16207 !important; }
+[data-theme="yellow"] [class*="text-pink-"]               { color: #b45309 !important; }
+
+/* Keep button text white on accent backgrounds */
+[data-theme="yellow"] [class*="bg-purple-6"]              { color: #ffffff !important; }
+[data-theme="yellow"] [class*="bg-purple-8"]              { color: #ffffff !important; }
+
+/* Borders */
+[data-theme="yellow"] [class*="border-white/"]            { border-color: rgba(202,138,4,0.25) !important; }
+[data-theme="yellow"] [class*="border-purple-"]           { border-color: rgba(202,138,4,0.4)  !important; }
+
+/* QuickActions — force white text */
+[data-theme="yellow"] .quick-actions .text-white,
+[data-theme="yellow"] .quick-actions [class*="text-gray-"] { color: #ffffff !important; }
+[data-theme="yellow"] .quick-actions [class*="text-purple-"] { color: #ffffff !important; }
+
+
+/* ============================================================
+   RED THEME
+   ============================================================ */
+[data-theme="red"] {
+  background-color: #fff1f2;
+  color: #1c1917;
+}
+
+[data-theme="red"] .dashboard-bg                          { background: #fff1f2 !important; }
+[data-theme="red"] [class*="bg-[#0b0f2a]"]               { background-color: #fff1f2 !important; }
+[data-theme="red"] [class*="bg-[#050816]"]               { background-color: #fff1f2 !important; }
+[data-theme="red"] [class*="bg-[#070b1d]"]               { background-color: #fff1f2 !important; }
+
+[data-theme="red"] [class*="bg-[#0f1535]"]               { background-color: #ffe4e6 !important; }
+[data-theme="red"] [class*="bg-[#121735]"]               { background-color: #fecdd3 !important; }
+[data-theme="red"] [class*="bg-[#25143d]"]               { background-color: #fecdd3 !important; }
+[data-theme="red"] [class*="bg-[#1a1f4a]"]              { background-color: #ffe4e6 !important; }
+[data-theme="red"] [class*="bg-[#1b1b52]"]              { background-color: #fecdd3 !important; }
+[data-theme="red"] [class*="bg-[#0b1027]"]              { background-color: #ffe4e6 !important; }
+[data-theme="red"] [class*="bg-white/5"]                 { background-color: rgba(252,165,165,0.2) !important; }
+[data-theme="red"] [class*="bg-white/10"]                { background-color: rgba(252,165,165,0.3) !important; }
+
+[data-theme="red"] [class*="bg-purple-6"]                { background-color: #e11d48 !important; }
+[data-theme="red"] [class*="bg-purple-8"]                { background-color: #be123c !important; }
+[data-theme="red"] [class*="bg-purple-6"]:hover          { background-color: #be123c !important; }
+[data-theme="red"] [class*="hover:bg-purple-7"]:hover    { background-color: #be123c !important; }
+
+[data-theme="red"] [class*="from-[#1a1f4a]"]            { background-image: none !important; background-color: #ffe4e6 !important; }
+[data-theme="red"] [class*="from-[#1b1b52]"]            { background-image: none !important; background-color: #fecdd3 !important; }
+[data-theme="red"] [class*="from-[#0b0f2a]"]            { background-image: linear-gradient(to right, rgba(255,241,242,0.97), rgba(255,241,242,0.75), transparent) !important; }
+[data-theme="red"] [class*="from-purple-7"]              { background-image: none !important; background-color: rgba(225,29,72,0.15) !important; }
+
+[data-theme="red"] .text-white                           { color: #1c1917 !important; }
+[data-theme="red"] [class*="text-gray-3"]                { color: #44403c !important; }
+[data-theme="red"] [class*="text-gray-4"]                { color: #78716c !important; }
+[data-theme="red"] [class*="text-purple-"]               { color: #be123c !important; }
+[data-theme="red"] [class*="text-pink-"]                 { color: #be123c !important; }
+
+/* Keep button text white on accent backgrounds */
+[data-theme="red"] [class*="bg-purple-6"]                { color: #ffffff !important; }
+[data-theme="red"] [class*="bg-purple-8"]                { color: #ffffff !important; }
+
+[data-theme="red"] [class*="border-white/"]              { border-color: rgba(225,29,72,0.2)  !important; }
+[data-theme="red"] [class*="border-purple-"]             { border-color: rgba(225,29,72,0.35) !important; }
+
+/* QuickActions — force white text */
+[data-theme="red"] .quick-actions .text-white,
+[data-theme="red"] .quick-actions [class*="text-gray-"]  { color: #ffffff !important; }
+[data-theme="red"] .quick-actions [class*="text-purple-"] { color: #ffffff !important; }
+
+
+/* ============================================================
+   BLUE THEME
+   ============================================================ */
+[data-theme="blue"] {
+  background-color: #eff6ff;
+  color: #1c1917;
+}
+
+[data-theme="blue"] .dashboard-bg                         { background: #eff6ff !important; }
+[data-theme="blue"] [class*="bg-[#0b0f2a]"]              { background-color: #eff6ff !important; }
+[data-theme="blue"] [class*="bg-[#050816]"]              { background-color: #eff6ff !important; }
+[data-theme="blue"] [class*="bg-[#070b1d]"]              { background-color: #eff6ff !important; }
+
+[data-theme="blue"] [class*="bg-[#0f1535]"]              { background-color: #dbeafe !important; }
+[data-theme="blue"] [class*="bg-[#121735]"]              { background-color: #bfdbfe !important; }
+[data-theme="blue"] [class*="bg-[#25143d]"]              { background-color: #bfdbfe !important; }
+[data-theme="blue"] [class*="bg-[#1a1f4a]"]             { background-color: #dbeafe !important; }
+[data-theme="blue"] [class*="bg-[#1b1b52]"]             { background-color: #bfdbfe !important; }
+[data-theme="blue"] [class*="bg-[#0b1027]"]             { background-color: #dbeafe !important; }
+[data-theme="blue"] [class*="bg-white/5"]                { background-color: rgba(147,197,253,0.2) !important; }
+[data-theme="blue"] [class*="bg-white/10"]               { background-color: rgba(147,197,253,0.3) !important; }
+
+[data-theme="blue"] [class*="bg-purple-6"]               { background-color: #2563eb !important; }
+[data-theme="blue"] [class*="bg-purple-8"]               { background-color: #1d4ed8 !important; }
+[data-theme="blue"] [class*="bg-purple-6"]:hover         { background-color: #1d4ed8 !important; }
+[data-theme="blue"] [class*="hover:bg-purple-7"]:hover   { background-color: #1d4ed8 !important; }
+
+[data-theme="blue"] [class*="from-[#1a1f4a]"]           { background-image: none !important; background-color: #dbeafe !important; }
+[data-theme="blue"] [class*="from-[#1b1b52]"]           { background-image: none !important; background-color: #bfdbfe !important; }
+[data-theme="blue"] [class*="from-[#0b0f2a]"]           { background-image: linear-gradient(to right, rgba(239,246,255,0.97), rgba(239,246,255,0.75), transparent) !important; }
+[data-theme="blue"] [class*="from-purple-7"]             { background-image: none !important; background-color: rgba(37,99,235,0.15) !important; }
+
+[data-theme="blue"] .text-white                          { color: #000000 !important; }
+[data-theme="blue"] [class*="text-gray-3"]               { color: #44403c !important; }
+[data-theme="blue"] [class*="text-gray-4"]               { color: #000000 !important; }
+[data-theme="blue"] [class*="text-purple-"]              { color: #1d4ed8 !important; }
+[data-theme="blue"] [class*="text-pink-"]                { color: #2563eb !important; }
+
+/* Keep button text white on accent backgrounds */
+[data-theme="blue"] [class*="bg-purple-6"]               { color: #000000 !important; }
+[data-theme="blue"] [class*="bg-purple-8"]               { color: #000000 !important; }
+
+[data-theme="blue"] [class*="border-white/"]             { border-color: rgba(59,130,246,0.2)  !important; }
+[data-theme="blue"] [class*="border-purple-"]            { border-color: rgba(59,130,246,0.35) !important; }
+
+/* QuickActions — force white text */
+[data-theme="blue"] .quick-actions .text-white,
+[data-theme="blue"] .quick-actions [class*="text-gray-"] { color: #ffffff !important; }
+[data-theme="blue"] .quick-actions [class*="text-purple-"] { color: #000000 !important; }
+
+
+/* ============================================================
+   CREAM THEME  (Image 1 — warm cream / deep gold)
+   ============================================================ */
+[data-theme="cream"] {
+  background-color: #fdf4e3;
+  color: #0a0a0a;
+}
+
+/* Page / sidebar / wrapper backgrounds */
+[data-theme="cream"] .dashboard-bg                         { background: #fdf4e3 !important; }
+[data-theme="cream"] [class*="bg-[#0b0f2a]"]              { background-color: #fdf4e3 !important; }
+[data-theme="cream"] [class*="bg-[#050816]"]              { background-color: #f5e9d4 !important; }
+[data-theme="cream"] [class*="bg-[#070b1d]"]              { background-color: #f5e9d4 !important; }
+
+/* Card backgrounds */
+[data-theme="cream"] [class*="bg-[#0f1535]"]              { background-color: #fff8ee !important; }
+[data-theme="cream"] [class*="bg-[#121735]"]              { background-color: #fdefd4 !important; }
+[data-theme="cream"] [class*="bg-[#25143d]"]              { background-color: #fdefd4 !important; }
+[data-theme="cream"] [class*="bg-[#1a1f4a]"]             { background-color: #fff8ee !important; }
+[data-theme="cream"] [class*="bg-[#1b1b52]"]             { background-color: #fdefd4 !important; }
+[data-theme="cream"] [class*="bg-[#0b1027]"]             { background-color: #fff8ee !important; }
+[data-theme="cream"] [class*="bg-white/5"]                { background-color: rgba(201,162,39,0.12) !important; }
+[data-theme="cream"] [class*="bg-white/10"]               { background-color: rgba(201,162,39,0.2)  !important; }
+
+/* Accent / buttons (purple → antique gold) */
+[data-theme="cream"] [class*="bg-purple-6"]               { background-color: #b8860b !important; }
+[data-theme="cream"] [class*="bg-purple-8"]               { background-color: #9a6f08 !important; }
+[data-theme="cream"] [class*="bg-purple-6"]:hover         { background-color: #9a6f08 !important; }
+[data-theme="cream"] [class*="hover:bg-purple-7"]:hover   { background-color: #9a6f08 !important; }
+
+/* Gradient cards */
+[data-theme="cream"] [class*="from-[#1a1f4a]"]           { background-image: none !important; background-color: #fff8ee !important; }
+[data-theme="cream"] [class*="from-[#1b1b52]"]           { background-image: none !important; background-color: #fdefd4 !important; }
+
+/* Hero overlay gradient */
+[data-theme="cream"] [class*="from-[#0b0f2a]"]           { background-image: linear-gradient(to right, rgba(253,244,227,0.97), rgba(253,244,227,0.75), transparent) !important; }
+
+/* Hero wallet card gradient */
+[data-theme="cream"] [class*="from-purple-7"]             { background-image: none !important; background-color: rgba(184,134,11,0.15) !important; }
+
+/* Text — pure black on all light cream backgrounds */
+[data-theme="cream"] .text-white                          { color: #0a0a0a !important; }
+[data-theme="cream"] [class*="text-gray-3"]               { color: #222222 !important; }
+[data-theme="cream"] [class*="text-gray-4"]               { color: #555555 !important; }
+[data-theme="cream"] [class*="text-purple-"]              { color: #9a6f08 !important; }
+[data-theme="cream"] [class*="text-pink-"]                { color: #8b4513 !important; }
+[data-theme="cream"] [class*="text-yellow-"]              { color: #a06c00 !important; }
+[data-theme="cream"] [class*="text-green-"]               { color: #276027 !important; }
+[data-theme="cream"] [class*="text-red-"]                 { color: #b91c1c !important; }
+[data-theme="cream"] [class*="text-blue-"]                { color: #1d4ed8 !important; }
+
+/* Button text: dark on gold background for readability */
+[data-theme="cream"] [class*="bg-purple-6"]               { color: #1a0e00 !important; }
+[data-theme="cream"] [class*="bg-purple-8"]               { color: #1a0e00 !important; }
+
+/* Borders */
+[data-theme="cream"] [class*="border-white/"]             { border-color: rgba(184,134,11,0.3)  !important; }
+[data-theme="cream"] [class*="border-purple-"]            { border-color: rgba(184,134,11,0.45) !important; }
+
+/* QuickActions — force white text */
+[data-theme="cream"] .quick-actions .text-white,
+[data-theme="cream"] .quick-actions [class*="text-gray-"]  { color: #000000 !important; }
+/* [data-theme="cream"] .quick-actions [class*="text-purple-"] { color: #000000 !important; } */
+[data-theme="cream"] .quick-actions [class*="text-purple-400"] { color: #1d4ed8 !important; }
+[data-theme="cream"] .quick-actions [class*="leading-tight"]  { color: #ffffff !important; }
+
+/* Logo / star icon */
+[data-theme="cream"] [class*="border-[#ffb86c]"]          { border-color: #b8860b !important; }
+[data-theme="cream"] [class*="text-[#ffb86c]"]            { color: #b8860b !important; }
+
+/* Hero — Focus / Execute / Reflect badge text (more specific overrides) */
+[data-theme="cream"] [class*="text-purple-3"]              { color: #5b21b6 !important; }
+[data-theme="cream"] [class*="text-yellow-3"]              { color: #92400e !important; }
+[data-theme="cream"] [class*="text-blue-3"]                { color: #1e3a8a !important; }
+
+/* Hero — Focus / Execute / Reflect badge backgrounds */
+[data-theme="cream"] [class*="bg-purple-5"]                { background-color: rgba(109,40,217,0.18) !important; }
+[data-theme="cream"] [class*="bg-yellow-5"]                { background-color: rgba(146,64,14,0.18)  !important; }
+[data-theme="cream"] [class*="bg-blue-5"]                  { background-color: rgba(30,58,138,0.15)  !important; }
+
+
+/* ============================================================
+   DARK GOLD THEME  (Image 2 — deep dark amber / temple gold)
+   ============================================================ */
+[data-theme="dark-gold"] {
+  background-color: #0e0800;
+  color: #fdf3e3;
+}
+
+/* Page / sidebar / wrapper backgrounds */
+[data-theme="dark-gold"] .dashboard-bg                    { background: radial-gradient(circle at top, #2a1500 0%, #150b00 45%, #0a0400 100%) !important; }
+[data-theme="dark-gold"] [class*="bg-[#0b0f2a]"]         { background-color: #110900 !important; }
+[data-theme="dark-gold"] [class*="bg-[#050816]"]         { background-color: #0a0500 !important; }
+[data-theme="dark-gold"] [class*="bg-[#070b1d]"]         { background-color: #0e0600 !important; }
+
+/* Card backgrounds */
+[data-theme="dark-gold"] [class*="bg-[#0f1535]"]         { background-color: #1d1002 !important; }
+[data-theme="dark-gold"] [class*="bg-[#121735]"]         { background-color: #261503 !important; }
+[data-theme="dark-gold"] [class*="bg-[#25143d]"]         { background-color: #261503 !important; }
+[data-theme="dark-gold"] [class*="bg-[#1a1f4a]"]        { background-color: #1d1002 !important; }
+[data-theme="dark-gold"] [class*="bg-[#1b1b52]"]        { background-color: #261503 !important; }
+[data-theme="dark-gold"] [class*="bg-[#0b1027]"]        { background-color: #1d1002 !important; }
+[data-theme="dark-gold"] [class*="bg-white/5"]           { background-color: rgba(200,120,10,0.12) !important; }
+[data-theme="dark-gold"] [class*="bg-white/10"]          { background-color: rgba(200,120,10,0.22) !important; }
+
+/* Accent / buttons (purple → amber gold) */
+[data-theme="dark-gold"] [class*="bg-purple-6"]          { background-color: #c47a0a !important; }
+[data-theme="dark-gold"] [class*="bg-purple-8"]          { background-color: #9e6208 !important; }
+[data-theme="dark-gold"] [class*="bg-purple-6"]:hover    { background-color: #9e6208 !important; }
+[data-theme="dark-gold"] [class*="hover:bg-purple-7"]:hover { background-color: #9e6208 !important; }
+
+/* Gradient cards */
+[data-theme="dark-gold"] [class*="from-[#1a1f4a]"]      { background-image: none !important; background-color: #1d1002 !important; }
+[data-theme="dark-gold"] [class*="from-[#1b1b52]"]      { background-image: none !important; background-color: #261503 !important; }
+
+/* Hero overlay gradient */
+[data-theme="dark-gold"] [class*="from-[#0b0f2a]"]      { background-image: linear-gradient(to right, rgba(14,8,0,0.97), rgba(30,15,0,0.82), transparent) !important; }
+
+/* Hero wallet card gradient */
+[data-theme="dark-gold"] [class*="from-purple-7"]        { background-image: none !important; background-color: rgba(196,122,10,0.25) !important; }
+
+/* Text */
+[data-theme="dark-gold"] .text-white                     { color: #fdf3e3 !important; }
+[data-theme="dark-gold"] [class*="text-gray-3"]          { color: #c8a882 !important; }
+[data-theme="dark-gold"] [class*="text-gray-4"]          { color: #9a7a52 !important; }
+[data-theme="dark-gold"] [class*="text-purple-"]         { color: #e8a020 !important; }
+[data-theme="dark-gold"] [class*="text-pink-"]           { color: #d4780a !important; }
+[data-theme="dark-gold"] [class*="text-yellow-"]         { color: #f0c040 !important; }
+
+/* Keep button text readable on amber backgrounds */
+[data-theme="dark-gold"] [class*="bg-purple-6"]          { color: #ffffff !important; }
+[data-theme="dark-gold"] [class*="bg-purple-8"]          { color: #ffffff !important; }
+
+/* Borders */
+[data-theme="dark-gold"] [class*="border-white/"]        { border-color: rgba(180,100,10,0.3)  !important; }
+[data-theme="dark-gold"] [class*="border-purple-"]       { border-color: rgba(196,122,10,0.45) !important; }
+
+/* QuickActions — force white text */
+[data-theme="dark-gold"] .quick-actions .text-white,
+[data-theme="dark-gold"] .quick-actions [class*="text-gray-"]  { color: #000000 !important; }
+[data-theme="dark-gold"] .quick-actions [class*="text-purple-"] { color: #000000 !important; }
+
+/* Logo / star icon */
+[data-theme="dark-gold"] [class*="border-[#ffb86c]"]     { border-color: #d4780a !important; }
+[data-theme="dark-gold"] [class*="text-[#ffb86c]"]       { color: #e8a020 !important; }

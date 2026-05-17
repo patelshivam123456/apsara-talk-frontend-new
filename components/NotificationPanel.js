@@ -1,0 +1,38 @@
+"use client";
+import { useApp } from "@/context/AppContext";
+
+export default function NotificationPanel() {
+  const { notifOpen, setNotifOpen } = useApp();
+  if (!notifOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={() => setNotifOpen(false)}
+      />
+
+      {/* Panel */}
+      <div className="relative w-full sm:w-80 h-full bg-[#0f1535] p-4 border-l border-white/10">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg">Notifications</h2>
+          <button
+            onClick={() => setNotifOpen(false)}
+            className="text-sm text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          <div className="p-2 bg-white/5 rounded">Horoscope ready</div>
+          <div className="p-2 bg-white/5 rounded">New message</div>
+        </div>
+      </div>
+    </div>
+  );
+}

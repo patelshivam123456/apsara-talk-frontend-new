@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/redux/slices/authSlice";
 
 
-const Header = ({ sidebarOpen = false }) => {
+const Header = ({ sidebarOpen = false,profileData }) => {
   const router = useRouter();
 
   const {
@@ -128,7 +128,7 @@ const Header = ({ sidebarOpen = false }) => {
           <div className="relative">
             {isLoggedIn ? (
               <div onClick={() => setShowDropdown(!showDropdown)} className="bg-white/5 cursor-pointer rounded-full text-black w-10 h-10 flex justify-center items-center">
-                {getInitials(user.name)}
+                {getInitials(profileData?.firstName, profileData?.lastName)}
                 </div>
               // <img
               //   onClick={() => setShowDropdown(!showDropdown)}
@@ -152,13 +152,13 @@ const Header = ({ sidebarOpen = false }) => {
                   <>
                     <div className="px-4 py-4 border-b border-white/10">
                       <p className="text-sm font-medium">
-                        {user?.name}
+                        {profileData?.firstName} {profileData?.lastName}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         Welcome back ✨
                       </p>
                     </div>
-                    <button className="w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition">
+                    <button onClick={()=>router.push("/profile")} className="cursor-pointer w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition">
                       Profile Details
                     </button>
                     <button

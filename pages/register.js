@@ -5,20 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { config } from "@/constants/URLConfig";
 
 export default function RegisterPage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [robotChecked, setRobotChecked] =
-    useState(false);
+  const [robotChecked, setRobotChecked] = useState(false);
 
   // ALL FIELDS (UNCHANGED - for API payload)
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-
+confirmPassword: "",
     firstName: "",
     middleName: "",
     lastName: "",
@@ -60,6 +60,9 @@ export default function RegisterPage() {
     childName: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -75,78 +78,57 @@ export default function RegisterPage() {
   };
 
   const validateForm = () => {
-  let newErrors = {};
+    let newErrors = {};
 
-  const fieldLabels = {
-    username: "User Name",
-    password: "Password",
-    firstName: "First Name",
-    phone: "Phone",
-    gender: "Gender",
-    address: "Address",
-    city: "City",
-    state: "State",
-    pinCode: "Pin Code",
-  };
+    const fieldLabels = {
+      username: "Email",
+      firstName: "First Name",
+      phone: "Mobile",
+      gender: "Gender",
+      dateOfBirth: "Date of Birth",
+      placeOfBirth: "Birth Place",
+      password: "Password",
+      confirmPassword: "Confirm Password",
+    };
 
-  const requiredFields = Object.keys(fieldLabels);
+    const requiredFields = Object.keys(fieldLabels);
 
-  requiredFields.forEach((field) => {
-    if (!formData[field]?.trim()) {
-      newErrors[field] =
-        `${fieldLabels[field]} is required`;
+    requiredFields.forEach((field) => {
+      if (!formData[field]?.trim()) {
+        newErrors[field] = `${fieldLabels[field]} is required`;
+      }
+    });
+
+    // EMAIL VALIDATION (username treated as email)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (formData.username && !emailRegex.test(formData.username)) {
+      newErrors.username = "Enter valid email address";
     }
-  });
 
-  // EMAIL VALIDATION (username treated as email)
-  const emailRegex =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // PHONE VALIDATION
+    const phoneRegex = /^[0-9]{10}$/;
+    if (formData.phone && !phoneRegex.test(formData.phone)) {
+      newErrors.phone = "Phone must be 10 digits";
+    }
 
-  if (
-    formData.username &&
-    !emailRegex.test(formData.username)
-  ) {
-    newErrors.username =
-      "Enter valid email address";
-  }
+    if (formData.password && formData.password.length < 6) {
+  newErrors.password = "Password must be at least 6 characters";
+}
 
-  // PASSWORD
-  if (
-    formData.password &&
-    formData.password.length < 6
-  ) {
-    newErrors.password =
-      "Password must be at least 6 characters";
-  }
+// CONFIRM PASSWORD MATCH
+if (formData.confirmPassword !== formData.password) {
+  newErrors.confirmPassword = "Passwords do not match";
+}
 
-  // PHONE
-  const phoneRegex = /^[0-9]{10}$/;
-  if (
-    formData.phone &&
-    !phoneRegex.test(formData.phone)
-  ) {
-    newErrors.phone =
-      "Phone must be 10 digits";
-  }
+    // DOB basic check
+    if (formData.dateOfBirth && isNaN(Date.parse(formData.dateOfBirth))) {
+      newErrors.dateOfBirth = "Enter valid date of birth";
+    }
 
-  // PIN CODE
-  if (
-    formData.pinCode &&
-    !/^[0-9]{6}$/.test(formData.pinCode)
-  ) {
-    newErrors.pinCode =
-      "Pin Code must be 6 digits";
-  }
-
-  // ROBOT CHECK
-  if (!robotChecked) {
-    newErrors.robot =
-      "Please confirm you are not a robot";
-  }
-
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -170,18 +152,20 @@ export default function RegisterPage() {
           email: formData.username,
           phone: formData.phone,
 
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pinCode: formData.pinCode,
-          country: "India",
-
           gender: formData.gender,
 
-          dateOfBirth: "",
+          dateOfBirth: formData.dateOfBirth || "",
+          placeOfBirth: formData.placeOfBirth || "",
+
+          // keep backend-required structure intact
           timeOfBirth: "",
-          placeOfBirth: "",
           countryOfBirth: "",
+
+          address: "",
+          city: "",
+          state: "",
+          pinCode: "",
+          country: "India",
 
           dateOfDeath: "",
           timeOfDeath: "",
@@ -199,22 +183,19 @@ export default function RegisterPage() {
           motherName: "",
 
           spouseName: "",
-          spouseRelationship:"",
+          spouseRelationship: "",
 
           childName: "",
         },
       };
 
-      const response = await fetch(
-        "http://65.0.55.178:8080/authorization/auth/create-user",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(config.registerClient, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error("Registration failed");
@@ -234,7 +215,6 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-[#050816] flex items-center justify-center px-4 py-8">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="w-full max-w-7xl bg-[#0f1535] rounded-3xl overflow-hidden shadow-2xl border border-white/10 grid grid-cols-1 lg:grid-cols-2">
-
         {/* LEFT SIDE */}
         <div className="hidden lg:flex relative items-center justify-center bg-[#0b1028]">
           <img
@@ -242,23 +222,21 @@ export default function RegisterPage() {
             className="absolute inset-0 w-full h-full object-cover opacity-50"
             alt="register"
           />
-
-          
         </div>
 
         {/* RIGHT SIDE FORM */}
         <div className="p-6 md:p-10">
-<a href="/">🏠</a>
-          <div className="mb-3 mt-3">
+          <div className="mb-3">
             <h1 className="text-2xl font-semibold text-white">
-              Welcome to <span className="text-xl md:text-2xl font-semibold">
-            Apsara
-            <span className="text-pink-400">Talk</span>
-          </span> ✨
+              Welcome to{" "}
+              <span className="text-xl md:text-2xl font-semibold">
+                Apsara
+                <span className="text-pink-400">Talk</span>
+              </span>{" "}
+              ✨
             </h1>
             <p className="text-gray-300">
-              Create your account and start
-              your journey.
+              Create your account and start your journey.
             </p>
           </div>
 
@@ -266,26 +244,6 @@ export default function RegisterPage() {
             onSubmit={handleRegister}
             className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-5"
           >
-
-            <Input
-              label="User Name"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              error={errors.username}
-              className="py-2"
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-              className="py-2"
-            />
-
             <Input
               label="First Name"
               name="firstName"
@@ -309,7 +267,15 @@ export default function RegisterPage() {
             />
 
             <Input
-              label="Phone"
+              label="Email"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              error={errors.username}
+            />
+
+            <Input
+              label="Mobile"
               name="phone"
               maxLength={10}
               value={formData.phone}
@@ -324,44 +290,21 @@ export default function RegisterPage() {
             />
 
             <Input
-              label="Address"
-              name="address"
-              value={formData.address}
+              label="Date of Birth"
+              name="dateOfBirth"
+              type="date"
+              value={formData.dateOfBirth}
               onChange={handleChange}
-              error={errors.address}
+              error={errors.dateOfBirth}
             />
 
             <Input
-              label="City"
-              name="city"
-              value={formData.city}
+              label="Birth Place"
+              name="placeOfBirth"
+              value={formData.placeOfBirth}
               onChange={handleChange}
-              error={errors.city}
+              error={errors.placeOfBirth}
             />
-
-            <Input
-              label="State"
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-              error={errors.state}
-            />
-
-            <Input
-              label="Pin Code"
-              name="pinCode"
-              value={formData.pinCode}
-              onChange={handleChange}
-              error={errors.pinCode}
-              className="py-3"
-            />
-
-            {/* <Input
-              label="Country"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-            /> */}
 
             <Select
               label="Gender"
@@ -371,6 +314,46 @@ export default function RegisterPage() {
               options={["Male", "Female", "Other"]}
               error={errors.gender}
             />
+
+            <div className="relative">
+  <Input
+    label="Password"
+    type={showPassword ? "text" : "password"}
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    error={errors.password}
+    className="py-2 pr-10"
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-9 text-sm text-gray-300"
+  >
+    {showPassword ? "Hide" : "Show"}
+  </button>
+</div>
+
+<div className="relative">
+  <Input
+    label="Confirm Password"
+    type={showConfirmPassword ? "text" : "password"}
+    name="confirmPassword"
+    value={formData.confirmPassword}
+    onChange={handleChange}
+    error={errors.confirmPassword}
+    className="py-2 pr-10"
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+    className="absolute right-3 top-9 text-sm text-gray-300"
+  >
+    {showConfirmPassword ? "Hide" : "Show"}
+  </button>
+</div>
 
             {/* ROBOT CHECK */}
             <div className="md:col-span-2">
@@ -384,15 +367,11 @@ export default function RegisterPage() {
                   }}
                   className="w-4 h-4 accent-purple-600"
                 />
-                <span className="text-gray-300">
-                  I'm not a robot
-                </span>
+                <span className="text-gray-300">I'm not a robot</span>
               </div>
 
               {errors.robot && (
-                <p className="text-red-400 text-xs mt-2">
-                  {errors.robot}
-                </p>
+                <p className="text-red-400 text-xs mt-2">{errors.robot}</p>
               )}
             </div>
 
@@ -412,7 +391,6 @@ export default function RegisterPage() {
                 Login
               </Link>
             </div>
-
           </form>
         </div>
       </div>
@@ -430,9 +408,7 @@ function Input({ label, error, ...props }) {
         className={`w-full mt-1 h-[40px] bg-[#121735] border rounded-xl px-3 text-white outline-none
         ${error ? "border-red-500" : "border-white/10"}`}
       />
-      {error && (
-        <p className="text-red-400 text-xs mt-1">{error}</p>
-      )}
+      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
     </div>
   );
 }
@@ -452,9 +428,7 @@ function Select({ label, options, error, ...props }) {
           <option key={o}>{o}</option>
         ))}
       </select>
-      {error && (
-        <p className="text-red-400 text-xs mt-1">{error}</p>
-      )}
+      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
     </div>
   );
 }

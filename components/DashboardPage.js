@@ -16,7 +16,7 @@ import ChatPanel from "@/components/ChatPanel";
 import NotificationPanel from "@/components/NotificationPanel";
 import LoginPromptModal from "@/components/LoginPromptModal";
 
-export default function DashboardPage({ sidebarOpen, handleOpenSidebar }) {
+export default function DashboardPage({ sidebarOpen, handleOpenSidebar,profileData, astrologerData }) {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const { isLoggedIn } = useSelector((state) => state.auth);
@@ -139,8 +139,8 @@ export default function DashboardPage({ sidebarOpen, handleOpenSidebar }) {
                   ☰
                 </button>
 
-                <Header />
-                <Hero />
+                <Header profileData={profileData} />
+                <Hero profileData={profileData}/>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                   {/* <QuickActions /> */}
@@ -149,7 +149,7 @@ export default function DashboardPage({ sidebarOpen, handleOpenSidebar }) {
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
 <QuickActions /> 
 </div>
-                <Astrologers limit={3} />
+                <Astrologers limit={3} astrologerData={astrologerData}/>
                 <Categories />
                 <LifeGuidance />
               </div>

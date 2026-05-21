@@ -6,7 +6,8 @@ import { useSelector } from "react-redux";
 
 import PageLayout from "@/components/PageLayout";
 import LoginPromptModal from "@/components/LoginPromptModal";
-import { astrologerData } from "@/constants/Astrologer-Home-Data";
+// import { astrologerData } from "@/constants/Astrologer-Home-Data";
+import { config } from "@/constants/URLConfig";
 
 const INFO_ITEMS = [
   { label: "City",         key: "city" },
@@ -20,7 +21,7 @@ function getInitials(firstName, lastName) {
   return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
 }
 
-export default function AstrologerDetailPage() {
+export default function AstrologerDetailPage({astrologerData=[]}) {
   const router = useRouter();
   const { publicId } = router.query;
   const { isLoggedIn } = useSelector((state) => state.auth);
@@ -160,4 +161,38 @@ export default function AstrologerDetailPage() {
       </PageLayout>
     </>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  try {
+    // const token = req.cookies?.token || "";
+    const response = await fetch(
+      config.getAstrologersList,
+      {
+        method: "GET",
+        headers: {
+          accept: "*/*",
+          // Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const res = await response.json();
+    return {
+      props: {
+        astrologerData: res?.data || [],
+      },
+    };
+  } catch (error) {
+    console.log(
+      "Get Astrologers Error:",
+      error
+    );
+
+    return {
+      props: {
+        astrologerData: [],
+      },
+    };
+  }
 }

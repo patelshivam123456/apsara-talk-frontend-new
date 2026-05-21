@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
+import { config } from "@/constants/URLConfig";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -49,57 +50,57 @@ export default function LoginPage() {
     setErrors({ ...errors, [field]: "" });
   };
 
-  // const handleLogin = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!validate()) return;
-
-  //   try {
-  //     const response = await fetch(
-  //       "http://65.0.55.178:8080/authorization/auth/login",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(formData),
-  //       }
-  //     );
-
-  //     const res = await response.json();
-
-  //     if (!response.ok) {
-  //       throw new Error(res?.message || "Login failed");
-  //     }
-
-  //     toast.success(res?.message || "Login successful");
-
-  //     dispatch(
-  //       login({
-  //         name: res?.data?.username || formData.username,
-  //         image: "https://i.pravatar.cc/150?img=12",
-  //         token: res?.data?.token,
-  //         user: res?.data,
-  //       })
-  //     );
-
-  //     router.push("/");
-  //   } catch (error) {
-  //     toast.error(error?.message || "Login failed. Please try again.");
-  //   }
-  // };
- const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-if (!validate()) return;
-    dispatch(
-      login({
-        name: formData.username,
-        image: "https://i.pravatar.cc/150?img=12",
-      })
-    );
 
-    router.push("/");
+    if (!validate()) return;
+
+    try {
+      const response = await fetch(
+        config.loginClient,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const res = await response.json();
+
+      if (!response.ok) {
+        throw new Error(res?.message || "Login failed");
+      }
+
+      toast.success(res?.message || "Login successful");
+
+      dispatch(
+        login({
+          name: res?.data?.username || formData.username,
+          image: "https://i.pravatar.cc/150?img=12",
+          token: res?.data?.token,
+          user: res?.data,
+        })
+      );
+
+      router.push("/");
+    } catch (error) {
+      toast.error(error?.message || "Login failed. Please try again.");
+    }
   };
+//  const handleLogin = (e) => {
+//     e.preventDefault();
+
+//     dispatch(
+//       login({
+//         name: formData.username,
+//         image: "https://i.pravatar.cc/150?img=12",
+//       })
+//     );
+
+//     router.push("/");
+//   };
   return (
     <div className="min-h-screen bg-[#050816] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-6xl bg-[#0f1535] border border-white/10 rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-2">
@@ -115,8 +116,8 @@ if (!validate()) return;
 
         {/* RIGHT FORM */}
         <div className="p-8 md:p-12 text-white">
-          <a href="/">🏠</a>
-          <div className="mb-8 mt-3">
+
+          <div className="mb-8">
             <h1 className="text-2xl font-semibold">Welcome Back to  <span className="text-xl md:text-2xl font-semibold">
             Apsara
             <span className="text-pink-400">Talk</span>
@@ -171,7 +172,7 @@ if (!validate()) return;
             {/* LOGIN BUTTON */}
             <button
               type="submit"
-              className="cursor-pointer w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 transition font-medium"
+              className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 transition font-medium"
             >
               Login
             </button>

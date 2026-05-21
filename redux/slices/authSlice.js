@@ -3,6 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   isLoggedIn: false,
   user: null,
+  token: null,
+  isAuthLoaded: false, // only becomes true AFTER restoreAuth runs
 };
 
 const authSlice = createSlice({
@@ -10,39 +12,114 @@ const authSlice = createSlice({
   initialState,
 
   reducers: {
+    // =========================
+    // LOGIN
+    // =========================
     login: (state, action) => {
       state.isLoggedIn = true;
-      state.user = action.payload;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthLoaded = true;
 
       localStorage.setItem(
         "auth",
         JSON.stringify({
           isLoggedIn: true,
-          user: action.payload,
+          user: action.payload.user,
+          token: action.payload.token,
         })
       );
 
-      // Cookie lets getServerSideProps read auth state on the server
-      document.cookie = "isLoggedIn=1; path=/; max-age=604800; SameSite=Lax";
+      document.cookie =
+        "isLoggedIn=1; path=/; max-age=604800; SameSite=Lax";
+
+      document.cookie = `token=${action.payload.token}; path=/; max-age=604800; SameSite=Lax`;
     },
 
+    // =========================
+    // UPDATE PROFILE NAME
+    // =========================
+    updateProfileName: (
+      state,
+      action
+    ) => {
+      if (state.user) {
+        state.user.firstName =
+          action.payload.firstName || "";
+
+        state.user.lastName =
+          action.payload.lastName || "";
+      }
+
+      // update localStorage also
+      const authData = JSON.parse(
+        localStorage.getItem("auth") ||
+          "{}"
+      );
+
+      if (authData.user) {
+        authData.user.firstName =
+          action.payload.firstName || "";
+
+        authData.user.lastName =
+          action.payload.lastName || "";
+
+        localStorage.setItem(
+          "auth",
+          JSON.stringify(authData)
+        );
+      }
+    },
+
+    // =========================
+    // LOGOUT
+    // =========================
     logout: (state) => {
       state.isLoggedIn = false;
       state.user = null;
+      state.token = null;
+      state.isAuthLoaded = true;
 
       localStorage.removeItem("auth");
 
-      document.cookie = "isLoggedIn=; path=/; max-age=0; SameSite=Lax";
+      document.cookie =
+        "isLoggedIn=; path=/; max-age=0; SameSite=Lax";
+
+      document.cookie =
+        "token=; path=/; max-age=0; SameSite=Lax";
     },
 
+    // =========================
+    // RESTORE AUTH
+    // =========================
     restoreAuth: (state, action) => {
-      state.isLoggedIn = action.payload.isLoggedIn;
-      state.user = action.payload.user;
+      state.isAuthLoaded = true;
+
+      state.isLoggedIn =
+        !!action.payload?.isLoggedIn;
+
+      state.user =
+        action.payload?.user || null;
+
+      state.token =
+        action.payload?.token || null;
+    },
+
+    // =========================
+    // AUTH LOADING
+    // =========================
+    setAuthLoading: (state) => {
+      state.isAuthLoaded = false;
     },
   },
 });
 
-export const { login, logout, restoreAuth } =
-  authSlice.actions;
+export const {
+  login,
+  logout,
+  restoreAuth,
+  setAuthLoading,
+  updateProfileName,
+} = authSlice.actions;
 
 export default authSlice.reducer;

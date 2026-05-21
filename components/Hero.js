@@ -8,11 +8,11 @@ function getGreeting() {
   return "Good Evening";
 }
 
-export default function Hero() {
+export default function Hero({ profileData }) {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
 
   const greeting = getGreeting();
-  const displayName = isLoggedIn ? user?.name : "Explorer";
+  const displayName = isLoggedIn ? profileData?.firstName?.toUpperCase() + " " + profileData?.lastName?.toUpperCase() : "Explorer";
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden min-h-65 sm:min-h-75">

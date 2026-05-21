@@ -6,7 +6,8 @@ import { useSelector } from "react-redux";
 
 import { useApp } from "@/context/AppContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
-import { astrologerData } from "@/constants/Astrologer-Home-Data";
+// import { astrologerData } from "@/constants/Astrologer-Home-Data";
+import { config } from "@/constants/URLConfig";
 
 const EXPERIENCE_RANGES = [
   { label: "All Experience", min: 0, max: Infinity },
@@ -15,7 +16,7 @@ const EXPERIENCE_RANGES = [
   { label: "11+ Years", min: 11, max: Infinity },
 ];
 
-export default function Astrologers({ limit }) {
+export default function Astrologers({ limit,astrologerData }) {
   const router = useRouter();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
@@ -33,6 +34,8 @@ export default function Astrologers({ limit }) {
   /* =========================
      DYNAMIC FILTER VALUES
   ========================= */
+  console.log(astrologerData,"//////////");
+  
 
   const categoryFilters = useMemo(() => {
     const categories = [
@@ -160,7 +163,7 @@ export default function Astrologers({ limit }) {
         />
       )}
 
-      <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
+      <div className="bg-[#0f1535]/80 z-30 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
 
         {/* =========================
             HEADER
@@ -470,3 +473,4 @@ export default function Astrologers({ limit }) {
     </>
   );
 }
+

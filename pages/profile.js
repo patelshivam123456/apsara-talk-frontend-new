@@ -104,16 +104,15 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
 
   const handleDeleteProfile = async () => {
     try {
-      const response = await fetch(config.deleteClientProfile, {
+      const url = `${config.deleteClientProfile}?clientId=${profileData?.publicId}`;
+
+      const response = await fetch(url, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           accept: "*/*",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          clientId: profileData?.publicId,
-        }),
       });
 
       const res = await response.json();
@@ -164,18 +163,18 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-[#0f1535] border border-white/10 rounded-2xl p-6 w-[90%] max-w-md shadow-xl">
             <h2 className="text-lg font-semibold text-white mb-2">
-              Delete Profile
+              Deactivate Profile
             </h2>
 
             <p className="text-sm text-gray-300 mb-6">
-              Are you sure you want to delete your profile? This action cannot
+              Are you sure you want to deactivate your profile? This action cannot
               be undone.
             </p>
 
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 rounded-lg bg-white/10 text-gray-300 hover:bg-white/20"
+                className="cursor-pointer px-4 py-2 rounded-lg bg-white/10 text-gray-300 hover:bg-white/20"
               >
                 Cancel
               </button>
@@ -207,13 +206,13 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
             </div>
 
             {/* Delete Icon */}
-            <button
+            {/* <button
               onClick={() => setShowDeleteModal(true)}
               className="cursor-pointer absolute bottom-1 -right-1 w-7 h-7 rounded-full bg-white hover:bg-red-100 flex items-center justify-center text-white shadow-lg transition"
               title="Delete Profile"
             >
               🗑
-            </button>
+            </button> */}
           </div>
           <div>
             <h2 className="text-xl font-bold">
@@ -341,12 +340,20 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
         </div>
 
         {/* Logout */}
+        <div className="flex justify-between gap-4 w-full">
         <button
           onClick={handleLogout}
-          className="w-full py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
+          className="cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
         >
           Logout
         </button>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
+        >
+          Deactivate Account
+        </button>
+        </div>
       </div>
     </PageLayout>
   );

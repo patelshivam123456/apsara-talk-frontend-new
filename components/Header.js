@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 
 import { useApp } from "@/context/AppContext";
 
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/redux/slices/authSlice";
+import { clearServerSession } from "@/utils/authFetch";
 
-
-const Header = ({ sidebarOpen = false,profileData }) => {
+const Header = ({ profileData }) => {
   const router = useRouter();
 
   const {
@@ -20,7 +20,7 @@ const Header = ({ sidebarOpen = false,profileData }) => {
     data,
   } = useApp();
 
-  const [results, setResults] = useState([]);
+  const [hideResults, setHideResults] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const dropdownRef = useRef();
@@ -30,22 +30,21 @@ const Header = ({ sidebarOpen = false,profileData }) => {
   const { isLoggedIn, user } = useSelector(
     (state) => state.auth
   );
+  const displayFirstName =
+    profileData?.firstName || user?.firstName || user?.username || user?.name;
+  const displayLastName = profileData?.lastName || user?.lastName;
+  const displayName =
+    [displayFirstName, displayLastName].filter(Boolean).join(" ") || "User";
 
-  // 🔍 SEARCH LOGIC
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setResults([]);
-      return;
+  const results = useMemo(() => {
+    if (hideResults || !searchQuery.trim()) {
+      return [];
     }
 
-    const filtered = data.filter((item) =>
-      item.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
+    return data.filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    setResults(filtered);
-  }, [searchQuery, data]);
+  }, [data, hideResults, searchQuery]);
 
   // ❌ CLOSE DROPDOWN
   useEffect(() => {
@@ -71,10 +70,11 @@ const Header = ({ sidebarOpen = false,profileData }) => {
   };
 
   // ✅ LOGOUT
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await clearServerSession();
     dispatch(logout());
     setShowDropdown(false);
-    router.push("/");
+    router.replace("/");
   };
 
   const getInitials = (firstName, lastName) => {
@@ -128,7 +128,7 @@ const Header = ({ sidebarOpen = false,profileData }) => {
           <div className="relative">
             {isLoggedIn ? (
               <div onClick={() => setShowDropdown(!showDropdown)} className="bg-white/5 cursor-pointer rounded-full text-black w-10 h-10 flex justify-center items-center">
-                {getInitials(profileData?.firstName, profileData?.lastName)}
+                {getInitials(displayFirstName, displayLastName) || "U"}
                 </div>
               // <img
               //   onClick={() => setShowDropdown(!showDropdown)}
@@ -152,7 +152,7 @@ const Header = ({ sidebarOpen = false,profileData }) => {
                   <>
                     <div className="px-4 py-4 border-b border-white/10">
                       <p className="text-sm font-medium">
-                        {profileData?.firstName} {profileData?.lastName}
+                        {displayName}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         Welcome back ✨
@@ -197,7 +197,10 @@ const Header = ({ sidebarOpen = false,profileData }) => {
       <div className="relative w-full lg:max-w-sm">
         <input
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setHideResults(false);
+            setSearchQuery(e.target.value);
+          }}
           placeholder="Search astrologers, topics..."
           className="w-full bg-[#121735] border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500"
         />
@@ -211,7 +214,7 @@ const Header = ({ sidebarOpen = false,profileData }) => {
                 className="px-4 py-3 text-sm text-gray-300 hover:bg-white/10 cursor-pointer transition"
                 onClick={() => {
                   setSearchQuery(item.name);
-                  setResults([]);
+                  setHideResults(true);
                 }}
               >
                 {item.name}

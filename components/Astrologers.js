@@ -16,7 +16,7 @@ const EXPERIENCE_RANGES = [
   { label: "11+ Years", min: 11, max: Infinity },
 ];
 
-export default function Astrologers({ limit,astrologerData }) {
+export default function Astrologers({ limit,astrologerData = [] }) {
   const router = useRouter();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
@@ -34,7 +34,7 @@ export default function Astrologers({ limit,astrologerData }) {
   /* =========================
      DYNAMIC FILTER VALUES
   ========================= */
-  console.log(astrologerData,"//////////");
+  // console.log(astrologerData,"//////////");
   
 
   const categoryFilters = useMemo(() => {
@@ -45,7 +45,7 @@ export default function Astrologers({ limit,astrologerData }) {
     ];
 
     return ["All", ...categories];
-  }, []);
+  }, [astrologerData]);
 
   const languageFilters = useMemo(() => {
     const langs = astrologerData.flatMap((astro) =>
@@ -53,7 +53,7 @@ export default function Astrologers({ limit,astrologerData }) {
     );
 
     return ["All", ...new Set(langs)];
-  }, []);
+  }, [astrologerData]);
 
   const locationFilters = useMemo(() => {
     const locations = [
@@ -61,7 +61,7 @@ export default function Astrologers({ limit,astrologerData }) {
     ];
 
     return ["All", ...locations];
-  }, []);
+  }, [astrologerData]);
 
   /* =========================
      ACTIONS
@@ -473,4 +473,3 @@ export default function Astrologers({ limit,astrologerData }) {
     </>
   );
 }
-

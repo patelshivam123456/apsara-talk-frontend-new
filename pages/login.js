@@ -6,7 +6,12 @@ import { useDispatch } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
-import { config } from "@/constants/URLConfig";
+import api from "@/utils/api";
+import { stripAuthFields } from "@/utils/authState";
+import {
+  extractAccessToken,
+  setAccessToken,
+} from "@/utils/tokenStore";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -56,37 +61,42 @@ export default function LoginPage() {
     if (!validate()) return;
 
     try {
-      const response = await fetch(
-        config.loginClient,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const res = await api.post("/authorization/auth/login", formData);
 
-      const res = await response.json();
-
-      if (!response.ok) {
+      if (!res.success) {
         throw new Error(res?.message || "Login failed");
       }
 
       toast.success(res?.message || "Login successful");
 
+      const accessToken = extractAccessToken(res);
+
+      if (accessToken) {
+        setAccessToken(accessToken);
+      }
+
+      const profileRes = await api.get("/authorization/client/profile-me");
+      const user =
+        profileRes?.success && profileRes?.data
+          ? stripAuthFields(profileRes.data)
+          : stripAuthFields(res.data) || {
+              username: formData.username,
+            };
+
       dispatch(
         login({
-          name: res?.data?.username || formData.username,
-          image: "https://i.pravatar.cc/150?img=12",
-          token: res?.data?.token,
-          user: res?.data,
+          user,
+          accessToken,
         })
       );
 
       router.push("/");
     } catch (error) {
-      toast.error(error?.message || "Login failed. Please try again.");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Login failed. Please try again."
+      );
     }
   };
 //  const handleLogin = (e) => {

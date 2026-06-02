@@ -163,16 +163,14 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export async function getServerSideProps() {
   try {
-    // const token = req.cookies?.token || "";
     const response = await fetch(
       config.getAstrologersList,
       {
         method: "GET",
         headers: {
           accept: "*/*",
-          // Authorization: `Bearer ${token}`,
         },
       }
     );

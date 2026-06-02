@@ -73,7 +73,7 @@ export default function HoroscopePage() {
           ) : (
             <div className="text-center text-gray-400">
               <p className="text-5xl mb-3">⭐</p>
-              <p className="text-sm">Select your zodiac sign to read today's horoscope</p>
+              <p className="text-sm">Select your zodiac sign to read today&apos;s horoscope</p>
             </div>
           )}
         </div>

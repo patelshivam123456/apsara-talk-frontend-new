@@ -1,13 +1,24 @@
 import PageLayout from "@/components/PageLayout";
+import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/redux/slices/authSlice";
-import { useState } from "react";
+import { logout, restoreAuth } from "@/redux/slices/authSlice";
+import { useEffect, useState } from "react";
 import { config } from "@/constants/URLConfig";
+import {
+  clearServerSession,
+  fetchWithAuth,
+  serverFetchWithAuth,
+} from "@/utils/authFetch";
+import { stripAuthFields } from "@/utils/authState";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
-  const { user } = useSelector((state) => state.auth);
+export default function ProfilePage({
+  profileData,
+  serverIsLoggedIn,
+}) {
+  const router = useRouter();
+  const { isLoggedIn, isAuthLoaded } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const [notifs, setNotifs] = useState(true);
@@ -18,10 +29,51 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
   const [formData, setFormData] = useState(profileData || {});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await clearServerSession();
     dispatch(logout());
-    window.location.href = "/"; // hard redirect after logout
+    router.replace("/");
   };
+
+  useEffect(() => {
+    if (!isAuthLoaded || !isLoggedIn) {
+      return;
+    }
+
+    async function loadProfile() {
+      try {
+        const response = await fetchWithAuth(
+          config.getClientProfile,
+          {
+            method: "GET",
+            headers: {
+              accept: "*/*",
+            },
+          },
+          {
+            onRefreshFailed: () => dispatch(logout()),
+          }
+        );
+
+        const profileRes = await response.json();
+
+        if (profileRes?.success) {
+          const profile = stripAuthFields(profileRes.data);
+          setFormData(profile || {});
+          dispatch(
+            restoreAuth({
+              isLoggedIn: true,
+              user: profile,
+            })
+          );
+        }
+      } catch (error) {
+        console.log("Profile API Error:", error);
+      }
+    }
+
+    loadProfile();
+  }, [dispatch, isAuthLoaded, isLoggedIn]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -71,15 +123,20 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
         childName: formData?.childName || "",
       };
 
-      const response = await fetch(config.updateClientProfile, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "*/*",
-          Authorization: `Bearer ${token}`,
+      const response = await fetchWithAuth(
+        config.updateClientProfile,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+        {
+          onRefreshFailed: () => dispatch(logout()),
+        }
+      );
 
       const res = await response.json();
 
@@ -104,26 +161,32 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
 
   const handleDeleteProfile = async () => {
     try {
-      const url = `${config.deleteClientProfile}?clientId=${profileData?.publicId}`;
+      const url = `${config.deleteClientProfile}?clientId=${formData?.publicId}`;
 
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "*/*",
-          Authorization: `Bearer ${token}`,
+      const response = await fetchWithAuth(
+        url,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+          },
         },
-      });
+        {
+          onRefreshFailed: () => dispatch(logout()),
+        }
+      );
 
       const res = await response.json();
 
       if (res?.success) {
         toast.success("Profile deleted successfully");
 
+        await clearServerSession();
         dispatch(logout());
 
         setTimeout(() => {
-          window.location.href = "/login";
+          router.replace("/login");
         }, 1500);
       } else {
         toast.error(res?.message || "Failed to delete profile");
@@ -158,7 +221,11 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
   );
 
   return (
-    <PageLayout title="Profile & Settings" icon="⚙️">
+    <PageLayout
+      title="Profile & Settings"
+      icon="⚙️"
+      serverIsLoggedIn={serverIsLoggedIn || !!profileData}
+    >
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-[#0f1535] border border-white/10 rounded-2xl p-6 w-[90%] max-w-md shadow-xl">
@@ -196,13 +263,9 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Profile Card */}
         <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-6 flex items-center gap-5">
-          {/* <img
-            src={getInitials(profileData.firstName, profileData?.lastName)}
-            className="w-20 h-20 rounded-full border-2 border-purple-500/40 object-cover"
-          /> */}
           <div className="relative w-20 h-20">
             <div className="w-20 h-20 text-2xl font-bold flex items-center justify-center rounded-full border-2 border-purple-500/40 object-cover bg-[#121735]">
-              {getInitials(profileData.firstName, profileData?.lastName)}
+              {getInitials(formData?.firstName, formData?.lastName)}
             </div>
 
             {/* Delete Icon */}
@@ -359,59 +422,40 @@ export default function ProfilePage({ profileData, serverIsLoggedIn, token }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
-  const serverIsLoggedIn = req.cookies?.isLoggedIn === "1";
-  const token = req.cookies?.token || null;
-
-  // 🔴 BLOCK UNAUTHENTICATED USERS BEFORE PAGE LOAD
-  if (!serverIsLoggedIn || !token) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  let profileData = null;
-
+export async function getServerSideProps(context) {
   try {
-    const response = await fetch(config.getClientProfile, {
-      method: "GET",
-      headers: {
-        accept: "*/*",
-        Authorization: `Bearer ${token}`,
+    const { response } = await serverFetchWithAuth(
+      config.getClientProfile,
+      {
+        method: "GET",
+        headers: {
+          accept: "*/*",
+        },
       },
-    });
+      { req: context.req, res: context.res }
+    );
 
-    const res = await response.json();
+    if (response.ok) {
+      const profileRes = await response.json();
+      const profileData = profileRes?.success
+        ? stripAuthFields(profileRes.data)
+        : null;
 
-    if (res?.success) {
-      profileData = res?.data;
-    } else {
       return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
+        props: {
+          serverIsLoggedIn: !!profileData,
+          profileData,
         },
       };
     }
   } catch (error) {
-    console.log("Profile API Error:", error);
-
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
+    console.log("Profile SSR Error:", error);
   }
 
   return {
     props: {
-      serverIsLoggedIn,
-      profileData,
-      token,
+      serverIsLoggedIn: false,
+      profileData: null,
     },
   };
 }

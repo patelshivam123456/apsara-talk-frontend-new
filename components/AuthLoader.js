@@ -3,53 +3,61 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { restoreAuth } from "@/redux/slices/authSlice";
+import api from "@/utils/api";
+import { stripAuthFields } from "@/utils/authState";
+import {
+  clearAccessToken,
+  extractAccessToken,
+  setAccessToken,
+} from "@/utils/tokenStore";
 
 export default function AuthLoader() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    try {
-      const savedAuth = localStorage.getItem("auth");
+    let cancelled = false;
 
-      if (savedAuth) {
-        const parsedAuth = JSON.parse(savedAuth);
+    async function restoreCookieSession() {
+      try {
+        const refreshRes = await api.get("/authorization/auth/refresh-token");
+        const accessToken = extractAccessToken(refreshRes);
 
-        dispatch(
-          restoreAuth({
-            isLoggedIn: parsedAuth?.isLoggedIn || false,
-            user: parsedAuth?.user || null,
-            token: parsedAuth?.token || null,
-          })
-        );
-
-        document.cookie =
-          "isLoggedIn=1; path=/; max-age=604800; SameSite=Lax";
-
-        if (parsedAuth?.token) {
-          document.cookie = `token=${parsedAuth.token}; path=/; max-age=604800; SameSite=Lax`;
+        if (accessToken) {
+          setAccessToken(accessToken);
         }
-      } else {
-        // ✅ IMPORTANT: force auth completion even if nothing exists
+
+        const res = await api.get("/authorization/client/profile-me");
+
+        if (cancelled) {
+          return;
+        }
+
         dispatch(
           restoreAuth({
-            isLoggedIn: false,
-            user: null,
-            token: null,
+            isLoggedIn: !!res?.success,
+            user: res?.success ? stripAuthFields(res?.data) : null,
+            accessToken,
           })
         );
-      }
-    } catch (error) {
-      console.log("Auth Restore Error:", error);
+      } catch {
+        clearAccessToken();
 
-      // fallback safety
-      dispatch(
-        restoreAuth({
-          isLoggedIn: false,
-          user: null,
-          token: null,
-        })
-      );
+        if (!cancelled) {
+          dispatch(
+            restoreAuth({
+              isLoggedIn: false,
+              user: null,
+            })
+          );
+        }
+      }
     }
+
+    restoreCookieSession();
+
+    return () => {
+      cancelled = true;
+    };
   }, [dispatch]);
 
   return null;

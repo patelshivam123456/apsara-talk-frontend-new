@@ -367,7 +367,7 @@ if (formData.confirmPassword !== formData.password) {
                   }}
                   className="w-4 h-4 accent-purple-600"
                 />
-                <span className="text-gray-300">I'm not a robot</span>
+                <span className="text-gray-300">I&apos;m not a robot</span>
               </div>
 
               {errors.robot && (

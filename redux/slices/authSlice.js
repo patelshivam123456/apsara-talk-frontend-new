@@ -3,8 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   isLoggedIn: false,
   user: null,
-  token: null,
-  isAuthLoaded: false, // only becomes true AFTER restoreAuth runs
+  accessToken: null,
+  isAuthLoaded: false,
 };
 
 const authSlice = createSlice({
@@ -18,22 +18,8 @@ const authSlice = createSlice({
     login: (state, action) => {
       state.isLoggedIn = true;
       state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.accessToken = action.payload.accessToken || null;
       state.isAuthLoaded = true;
-
-      localStorage.setItem(
-        "auth",
-        JSON.stringify({
-          isLoggedIn: true,
-          user: action.payload.user,
-          token: action.payload.token,
-        })
-      );
-
-      document.cookie =
-        "isLoggedIn=1; path=/; max-age=604800; SameSite=Lax";
-
-      document.cookie = `token=${action.payload.token}; path=/; max-age=604800; SameSite=Lax`;
     },
 
     // =========================
@@ -43,32 +29,19 @@ const authSlice = createSlice({
       state,
       action
     ) => {
+      const firstName = action.payload.firstName;
+      const lastName = action.payload.lastName;
+
       if (state.user) {
-        state.user.firstName =
-          action.payload.firstName || "";
+        if (firstName) {
+          state.user.firstName = firstName;
+        }
 
-        state.user.lastName =
-          action.payload.lastName || "";
+        if (lastName) {
+          state.user.lastName = lastName;
+        }
       }
 
-      // update localStorage also
-      const authData = JSON.parse(
-        localStorage.getItem("auth") ||
-          "{}"
-      );
-
-      if (authData.user) {
-        authData.user.firstName =
-          action.payload.firstName || "";
-
-        authData.user.lastName =
-          action.payload.lastName || "";
-
-        localStorage.setItem(
-          "auth",
-          JSON.stringify(authData)
-        );
-      }
     },
 
     // =========================
@@ -77,16 +50,8 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isLoggedIn = false;
       state.user = null;
-      state.token = null;
+      state.accessToken = null;
       state.isAuthLoaded = true;
-
-      localStorage.removeItem("auth");
-
-      document.cookie =
-        "isLoggedIn=; path=/; max-age=0; SameSite=Lax";
-
-      document.cookie =
-        "token=; path=/; max-age=0; SameSite=Lax";
     },
 
     // =========================
@@ -101,8 +66,19 @@ const authSlice = createSlice({
       state.user =
         action.payload?.user || null;
 
-      state.token =
-        action.payload?.token || null;
+      if (
+        action.payload &&
+        Object.prototype.hasOwnProperty.call(action.payload, "accessToken")
+      ) {
+        state.accessToken = action.payload.accessToken || null;
+      }
+    },
+
+    setAccessToken: (state, action) => {
+      state.accessToken =
+        typeof action.payload === "object"
+          ? action.payload?.accessToken || null
+          : action.payload || null;
     },
 
     // =========================
@@ -118,6 +94,7 @@ export const {
   login,
   logout,
   restoreAuth,
+  setAccessToken,
   setAuthLoading,
   updateProfileName,
 } = authSlice.actions;

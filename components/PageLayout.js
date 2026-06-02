@@ -5,8 +5,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import AppSidebar from "@/components/AppSidebar";
 import { logout } from "@/redux/slices/authSlice";
+import { clearServerSession } from "@/utils/authFetch";
 
-export default function PageLayout({ title, icon, children, protect = true }) {
+export default function PageLayout({
+  title,
+  icon,
+  children,
+  protect = true,
+  serverIsLoggedIn = false,
+}) {
   const router = useRouter();
   const dropdownRef = useRef();
   const dispatch = useDispatch();
@@ -32,11 +39,14 @@ export default function PageLayout({ title, icon, children, protect = true }) {
   };
 
   // ✅ LOGOUT
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await clearServerSession();
     dispatch(logout());
-    // setShowDropdown(false);
-    router.push("/");
+    setShowDropdown(false);
+    router.replace("/");
   };
+
+  
 
   // ✅ Public astrologer routes
   const isPublicAstrologerRoute =
@@ -45,15 +55,16 @@ export default function PageLayout({ title, icon, children, protect = true }) {
 
   // ✅ Disable protection for public routes
   const shouldProtect = protect && !isPublicAstrologerRoute;
+  const hasActiveSession = isLoggedIn || serverIsLoggedIn;
 
   useEffect(() => {
     // wait for auth restore
     if (!isAuthLoaded) return;
 
-    if (shouldProtect && !isLoggedIn) {
+    if (shouldProtect && !hasActiveSession) {
       router.replace("/login");
     }
-  }, [isLoggedIn, isAuthLoaded, shouldProtect, router]);
+  }, [hasActiveSession, isAuthLoaded, shouldProtect, router]);
 
   // loading state while restoring auth
   if (shouldProtect && !isAuthLoaded) {
@@ -61,7 +72,7 @@ export default function PageLayout({ title, icon, children, protect = true }) {
   }
 
   // block protected content
-  if (shouldProtect && !isLoggedIn) {
+  if (shouldProtect && !hasActiveSession) {
     return null;
   }
 
@@ -70,6 +81,10 @@ export default function PageLayout({ title, icon, children, protect = true }) {
       lastName?.charAt(0) || ""
     }`.toUpperCase();
   };
+  const displayFirstName = user?.firstName || user?.username || user?.name;
+  const displayLastName = user?.lastName;
+  const displayName =
+    [displayFirstName, displayLastName].filter(Boolean).join(" ") || "User";
 
   return (
     <div className="min-h-screen dashboard-bg text-white flex">
@@ -94,12 +109,12 @@ export default function PageLayout({ title, icon, children, protect = true }) {
             </div>
           </div>
           <div ref={dropdownRef} className="relative pr-8">
-            {isLoggedIn ? (
+            {hasActiveSession ? (
               <div
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="bg-white/5 cursor-pointer rounded-full text-black w-10 h-10 flex justify-center items-center"
               >
-                {getInitials(user?.firstName, user?.lastName)}
+                {getInitials(displayFirstName, displayLastName) || "U"}
               </div>
             ) : (
               // <img
@@ -119,11 +134,11 @@ export default function PageLayout({ title, icon, children, protect = true }) {
             {/* DROPDOWN */}
             {showDropdown && (
               <div className="absolute right-6 mt-1 w-52 bg-[#0f1535] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
-                {isLoggedIn ? (
+                {hasActiveSession ? (
                   <>
                     <div className="px-4 py-4 border-b border-white/10">
                       <p className="text-sm font-medium">
-                        {user?.firstName} {user?.lastName}
+                        {displayName}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         Welcome back ✨

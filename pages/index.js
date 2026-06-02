@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import { useSelector,useDispatch } from "react-redux";
 import { config } from "@/constants/URLConfig";
 import { updateProfileName } from "@/redux/slices/authSlice";
+import { serverFetchWithAuth } from "@/utils/authFetch";
+import { stripAuthFields } from "@/utils/authState";
 
 export default function Home({
   serverIsLoggedIn,
@@ -34,16 +36,6 @@ export default function Home({
   const isLoggedIn =
     reduxIsLoggedIn || serverIsLoggedIn;
 
-  // ✅ Load from localStorage on first render
-  useEffect(() => {
-    const savedSidebar =
-      localStorage.getItem("sidebarOpen");
-
-    if (savedSidebar !== null) {
-      setSidebarOpen(JSON.parse(savedSidebar));
-    }
-  }, []);
-
   useEffect(() => {
   if (profileData) {
     dispatch(
@@ -60,14 +52,7 @@ export default function Home({
 
   // ✅ Toggle sidebar
   const handleOpenSidebar = () => {
-    const updatedValue = !sidebarOpen;
-
-    setSidebarOpen(updatedValue);
-
-    localStorage.setItem(
-      "sidebarOpen",
-      JSON.stringify(updatedValue)
-    );
+    setSidebarOpen((value) => !value);
   };
 
 
@@ -115,93 +100,33 @@ export default function Home({
   );
 }
 
-// export async function getServerSideProps({ req }) {
-//   const serverIsLoggedIn =
-//     req.cookies?.isLoggedIn === "1";
-
-//   let profileData = null;
-
-//   try {
-//     // ✅ token from cookie
-//     const token = req.cookies?.token;
-//     console.log(token,"///////////////");
-    
-
-//     if (token) {
-//       const response = await fetch(
-//         config.getClientProfile,
-//         {
-//           method: "GET",
-//           headers: {
-//             accept: "*/*",
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-
-//       const res = await response.json();
-
-//       if (res?.success) {
-//         profileData = res?.data;
-//       }
-//     }
-//   } catch (error) {
-//     console.log(
-//       "Profile API Error:",
-//       error
-//     );
-//   }
-
-//   return {
-//     props: {
-//       serverIsLoggedIn,
-//       profileData,
-//     },
-//   };
-// }
-
-export async function getServerSideProps({ req }) {
-  const serverIsLoggedIn =
-    req.cookies?.isLoggedIn === "1";
-
+export async function getServerSideProps(context) {
   let profileData = null;
   let astrologerData = [];
+  let serverIsLoggedIn = false;
 
   try {
-    const token = req.cookies?.token;
+    try {
+      const { response } = await serverFetchWithAuth(
+        config.getClientProfile,
+        {
+          method: "GET",
+          headers: {
+            accept: "*/*",
+          },
+        },
+        { req: context.req, res: context.res }
+      );
 
-    // =========================
-    // Profile API ONLY if logged in
-    // =========================
-    if (token) {
-      try {
-        const profileResponse = await fetch(
-          config.getClientProfile,
-          {
-            method: "GET",
-            headers: {
-              accept: "*/*",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        // Unauthorized → treat as guest user
-        if (profileResponse.status !== 401) {
-          const profileRes =
-            await profileResponse.json();
-
-          if (profileRes?.success) {
-            profileData =
-              profileRes?.data;
-          }
-        }
-      } catch (error) {
-        console.log(
-          "Profile API Error:",
-          error
-        );
+      if (response.ok) {
+        const profileRes = await response.json();
+        profileData = profileRes?.success
+          ? stripAuthFields(profileRes.data)
+          : null;
+        serverIsLoggedIn = !!profileData;
       }
+    } catch (error) {
+      console.log("Get Profile Error:", error);
     }
 
     // =========================
@@ -214,9 +139,6 @@ export async function getServerSideProps({ req }) {
           method: "GET",
           headers: {
             accept: "*/*",
-            // Authorization: `Bearer ${
-            //   token || ""
-            // }`,
           },
         }
       );
@@ -238,12 +160,12 @@ export async function getServerSideProps({ req }) {
     // =========================
     // Final Return
     // =========================
-    return {
-      props: {
-        serverIsLoggedIn,
-        profileData,
-        astrologerData,
-      },
+      return {
+        props: {
+          serverIsLoggedIn,
+          profileData,
+          astrologerData,
+        },
     };
   } catch (error) {
     console.log(

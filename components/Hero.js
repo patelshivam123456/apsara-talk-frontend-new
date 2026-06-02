@@ -12,7 +12,12 @@ export default function Hero({ profileData }) {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
 
   const greeting = getGreeting();
-  const displayName = isLoggedIn ? profileData?.firstName?.toUpperCase() + " " + profileData?.lastName?.toUpperCase() : "Explorer";
+  const firstName =
+    profileData?.firstName || user?.firstName || user?.username || user?.name;
+  const lastName = profileData?.lastName || user?.lastName;
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  const displayName =
+    isLoggedIn && fullName ? fullName.toUpperCase() : "Explorer";
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden min-h-65 sm:min-h-75">
@@ -70,14 +75,14 @@ export default function Hero({ profileData }) {
           {/* Energy Card */}
           <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 rounded-xl sm:w-[44%] flex flex-col gap-2">
             <p className="text-[10px] uppercase tracking-widest font-bold">
-              Today's Energy
+              Today&apos;s Energy
             </p>
             <div className="flex items-center gap-4">
               <CircularProgress value={72} />
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-semibold text-white">Positive Zone</p>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  You're radiating strong cosmic energy today.
+                  You&apos;re radiating strong cosmic energy today.
                 </p>
                 <p className="text-[11px] font-bold  mt-0.5">
                   Keep the momentum going!

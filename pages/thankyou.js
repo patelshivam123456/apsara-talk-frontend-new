@@ -11,7 +11,7 @@ export default function ThankYouPage() {
   // If not logged in, bounce back to home
   useEffect(() => {
     if (!isLoggedIn) router.replace("/");
-  }, [isLoggedIn]);
+  }, [isLoggedIn, router]);
 
   return (
     <div className="min-h-screen dashboard-bg text-white flex items-center justify-center px-4">

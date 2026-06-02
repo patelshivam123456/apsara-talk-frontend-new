@@ -23,7 +23,7 @@ export default function App({ Component, pageProps }) {
         <AppProvider>
           <ThemeProvider>
 
-            {/* LOAD AUTH FROM LOCALSTORAGE */}
+            {/* Restore auth from the cookie-backed server session */}
             <AuthLoader />
 
             <Component {...pageProps} />

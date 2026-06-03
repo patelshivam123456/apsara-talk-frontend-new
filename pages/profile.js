@@ -1,4 +1,5 @@
 import PageLayout from "@/components/PageLayout";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, restoreAuth } from "@/redux/slices/authSlice";
@@ -28,12 +29,6 @@ export default function ProfilePage({
 
   const [formData, setFormData] = useState(profileData || {});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const handleLogout = async () => {
-    await clearServerSession();
-    dispatch(logout());
-    router.replace("/");
-  };
 
   useEffect(() => {
     if (!isAuthLoaded || !isLoggedIn) {
@@ -402,20 +397,20 @@ export default function ProfilePage({
           </div>
         </div>
 
-        {/* Logout */}
+        {/* Account Actions */}
         <div className="flex justify-between gap-4 w-full">
-        <button
-          onClick={handleLogout}
-          className="cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
-        >
-          Logout
-        </button>
-        <button
-          onClick={() => setShowDeleteModal(true)}
-          className="cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
-        >
-          Deactivate Account
-        </button>
+          <Link
+            href="/change-password"
+            className="text-center cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
+          >
+            Change Password
+          </Link>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
+          >
+            Deactivate Account
+          </button>
         </div>
       </div>
     </PageLayout>

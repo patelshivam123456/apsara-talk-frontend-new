@@ -5,3 +5,12 @@ export async function clearServerSession() {
     .get("/authorization/auth/logout")
     .catch((error) => console.error("Failed to clear server session:", error));
 }
+
+export async function updatePassword(payload) {
+  return api.put("/authorization/auth/update-password", payload, {
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "*/*",
+    },
+  });
+}

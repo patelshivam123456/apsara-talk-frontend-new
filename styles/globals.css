@@ -217,6 +217,8 @@ body {
 /* Card backgrounds */
 [data-theme="cream"] [class*="bg-[#0f1535]"]              { background-color: #fff8ee !important; }
 [data-theme="cream"] [class*="bg-[#121735]"]              { background-color: #fdefd4 !important; }
+[data-theme="cream"] [class*="bg-[#17112f]"]              { background-color: #17112f !important; color: #ffffff !important; }
+[data-theme="cream"] [class*="bg-[#17112F]"]              { background-color: #17112f !important; color: #ffffff !important; }
 [data-theme="cream"] [class*="bg-[#25143d]"]              { background-color: #fdefd4 !important; }
 [data-theme="cream"] [class*="bg-[#1a1f4a]"]             { background-color: #fff8ee !important; }
 [data-theme="cream"] [class*="bg-[#1b1b52]"]             { background-color: #fdefd4 !important; }
@@ -250,6 +252,8 @@ body {
 [data-theme="cream"] [class*="text-green-"]               { color: #276027 !important; }
 [data-theme="cream"] [class*="text-red-"]                 { color: #b91c1c !important; }
 [data-theme="cream"] [class*="text-blue-"]                { color: #1d4ed8 !important; }
+[data-theme="cream"] [class*="bg-[#17112f]"] :where(*)    { color: #ffffff !important; }
+[data-theme="cream"] [class*="bg-[#17112F]"] :where(*)    { color: #ffffff !important; }
 
 /* Button text: dark on gold background for readability */
 [data-theme="cream"] [class*="bg-purple-6"]               { color: #1a0e00 !important; }

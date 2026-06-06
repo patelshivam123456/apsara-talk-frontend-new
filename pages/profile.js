@@ -14,6 +14,53 @@ import { stripAuthFields } from "@/utils/authState";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const PROFILE_COMPLETION_FIELDS = [
+  "firstName",
+  "lastName",
+  "email",
+  "phone",
+  "gender",
+  "dateOfBirth",
+  "timeOfBirth",
+  "placeOfBirth",
+  "address",
+  "city",
+  "state",
+  "pinCode",
+  "country",
+  "religion",
+  "motherTongue",
+  "language",
+  "fatherName",
+  "motherName",
+];
+
+const clampPercentage = (value) => Math.min(100, Math.max(0, value));
+
+const calculateProfileCompletion = (profile = {}) => {
+  const completedFields = PROFILE_COMPLETION_FIELDS.filter((field) => {
+    const value = profile?.[field];
+
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    return String(value).trim().length > 0;
+  }).length;
+
+  return Math.round((completedFields / PROFILE_COMPLETION_FIELDS.length) * 100);
+};
+
+const getProfileCompletionPercentage = (profile = {}) => {
+  const apiPercentage = Number(profile?.profileCompletionPercentage);
+
+  if (Number.isFinite(apiPercentage)) {
+    return clampPercentage(Math.round(apiPercentage));
+  }
+
+  return calculateProfileCompletion(profile);
+};
+
 export default function ProfilePage({
   profileData,
   serverIsLoggedIn,
@@ -193,26 +240,89 @@ export default function ProfilePage({
     }
   };
 
+  const accountFields = [
+    { label: "First Name", field: "firstName" },
+    { label: "Middle Name", field: "middleName" },
+    { label: "Last Name", field: "lastName" },
+    { label: "Email", field: "email", disabled: true },
+    { label: "Mobile", field: "phone" },
+    { label: "Gender", field: "gender" },
+  ];
+
+  const birthFields = [
+    { label: "Date Of Birth", field: "dateOfBirth", type: "date" },
+    { label: "Time Of Birth", field: "timeOfBirth", type: "time" },
+    { label: "Place Of Birth", field: "placeOfBirth" },
+    { label: "Country Of Birth", field: "countryOfBirth" },
+  ];
+
+  const locationFields = [
+    { label: "Address", field: "address" },
+    { label: "City", field: "city" },
+    { label: "State", field: "state" },
+    { label: "Pin Code", field: "pinCode" },
+    { label: "Country", field: "country" },
+  ];
+
+  const familyFields = [
+    { label: "Religion", field: "religion" },
+    { label: "Caste", field: "caste" },
+    { label: "Gotra", field: "gotra" },
+    { label: "Mother Tongue", field: "motherTongue" },
+    { label: "Language", field: "language" },
+    { label: "Father Name", field: "fatherName" },
+    { label: "Mother Name", field: "motherName" },
+    { label: "Spouse Name", field: "spouseName" },
+    { label: "Child Name", field: "childName" },
+  ];
+
+  const profileCompletionPercentage = getProfileCompletionPercentage(formData);
+  const completedRequiredFields = PROFILE_COMPLETION_FIELDS.filter((field) =>
+    String(formData?.[field] || "").trim()
+  ).length;
+  const displayName =
+    `${formData?.firstName || "Apsara"} ${formData?.lastName || "Member"}`.trim();
+  const completionStrokeStyle = {
+    background: `conic-gradient(#14b8a6 ${profileCompletionPercentage * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
+  };
+
   const renderField = (label, field, disabled = false, type = "text") => (
     <div
       key={field}
-      className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0 gap-4"
+      className="rounded-xl border border-white/10 bg-[#17112f] px-4 py-3 text-white transition focus-within:border-teal-400/70"
     >
-      <span className="text-xs text-gray-400 min-w-[140px]">{label}</span>
+      <label className="text-xs uppercase tracking-[0.16em] text-white">
+        {label}
+      </label>
 
       {isEditing && !disabled ? (
         <input
           type={type}
           value={formData?.[field] || ""}
           onChange={(e) => handleChange(field, e.target.value)}
-          className="bg-[#121735] border border-white/10 rounded-lg px-3 py-2 text-sm w-full outline-none focus:border-purple-500"
+          className="mt-2 h-10 w-full bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/60"
         />
       ) : (
-        <span className="text-sm font-medium text-right">
-          {formData?.[field] || "—"}
-        </span>
+        <p className="mt-2 min-h-6 break-words text-sm font-medium text-white">
+          {formData?.[field] || "Not added"}
+        </p>
       )}
     </div>
+  );
+
+  const renderSection = (title, description, fields) => (
+    <section className="rounded-2xl border border-white/10 bg-[#0f1535]/90 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
+      <div className="mb-5">
+        <h3 className="text-base font-semibold text-white">{title}</h3>
+        <p className="mt-1 text-sm text-gray-400">{description}</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {fields.map(({ label, field, disabled, type }) =>
+          renderField(label, field, disabled, type)
+        )}
+      </div>
+    </section>
   );
 
   return (
@@ -255,163 +365,173 @@ export default function ProfilePage({
         </div>
       )}
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="max-w-2xl mx-auto space-y-4">
-        {/* Profile Card */}
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-6 flex items-center gap-5">
-          <div className="relative w-20 h-20">
-            <div className="w-20 h-20 text-2xl font-bold flex items-center justify-center rounded-full border-2 border-purple-500/40 object-cover bg-[#121735]">
-              {getInitials(formData?.firstName, formData?.lastName)}
-            </div>
+      <div className="mx-auto max-w-6xl space-y-5">
+        <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f1535] shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.8fr]">
+            <div className="p-6 md:p-8">
+              <div className="flex flex-col gap-5 sm:flex-row ">
+                <div className="relative h-24 w-24 shrink-0 rounded-full border bg-white border-none shadow-2xl">
+                  <div className="flex h-full w-full items-center justify-center rounded-full  text-3xl font-bold text-white">
+                    {getInitials(formData?.firstName, formData?.lastName) || "AT"}
+                  </div>
+                </div>
 
-            {/* Delete Icon */}
-            {/* <button
-              onClick={() => setShowDeleteModal(true)}
-              className="cursor-pointer absolute bottom-1 -right-1 w-7 h-7 rounded-full bg-white hover:bg-red-100 flex items-center justify-center text-white shadow-lg transition"
-              title="Delete Profile"
-            >
-              🗑
-            </button> */}
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">
-              {formData?.firstName || "User"} {formData?.lastName || ""}
-            </h2>
+                <div className="min-w-0 flex-1">
+                  {/* <p className="text-xs uppercase tracking-[0.22em] text-teal-300">
+                    Premium Client Profile
+                  </p> */}
+                  <h2 className=" break-words text-3xl font-semibold text-white">
+                    {displayName}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-400">
+                    Keep your birth, contact, and family details complete for a
+                    sharper consultation experience.
+                  </p>
 
-            <p className="text-sm text-gray-400 mt-0.5">CosmicPath Member ✨</p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      onClick={handleEditToggle}
+                      className="cursor-pointer rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-[#071018] transition hover:bg-teal-400"
+                    >
+                      {isEditing ? "Cancel Editing" : "Edit Profile"}
+                    </button>
 
-            <div className="flex items-center gap-3 mt-2">
-              <button
-                onClick={handleEditToggle}
-                className="text-xs text-purple-400 hover:text-purple-300 transition"
-              >
-                {isEditing ? "Cancel Editing" : "Edit Profile →"}
-              </button>
+                    {isEditing && (
+                      <button
+                        onClick={handleUpdateProfile}
+                        disabled={isSaving}
+                        className="cursor-pointer rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#071018] transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isSaving ? "Saving..." : "Save Changes"}
+                      </button>
+                    )}
 
-              {isEditing && (
-                <button
-                  onClick={handleUpdateProfile}
-                  disabled={isSaving}
-                  className="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs transition disabled:opacity-50"
-                >
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Account Details */}
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-            Account Details
-          </p>
-
-          <div className="space-y-3">
-            {renderField("First Name", "firstName")}
-            {renderField("Last Name", "lastName")}
-            {renderField("Email", "email", true)}
-            {renderField("Mobile", "phone")}
-            {renderField("Gender", "gender")}
-          </div>
-        </div>
-
-        {/* Personal Details */}
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-            Personal Details
-          </p>
-
-          <div className="space-y-3">
-            {renderField("Middle Name", "middleName")}
-            {renderField("Address", "address")}
-            {renderField("City", "city")}
-            {renderField("State", "state")}
-            {renderField("Pin Code", "pinCode")}
-            {renderField("Country", "country")}
-            {renderField("Date Of Birth", "dateOfBirth", false, "date")}
-            {renderField("Time Of Birth", "timeOfBirth", false, "time")}
-            {renderField("Place Of Birth", "placeOfBirth")}
-          </div>
-        </div>
-
-        {/* Other Details */}
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-            Other Details
-          </p>
-
-          <div className="space-y-3">
-            {renderField("Religion", "religion")}
-            {renderField("Caste", "caste")}
-            {renderField("Gotra", "gotra")}
-            {renderField("Mother Tongue", "motherTongue")}
-            {renderField("Language", "language")}
-            {renderField("Father Name", "fatherName")}
-            {renderField("Mother Name", "motherName")}
-            {renderField("Spouse Name", "spouseName")}
-            {renderField("Child Name", "childName")}
-          </div>
-        </div>
-
-        {/* Preferences */}
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-            Preferences
-          </p>
-
-          <div className="space-y-3">
-            {[
-              {
-                label: "Push Notifications",
-                value: notifs,
-                toggle: setNotifs,
-              },
-              {
-                label: "Email Updates",
-                value: emails,
-                toggle: setEmails,
-              },
-            ].map(({ label, value, toggle }) => (
-              <div
-                key={label}
-                className="flex items-center justify-between py-2"
-              >
-                <span className="text-sm">{label}</span>
-
-                <button
-                  onClick={() => toggle(!value)}
-                  className={`w-11 h-6 rounded-full border transition-all relative ${
-                    value
-                      ? "bg-purple-600 border-purple-500"
-                      : "bg-white/10 border-white/20"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${
-                      value ? "left-5" : "left-0.5"
-                    }`}
-                  />
-                </button>
+                    <Link
+                      href="/change-password"
+                      className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                    >
+                      Change Password
+                    </Link>
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
+
+            <div className="border-t border-white/10 bg-[#17112f] p-6 text-white lg:border-l lg:border-t-0 md:p-8">
+              <div className="flex h-full flex-col items-center justify-center text-center">
+                <div
+                  className="grid h-40 w-40 place-items-center rounded-full p-3"
+                  style={completionStrokeStyle}
+                >
+                  <div className="grid h-full w-full place-items-center rounded-full bg-[#0f1536]">
+                    <div>
+                      <p className="text-4xl font-semibold text-black">
+                        {profileCompletionPercentage}%
+                      </p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-gray-400">
+                        Complete
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-5 text-sm font-medium text-white">
+                  {completedRequiredFields} of {PROFILE_COMPLETION_FIELDS.length} key fields complete
+                </p>
+                <p className="mt-2 text-sm leading-6 text-gray-400">
+                  Add missing details to raise your profile score and improve
+                  personalization.
+                </p>
+              </div>
+            </div>
           </div>
+        </section>
+
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          {renderSection(
+            "Account Details",
+            "Primary identity and contact information for your account.",
+            accountFields
+          )}
+          {renderSection(
+            "Birth Profile",
+            "Astrology-ready details used for more accurate guidance.",
+            birthFields
+          )}
+          {renderSection(
+            "Location Details",
+            "Current address and regional profile information.",
+            locationFields
+          )}
+          {renderSection(
+            "Family And Culture",
+            "Personal context that helps tailor recommendations.",
+            familyFields
+          )}
         </div>
 
-        {/* Account Actions */}
-        <div className="flex justify-between gap-4 w-full">
-          <Link
-            href="/change-password"
-            className="text-center cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
-          >
-            Change Password
-          </Link>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="cursor-pointer w-[50%] py-3 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition text-sm font-semibold"
-          >
-            Deactivate Account
-          </button>
-        </div>
+        <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_0.8fr]">
+          <div className="rounded-2xl border border-white/10 bg-[#0f1535]/90 p-5">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-white">Preferences</h3>
+              <p className="mt-1 text-sm text-gray-400">
+                Control how ApsaraTalk keeps you updated.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[
+                {
+                  label: "Push Notifications",
+                  value: notifs,
+                  toggle: setNotifs,
+                },
+                {
+                  label: "Email Updates",
+                  value: emails,
+                  toggle: setEmails,
+                },
+              ].map(({ label, value, toggle }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-[#10162f] px-4 py-4"
+                >
+                  <span className="text-sm font-medium text-white">{label}</span>
+
+                  <button
+                    onClick={() => toggle(!value)}
+                    className={`relative h-6 w-11 cursor-pointer rounded-full border transition-all ${
+                      value
+                        ? "border-teal-400 bg-teal-500"
+                        : "border-white/20 bg-white/10"
+                    }`}
+                    aria-pressed={value}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                        value ? "left-5" : "left-0.5"
+                      }`}
+                    />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-5">
+            <h3 className="text-base font-semibold text-white">Account Actions</h3>
+            <p className="mt-1 text-sm leading-6 text-red-100/75">
+              Deactivation removes access to your profile and saved consultation
+              details.
+            </p>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="mt-5 w-full cursor-pointer rounded-xl border border-red-400/40 bg-red-500/20 px-5 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-500/30"
+            >
+              Deactivate Account
+            </button>
+          </div>
+        </section>
       </div>
     </PageLayout>
   );

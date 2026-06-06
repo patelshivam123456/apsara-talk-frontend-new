@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { config } from "@/constants/URLConfig";
+import api from "@/utils/api";
+
+const CLIENT_ROLE_ID = 2;
+const textValue = (value) => value?.trim?.() || "";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -139,23 +142,24 @@ if (formData.confirmPassword !== formData.password) {
 
     try {
       const payload = {
-        username: formData.username,
+        username: textValue(formData.username),
         password: formData.password,
+        roleId: CLIENT_ROLE_ID,
 
         clientDto: {
           publicId: "",
 
-          firstName: formData.firstName,
-          middleName: formData.middleName,
-          lastName: formData.lastName,
+          firstName: textValue(formData.firstName),
+          middleName: textValue(formData.middleName),
+          lastName: textValue(formData.lastName),
 
-          email: formData.username,
-          phone: formData.phone,
+          email: textValue(formData.username),
+          phone: textValue(formData.phone),
 
-          gender: formData.gender,
+          gender: textValue(formData.gender),
 
-          dateOfBirth: formData.dateOfBirth || "",
-          placeOfBirth: formData.placeOfBirth || "",
+          dateOfBirth: textValue(formData.dateOfBirth),
+          placeOfBirth: textValue(formData.placeOfBirth),
 
           // keep backend-required structure intact
           timeOfBirth: "",
@@ -189,23 +193,27 @@ if (formData.confirmPassword !== formData.password) {
         },
       };
 
-      const response = await fetch(config.registerClient, {
-        method: "POST",
+      const res = await api.post("/authorization/auth/create-user", payload, {
         headers: {
           "Content-Type": "application/json",
+          Accept: "*/*",
         },
-        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error("Registration failed");
+      if (!res?.success) {
+        throw new Error(res?.message || "Registration failed");
       }
 
-      toast.success("Registration Successful ✅");
+      toast.success(res?.message || "Registration Successful");
       router.push("/login");
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error(
+        error?.response?.data?.errorDescription ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }

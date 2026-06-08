@@ -10,10 +10,11 @@ export default function ChatPanel() {
     { id: 1, sender: "astro", text: "Hello! How can I guide you today?" },
   ]);
   const [input, setInput] = useState("");
+  const [isReplying, setIsReplying] = useState(false);
 
   // ✅ ADDED: send message
   const handleSend = () => {
-    if (!input.trim()) return;
+    if (isReplying || !input.trim()) return;
 
     const newMessage = {
       id: Date.now(),
@@ -23,6 +24,7 @@ export default function ChatPanel() {
 
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
+    setIsReplying(true);
 
     // ✅ Simulated reply
     setTimeout(() => {
@@ -34,6 +36,7 @@ export default function ChatPanel() {
           text: "I see positive energy around this. Stay focused ✨",
         },
       ]);
+      setIsReplying(false);
     }, 1000);
   };
 
@@ -44,7 +47,7 @@ export default function ChatPanel() {
       
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 cursor-pointer"
         onClick={() => setChatOpen(false)}
       />
 
@@ -87,13 +90,19 @@ export default function ChatPanel() {
             placeholder="Type your question..."
             className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none"
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            disabled={isReplying}
           />
 
           <button
             onClick={handleSend}
-            className="bg-purple-600 px-3 py-2 rounded-lg text-xs hover:bg-purple-700"
+            disabled={isReplying || !input.trim()}
+            className="bg-purple-600 px-3 py-2 rounded-lg text-xs hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed min-w-16 flex items-center justify-center"
           >
-            Send
+            {isReplying ? (
+              <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+            ) : (
+              "Send"
+            )}
           </button>
         </div>
       </div>

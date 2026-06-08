@@ -6,6 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import AppSidebar from "@/components/AppSidebar";
 import { logout } from "@/redux/slices/authSlice";
 import { clearServerSession } from "@/utils/authFetch";
+import {
+  canAccessRoute,
+  getPrimaryDashboardRoute,
+  getProfileRoute,
+  getUserRoles,
+} from "@/utils/roleAccess";
+import { getStoredRoles } from "@/utils/tokenStore";
 
 export default function PageLayout({
   title,
@@ -18,6 +25,7 @@ export default function PageLayout({
   const dropdownRef = useRef();
   const dispatch = useDispatch();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isLoggedIn, isAuthLoaded, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -40,10 +48,15 @@ export default function PageLayout({
 
   // ✅ LOGOUT
   const handleLogout = async () => {
-    await clearServerSession();
-    dispatch(logout());
-    setShowDropdown(false);
-    router.replace("/");
+    try {
+      setIsLoggingOut(true);
+      await clearServerSession();
+      dispatch(logout());
+      setShowDropdown(false);
+      router.replace("/");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   
@@ -52,6 +65,15 @@ export default function PageLayout({
   const isPublicAstrologerRoute =
     router.pathname === "/astrologers" ||
     router.pathname === "/astrologers/[publicId]";
+
+  const roles = [
+    ...new Set([
+      ...getUserRoles(user),
+      ...getStoredRoles(),
+    ]),
+  ];
+  const canAccessCurrentRoute = canAccessRoute(router.pathname, roles);
+  const fallbackRoute = getPrimaryDashboardRoute(roles);
 
   // ✅ Disable protection for public routes
   const shouldProtect = protect && !isPublicAstrologerRoute;
@@ -63,8 +85,20 @@ export default function PageLayout({
 
     if (shouldProtect && !hasActiveSession) {
       router.replace("/login");
+      return;
     }
-  }, [hasActiveSession, isAuthLoaded, shouldProtect, router]);
+
+    if (hasActiveSession && !canAccessCurrentRoute) {
+      router.replace(fallbackRoute);
+    }
+  }, [
+    canAccessCurrentRoute,
+    fallbackRoute,
+    hasActiveSession,
+    isAuthLoaded,
+    shouldProtect,
+    router,
+  ]);
 
   // loading state while restoring auth
   if (shouldProtect && !isAuthLoaded) {
@@ -73,6 +107,10 @@ export default function PageLayout({
 
   // block protected content
   if (shouldProtect && !hasActiveSession) {
+    return null;
+  }
+
+  if (hasActiveSession && !canAccessCurrentRoute) {
     return null;
   }
 
@@ -85,6 +123,7 @@ export default function PageLayout({
   const displayLastName = user?.lastName;
   const displayName =
     [displayFirstName, displayLastName].filter(Boolean).join(" ") || "User";
+  const profileRoute = getProfileRoute(roles);
 
   return (
     <div className="min-h-screen dashboard-bg text-white flex">
@@ -145,16 +184,17 @@ export default function PageLayout({
                       </p>
                     </div>
                     <button
-                      onClick={() => router.push("/profile")}
+                      onClick={() => router.push(profileRoute)}
                       className="cursor-pointer w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition"
                     >
                       Profile Details
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="cursor-pointer w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition"
+                      disabled={isLoggingOut}
+                      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Logout
+                      {isLoggingOut ? "Logging out..." : "Logout"}
                     </button>
                   </>
                 ) : (

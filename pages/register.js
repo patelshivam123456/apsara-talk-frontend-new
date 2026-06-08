@@ -387,9 +387,16 @@ if (formData.confirmPassword !== formData.password) {
               <button
                 type="submit"
                 disabled={loading}
-                className="cursor-pointer w-full h-[50px] bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold"
+                className="w-full h-[50px] bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {loading ? "Creating..." : "Create Account"}
+                {loading ? (
+                  <>
+                    <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </button>
             </div>
 

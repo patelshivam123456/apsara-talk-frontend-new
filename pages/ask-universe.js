@@ -20,7 +20,7 @@ export default function AskUniversePage() {
   const [loading, setLoading] = useState(false);
 
   const handleSend = (q = input) => {
-    if (!q.trim()) return;
+    if (loading || !q.trim()) return;
     const question = q.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", text: question }]);
@@ -38,8 +38,12 @@ export default function AskUniversePage() {
         {/* Suggestions */}
         <div className="flex flex-wrap gap-2">
           {suggestions.map((s) => (
-            <button key={s} onClick={() => handleSend(s)}
-              className="text-xs px-3 py-1.5 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-300 hover:bg-purple-600/40 transition">
+            <button
+              key={s}
+              onClick={() => handleSend(s)}
+              disabled={loading}
+              className="text-xs px-3 py-1.5 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-300 hover:bg-purple-600/40 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {s}
             </button>
           ))}
@@ -73,13 +77,23 @@ export default function AskUniversePage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            disabled={loading}
             placeholder="Ask the universe anything..."
-            className="flex-1 bg-[#0f1535]/80 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 text-white"
+            className="flex-1 bg-[#0f1535]/80 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 text-white disabled:opacity-60"
           />
           <button
             onClick={() => handleSend()}
-            className="px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl text-sm font-semibold transition">
-            Ask ✨
+            disabled={loading || !input.trim()}
+            className="px-5 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-24"
+          >
+            {loading ? (
+              <>
+                <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                Asking...
+              </>
+            ) : (
+              "Ask ✨"
+            )}
           </button>
         </div>
       </div>

@@ -15,7 +15,7 @@ export default function LoginPromptModal({ onClose }) {
 
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
         onClick={onClose}
       />
 

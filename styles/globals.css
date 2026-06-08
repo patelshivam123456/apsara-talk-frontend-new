@@ -349,3 +349,41 @@ body {
 /* Logo / star icon */
 [data-theme="dark-gold"] [class*="border-[#ffb86c]"]     { border-color: #d4780a !important; }
 [data-theme="dark-gold"] [class*="text-[#ffb86c]"]       { color: #e8a020 !important; }
+
+/* Dark cards must stay readable inside light themes. */
+.astro-dark-surface,
+[data-theme] .astro-dark-surface {
+  color: #ffffff !important;
+}
+
+.astro-dark-surface :where(h1, h2, h3, h4, h5, h6, p, span, label),
+[data-theme] .astro-dark-surface :where(h1, h2, h3, h4, h5, h6, p, span, label) {
+  color: #ffffff !important;
+}
+
+.astro-dark-surface .astro-muted,
+[data-theme] .astro-dark-surface .astro-muted {
+  color: #d1d5db !important;
+}
+
+.astro-dark-surface .astro-subtle,
+[data-theme] .astro-dark-surface .astro-subtle {
+  color: #9ca3af !important;
+}
+
+button:not(:disabled),
+a[href],
+[role="button"]:not([aria-disabled="true"]),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+select:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

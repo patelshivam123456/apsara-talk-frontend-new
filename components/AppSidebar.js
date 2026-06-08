@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import LoginPromptModal from "@/components/LoginPromptModal";
+import {
+  canAccessRoute,
+  getPrimaryDashboardRoute,
+  getUserRoles,
+} from "@/utils/roleAccess";
+import { getStoredRoles } from "@/utils/tokenStore";
 
 const sidebarMenus = [
   { label: "Home",                  icon: "🏠", route: "/" },
@@ -20,16 +26,33 @@ const sidebarMenus = [
   { label: "Profile & Settings",    icon: "⚙️", route: "/profile" },
 ];
 
+const astrologerMenus = [
+  { label: "Our Profile",           icon: "🔭", route: "/astrologer-profile" },
+  { label: "Our Clients",           icon: "💬", route: "/chat" },
+  { label: "My Activity",           icon: "📊", route: "/activity" },
+];
+
 export default function AppSidebar({ currentRoute }) {
   const [open, setOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
-  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { isLoggedIn, user } = useSelector((state) => state.auth);
+  const roles = [
+    ...new Set([
+      ...getUserRoles(user),
+      ...getStoredRoles(),
+    ]),
+  ];
+  const isAdmin = roles.includes("ROLE_ADMIN");
+  const isAstrologer = roles.includes("ROLE_ASTROLOGER") && !isAdmin;
+  const menuItems = isAstrologer ? astrologerMenus : sidebarMenus;
 
   const handleNav = (item) => {
     setOpen(false);
     if (!isLoggedIn && item.route !== "/" && item.route !== "/astrologers") {
       setShowModal(true);
+    } else if (isLoggedIn && !canAccessRoute(item.route, roles)) {
+      router.push(getPrimaryDashboardRoute(roles));
     } else {
       router.push(item.route);
     }
@@ -42,7 +65,7 @@ export default function AppSidebar({ currentRoute }) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden cursor-pointer"
           onClick={() => setOpen(false)}
         />
       )}
@@ -79,7 +102,7 @@ export default function AppSidebar({ currentRoute }) {
 
         {/* Menu items */}
         <nav className="space-y-1 flex-1">
-          {sidebarMenus.map((item) => {
+          {menuItems.map((item) => {
             const active = currentRoute === item.route;
             return (
               <button
@@ -100,15 +123,19 @@ export default function AppSidebar({ currentRoute }) {
 
         {/* Free chat promo */}
         <div className="mt-6 rounded-2xl border border-white/10 bg-linear-to-br from-[#1b1b52] to-[#0b1027] p-4">
-          <h3 className="text-sm font-semibold mb-1">First Chat Free</h3>
+          <h3 className="text-sm font-semibold mb-1">
+            {isAstrologer ? "Client Queue" : "First Chat Free"}
+          </h3>
           <p className="text-xs text-gray-300 leading-5">
-            Get 5 minutes FREE with your first astrologer.
+            {isAstrologer
+              ? "Review your waiting clients and active sessions."
+              : "Get 5 minutes FREE with your first astrologer."}
           </p>
           <button
-            onClick={() => handleNav({ route: "/astrologers" })}
+            onClick={() => handleNav({ route: isAstrologer ? "/chat" : "/astrologers" })}
             className="mt-3 w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-xs font-semibold transition"
           >
-            Claim Now
+            {isAstrologer ? "Open Clients" : "Claim Now"}
           </button>
         </div>
       </aside>

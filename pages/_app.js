@@ -8,6 +8,7 @@ import { AppProvider } from "@/context/AppContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
 import AuthLoader from "@/components/AuthLoader";
+import RoleRouteGuard from "@/components/RoleRouteGuard";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -25,6 +26,7 @@ export default function App({ Component, pageProps }) {
 
             {/* Restore auth from the cookie-backed server session */}
             <AuthLoader />
+            <RoleRouteGuard />
 
             <Component {...pageProps} />
 

@@ -8,6 +8,8 @@ import { useApp } from "@/context/AppContext";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/redux/slices/authSlice";
 import { clearServerSession } from "@/utils/authFetch";
+import { getProfileRoute, getUserRoles } from "@/utils/roleAccess";
+import { getStoredRoles } from "@/utils/tokenStore";
 
 const Header = ({ profileData }) => {
   const router = useRouter();
@@ -22,6 +24,7 @@ const Header = ({ profileData }) => {
 
   const [hideResults, setHideResults] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const dropdownRef = useRef();
 
@@ -30,6 +33,13 @@ const Header = ({ profileData }) => {
   const { isLoggedIn, user } = useSelector(
     (state) => state.auth
   );
+  const roles = [
+    ...new Set([
+      ...getUserRoles(user),
+      ...getStoredRoles(),
+    ]),
+  ];
+  const profileRoute = getProfileRoute(roles);
   const displayFirstName =
     profileData?.firstName || user?.firstName || user?.username || user?.name;
   const displayLastName = profileData?.lastName || user?.lastName;
@@ -71,10 +81,15 @@ const Header = ({ profileData }) => {
 
   // ✅ LOGOUT
   const handleLogout = async () => {
-    await clearServerSession();
-    dispatch(logout());
-    setShowDropdown(false);
-    router.replace("/");
+    try {
+      setIsLoggingOut(true);
+      await clearServerSession();
+      dispatch(logout());
+      setShowDropdown(false);
+      router.replace("/");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const getInitials = (firstName, lastName) => {
@@ -158,14 +173,15 @@ const Header = ({ profileData }) => {
                         Welcome back ✨
                       </p>
                     </div>
-                    <button onClick={()=>router.push("/profile")} className="cursor-pointer w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition">
+                    <button onClick={()=>router.push(profileRoute)} className="cursor-pointer w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition">
                       Profile Details
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition"
+                      disabled={isLoggingOut}
+                      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Logout
+                      {isLoggingOut ? "Logging out..." : "Logout"}
                     </button>
                   </>
                 ) : (

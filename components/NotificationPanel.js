@@ -10,7 +10,7 @@ export default function NotificationPanel() {
       
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 cursor-pointer"
         onClick={() => setNotifOpen(false)}
       />
 

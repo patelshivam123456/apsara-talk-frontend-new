@@ -15,11 +15,25 @@ import Sidebar from "@/components/Sidebar";
 import ChatPanel from "@/components/ChatPanel";
 import NotificationPanel from "@/components/NotificationPanel";
 import LoginPromptModal from "@/components/LoginPromptModal";
+import {
+  canAccessRoute,
+  getPrimaryDashboardRoute,
+  getUserRoles,
+} from "@/utils/roleAccess";
+import { getStoredRoles } from "@/utils/tokenStore";
 
 export default function DashboardPage({ sidebarOpen, handleOpenSidebar,profileData, astrologerData }) {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
-  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { isLoggedIn, user } = useSelector((state) => state.auth);
+  const roles = [
+    ...new Set([
+      ...getUserRoles(user),
+      ...getStoredRoles(),
+    ]),
+  ];
+  const isAdmin = roles.includes("ROLE_ADMIN");
+  const isAstrologer = roles.includes("ROLE_ASTROLOGER") && !isAdmin;
 
   const handleAction = () => {
     if (!isLoggedIn) {
@@ -43,6 +57,12 @@ export default function DashboardPage({ sidebarOpen, handleOpenSidebar,profileDa
     { label: "Wallet & Payments",     icon: "💰", route: "/wallet" },
     { label: "Profile & Settings",    icon: "⚙️", route: "/profile" },
   ];
+  const astrologerMenus = [
+    { label: "Our Profile", icon: "🔭", route: "/astrologer-profile" },
+    { label: "Our Clients", icon: "💬", route: "/chat" },
+    { label: "My Activity", icon: "📊", route: "/activity" },
+  ];
+  const visibleMenus = isAstrologer ? astrologerMenus : sidebarMenus;
 
   return (
     <>
@@ -59,7 +79,7 @@ export default function DashboardPage({ sidebarOpen, handleOpenSidebar,profileDa
             {/* MOBILE OVERLAY */}
             {sidebarOpen && (
               <div
-                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden cursor-pointer"
                 onClick={() => handleOpenSidebar()}
               />
             )}
@@ -88,12 +108,14 @@ export default function DashboardPage({ sidebarOpen, handleOpenSidebar,profileDa
 
               {/* MENUS */}
               <div className="space-y-2">
-                {sidebarMenus.map((item) => (
+                {visibleMenus.map((item) => (
                   <button
                     key={item.label}
                     onClick={() => {
                       if (!isLoggedIn && item.route !== "/" && item.route !== "/astrologers") {
                         setShowModal(true);
+                      } else if (isLoggedIn && !canAccessRoute(item.route, roles)) {
+                        router.push(getPrimaryDashboardRoute(roles));
                       } else {
                         router.push(item.route);
                       }
@@ -114,13 +136,20 @@ export default function DashboardPage({ sidebarOpen, handleOpenSidebar,profileDa
               {/* FREE CHAT CARD */}
               <div className={`mt-6 rounded-2xl overflow-hidden border border-white/10 bg-linear-to-br from-[#1b1b52] to-[#0b1027] p-4 ${!sidebarOpen ? "hidden lg:block" : ""}`}>
                 <h3 className="text-lg font-semibold mb-2">
-                  First Chat Free
+                  {isAstrologer ? "Client Queue" : "First Chat Free"}
                 </h3>
                 <p className="text-xs text-gray-300 leading-5">
-                  Get 5 minutes FREE with your first astrologer.
+                  {isAstrologer
+                    ? "Review your assigned clients and active sessions."
+                    : "Get 5 minutes FREE with your first astrologer."}
                 </p>
-                <button onClick={handleAction} className="mt-4 w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm">
-                  Claim Now
+                <button
+                  onClick={() =>
+                    isAstrologer ? router.push("/chat") : handleAction()
+                  }
+                  className="mt-4 w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm"
+                >
+                  {isAstrologer ? "Open Clients" : "Claim Now"}
                 </button>
               </div>
             </aside>

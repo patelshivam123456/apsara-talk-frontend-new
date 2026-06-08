@@ -14,4 +14,6 @@ export const config = {
     "updateClientProfile": apiUrl("authorization/client/update-profile-data"),
     "deleteClientProfile": apiUrl("authorization/client/delete-profile-data"),
     "getAstrologersList": apiUrl("authorization/info/get-all-astrologers"),
+    "getAstrologerProfile": apiUrl("authorization/astrologer/profile-me"),
+    "getAstrologerClients": apiUrl("authorization/astrologer/clients"),
 }

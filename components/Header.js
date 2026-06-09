@@ -105,14 +105,15 @@ const Header = ({ profileData }) => {
       <div className="flex items-center justify-between">
 
         {/* LOGO */}
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full border border-[#ffb86c] flex items-center justify-center text-[#ffb86c] text-lg">
+        <div className="">
+          {/* <div className="w-9 h-9 rounded-full border border-[#ffb86c] flex items-center justify-center text-[#ffb86c] text-lg">
             ✦
           </div>
           <h2 className="text-xl md:text-2xl font-semibold">
             Apsara
             <span className="text-pink-400">Talk</span>
-          </h2>
+          </h2> */}
+          <img src="/logo_apsara.jpeg" alt="Apsara Talk Logo" className="w-16 h-16" />
         </div>
 
         {/* RIGHT ACTIONS */}

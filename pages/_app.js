@@ -6,9 +6,11 @@ import { store } from "@/redux/store";
 
 import { AppProvider } from "@/context/AppContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 import AuthLoader from "@/components/AuthLoader";
 import RoleRouteGuard from "@/components/RoleRouteGuard";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,15 +24,18 @@ export default function App({ Component, pageProps }) {
     <div className={poppins.variable} style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
       <Provider store={store}>
         <AppProvider>
-          <ThemeProvider>
+          <LanguageProvider>
+            <ThemeProvider>
 
             {/* Restore auth from the cookie-backed server session */}
             <AuthLoader />
             <RoleRouteGuard />
+            <LanguageSwitcher />
 
             <Component {...pageProps} />
 
-          </ThemeProvider>
+            </ThemeProvider>
+          </LanguageProvider>
         </AppProvider>
       </Provider>
     </div>

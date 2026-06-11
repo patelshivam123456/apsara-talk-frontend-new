@@ -8,18 +8,20 @@ import { useApp } from "@/context/AppContext";
 import LoginPromptModal from "@/components/LoginPromptModal";
 // import { astrologerData } from "@/constants/Astrologer-Home-Data";
 import { config } from "@/constants/URLConfig";
+import { useLanguage } from "@/context/LanguageContext";
 
 const EXPERIENCE_RANGES = [
-  { label: "All Experience", min: 0, max: Infinity },
-  { label: "0 - 5 Years", min: 0, max: 5 },
-  { label: "6 - 10 Years", min: 6, max: 10 },
-  { label: "11+ Years", min: 11, max: Infinity },
+  { labelKey: "astro.allExperience", min: 0, max: Infinity },
+  { labelKey: "astro.years0to5", min: 0, max: 5 },
+  { labelKey: "astro.years6to10", min: 6, max: 10 },
+  { labelKey: "astro.years11plus", min: 11, max: Infinity },
 ];
 
 export default function Astrologers({ limit,astrologerData = [] }) {
   const router = useRouter();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
+  const { t } = useLanguage();
 
   const { searchQuery } = useApp();
 
@@ -197,7 +199,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                   <path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 .78 1.625L14 12.376V20a1 1 0 0 1-1.447.894l-4-2A1 1 0 0 1 8 18v-5.624L3.22 5.625A1 1 0 0 1 3 4z"/>
                 </svg>
 
-                Filters
+                {t("astro.filters")}
 
                 {/* FILTER COUNT */}
                 {activeFilterCount > 0 && (
@@ -224,7 +226,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
               </button>
 
               <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
-                Top Astrologers
+                {t("astro.top")}
               </h2>
             </div>
 
@@ -234,7 +236,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                 onClick={resetFilters}
                 className="text-xs text-red-400 hover:text-red-300 transition"
               >
-                Reset Filters
+                {t("astro.resetFilters")}
               </button>
             )}
           </div>
@@ -249,7 +251,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
               {/* CATEGORY */}
               <div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
-                  Category
+                  {t("astro.category")}
                 </p>
 
                 <div className="flex flex-wrap gap-2">
@@ -264,7 +266,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                           : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
                       }`}
                     >
-                      {item}
+                      {item === "All" ? t("common.all") : item}
                     </button>
                   ))}
                 </div>
@@ -273,7 +275,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
               {/* LANGUAGE */}
               <div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
-                  Language
+                  {t("astro.language")}
                 </p>
 
                 <div className="flex flex-wrap gap-2">
@@ -288,7 +290,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                           : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
                       }`}
                     >
-                      {item}
+                      {item === "All" ? t("common.all") : item}
                     </button>
                   ))}
                 </div>
@@ -297,7 +299,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
               {/* LOCATION */}
               <div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
-                  Location
+                  {t("astro.location")}
                 </p>
 
                 <div className="flex flex-wrap gap-2">
@@ -312,7 +314,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                           : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
                       }`}
                     >
-                      {item}
+                      {item === "All" ? t("common.all") : item}
                     </button>
                   ))}
                 </div>
@@ -321,13 +323,13 @@ export default function Astrologers({ limit,astrologerData = [] }) {
               {/* EXPERIENCE */}
               <div>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
-                  Experience
+                  {t("astro.experience")}
                 </p>
 
                 <div className="flex flex-wrap gap-2">
                   {EXPERIENCE_RANGES.map((item, index) => (
                     <button
-                      key={item.label}
+                      key={item.labelKey}
                       onClick={() => setExperienceRange(index)}
                       className={`px-3 py-1 text-xs rounded-full border transition-all duration-200
                       ${
@@ -336,7 +338,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                           : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
                       }`}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -385,7 +387,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
                 {/* EXPERIENCE */}
                 <p className="text-[11px] text-purple-400 font-medium">
-                  {astro.yearsOfExperience}+ Years Experience
+                  {astro.yearsOfExperience}+ {t("astro.yearsExperience")}
                 </p>
               </div>
 
@@ -415,14 +417,14 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                   onClick={handleAction}
                   className="flex-1 text-xs font-medium bg-white/5 py-2 rounded-lg hover:bg-white/10 transition"
                 >
-                  Chat
+                  {t("astro.chat")}
                 </button>
 
                 <button
                   onClick={handleAction}
                   className="flex-1 text-xs font-medium bg-purple-600 py-2 rounded-lg hover:bg-purple-700 transition"
                 >
-                  Call
+                  {t("astro.call")}
                 </button>
               </div>
 
@@ -431,7 +433,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                 onClick={() => router.push(`/astrologers/${astro.publicId}`)}
                 className="w-full text-xs text-purple-400 hover:text-purple-300 py-1 transition text-center"
               >
-                View Profile →
+                {t("astro.viewProfile")} →
               </button>
             </div>
           ))}
@@ -443,7 +445,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                 onClick={() => router.push("/astrologers")}
                 className="px-6 py-2 text-sm font-medium bg-purple-600 hover:bg-purple-700 rounded-xl transition shadow-[0_0_16px_rgba(139,92,246,0.25)]"
               >
-                View More →
+                {t("astro.viewMore")} →
               </button>
             </div>
           )}
@@ -457,14 +459,14 @@ export default function Astrologers({ limit,astrologerData = [] }) {
               </span>
 
               <p className="text-sm">
-                No astrologers match your filters.
+                {t("astro.empty")}
               </p>
 
               <button
                 onClick={resetFilters}
                 className="text-xs text-purple-400 hover:text-purple-300 transition"
               >
-                Reset Filters
+                {t("astro.resetFilters")}
               </button>
             </div>
           )}

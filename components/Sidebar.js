@@ -5,12 +5,14 @@ import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import ThemeToggle from "@/components/ThemeToggle";
 import LoginPromptModal from "@/components/LoginPromptModal";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Sidebar() {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const { isLoggedIn, user } = useSelector((state) => state.auth);
   const { balance }          = useSelector((state) => state.wallet);
+  const { t } = useLanguage();
 
   const handleAction = () => {
     if (!isLoggedIn) {
@@ -30,14 +32,14 @@ export default function Sidebar() {
         {isLoggedIn && (
           <div className="order-first bg-[#0f1535]/80 border border-white/10 rounded-2xl p-4 flex justify-between items-center">
             <div>
-              <p className="text-xs text-gray-400">Wallet Balance</p>
+              <p className="text-xs text-gray-400">{t("sidebar.wallet")}</p>
               <h2 className="text-xl font-semibold mt-1">₹ {balance.toFixed(2)}</h2>
             </div>
             <button
               onClick={() => router.push("/wallet")}
               className="bg-purple-600 px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition"
             >
-              Add Money
+              {t("hero.addMoney")}
             </button>
           </div>
         )}
@@ -45,12 +47,12 @@ export default function Sidebar() {
         {/* DAILY HOROSCOPE */}
         <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-4">
           <div className="flex justify-between mb-4">
-            <h3>Daily Horoscope</h3>
+            <h3>{t("sidebar.dailyHoroscope")}</h3>
             <button
               onClick={handleAction}
               className="text-xs text-purple-400 hover:text-purple-300 transition"
             >
-              View All
+              {t("sidebar.viewAll")}
             </button>
           </div>
 
@@ -59,38 +61,38 @@ export default function Sidebar() {
               ♈
             </div>
             <div>
-              <h4 className="text-xl">Aries</h4>
+              <h4 className="text-xl">{t("sidebar.aries")}</h4>
               <p className="text-xs text-gray-400">May 12, 2024</p>
             </div>
           </div>
 
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-pink-400">Love</span>
-              <span className="text-gray-300">Good time for honesty</span>
+              <span className="text-pink-400">{t("sidebar.love")}</span>
+              <span className="text-gray-300">{t("sidebar.loveText")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-yellow-400">Career</span>
-              <span className="text-gray-300">New opportunities coming</span>
+              <span className="text-yellow-400">{t("sidebar.career")}</span>
+              <span className="text-gray-300">{t("sidebar.careerText")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-green-400">Health</span>
-              <span className="text-gray-300">Take care of your sleep</span>
+              <span className="text-green-400">{t("sidebar.health")}</span>
+              <span className="text-gray-300">{t("sidebar.healthText")}</span>
             </div>
           </div>
         </div>
 
         {/* SUGGESTED */}
         <div className="bg-[#121735] p-4 rounded-xl border border-white/10">
-          <h3 className="mb-2 font-semibold">Suggested Questions</h3>
+          <h3 className="mb-2 font-semibold">{t("sidebar.suggestedQuestions")}</h3>
           <ul className="text-sm space-y-2 text-gray-300">
-            {["Will I get a new job?", "Is marriage in my destiny?", "What should I focus on?"].map((q) => (
+            {["sidebar.questionJob", "sidebar.questionMarriage", "sidebar.questionFocus"].map((q) => (
               <li
                 key={q}
                 onClick={handleAction}
                 className="cursor-pointer hover:text-white transition"
               >
-                {q}
+                {t(q)}
               </li>
             ))}
           </ul>
@@ -98,19 +100,19 @@ export default function Sidebar() {
 
         {/* SESSION */}
         <div className="bg-[#121735] p-4 rounded-xl border border-white/10">
-          <h3 className="font-semibold">Upcoming Session</h3>
+          <h3 className="font-semibold">{t("sidebar.upcomingSession")}</h3>
           <p className="text-sm mt-2">Dr. Aryan Sharma</p>
           <button
             onClick={handleAction}
             className="bg-purple-600 hover:bg-purple-700 transition w-full mt-3 py-2 rounded-lg"
           >
-            Join Session
+            {t("sidebar.joinSession")}
           </button>
         </div>
 
         {/* THEME */}
         <div className="mt-auto pt-4 border-t border-white/10">
-          <p className="text-xs text-gray-400 mb-3">Theme</p>
+          <p className="text-xs text-gray-400 mb-3">{t("sidebar.theme")}</p>
           <ThemeToggle />
         </div>
       </aside>

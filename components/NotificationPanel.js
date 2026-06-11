@@ -1,8 +1,10 @@
 "use client";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function NotificationPanel() {
   const { notifOpen, setNotifOpen } = useApp();
+  const { t } = useLanguage();
   if (!notifOpen) return null;
 
   return (
@@ -19,7 +21,7 @@ export default function NotificationPanel() {
         
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg">Notifications</h2>
+          <h2 className="text-lg">{t("notifications.title")}</h2>
           <button
             onClick={() => setNotifOpen(false)}
             className="text-sm text-gray-400 hover:text-white"
@@ -29,8 +31,8 @@ export default function NotificationPanel() {
         </div>
 
         <div className="space-y-2">
-          <div className="p-2 bg-white/5 rounded">Horoscope ready</div>
-          <div className="p-2 bg-white/5 rounded">New message</div>
+          <div className="p-2 bg-white/5 rounded">{t("notifications.horoscopeReady")}</div>
+          <div className="p-2 bg-white/5 rounded">{t("notifications.newMessage")}</div>
         </div>
       </div>
     </div>

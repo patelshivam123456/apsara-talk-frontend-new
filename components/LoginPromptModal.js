@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/router";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoginPromptModal({ onClose }) {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const handleOk = () => {
     onClose();
@@ -28,11 +30,11 @@ export default function LoginPromptModal({ onClose }) {
         </div>
 
         {/* Title */}
-        <h2 className="text-xl font-bold mb-2">Login Required</h2>
+        <h2 className="text-xl font-bold mb-2">{t("modal.loginRequired")}</h2>
 
         {/* Message */}
         <p className="text-sm text-gray-400 leading-relaxed mb-6">
-          Please login to access this feature and continue your cosmic journey.
+          {t("modal.loginMessage")}
         </p>
 
         {/* Buttons */}
@@ -41,13 +43,13 @@ export default function LoginPromptModal({ onClose }) {
             onClick={onClose}
             className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm text-gray-400 hover:bg-white/5 transition"
           >
-            Cancel
+            {t("modal.cancel")}
           </button>
           <button
             onClick={handleOk}
             className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-sm font-semibold transition"
           >
-            Login →
+            {t("auth.login")} →
           </button>
         </div>
       </div>

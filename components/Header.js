@@ -10,9 +10,11 @@ import { logout } from "@/redux/slices/authSlice";
 import { clearServerSession } from "@/utils/authFetch";
 import { getProfileRoute, getUserRoles } from "@/utils/roleAccess";
 import { getStoredRoles } from "@/utils/tokenStore";
+import { useLanguage } from "@/context/LanguageContext";
 
 const Header = ({ profileData }) => {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const {
     setChatOpen,
@@ -125,6 +127,7 @@ const Header = ({ profileData }) => {
           <button
             onClick={() => setChatOpen(true)}
             className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition"
+            aria-label="Open chat"
           >
             💬
           </button>
@@ -171,18 +174,18 @@ const Header = ({ profileData }) => {
                         {displayName}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Welcome back ✨
+                        {t("auth.welcomeBack")} ✨
                       </p>
                     </div>
                     <button onClick={()=>router.push(profileRoute)} className="cursor-pointer w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition">
-                      Profile Details
+                      {t("auth.profileDetails")}
                     </button>
                     <button
                       onClick={handleLogout}
                       disabled={isLoggingOut}
                       className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {isLoggingOut ? "Logging out..." : "Logout"}
+                      {isLoggingOut ? t("auth.loggingOut") : t("auth.logout")}
                     </button>
                   </>
                 ) : (
@@ -191,7 +194,7 @@ const Header = ({ profileData }) => {
                       onClick={handleLogin}
                       className="w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition"
                     >
-                      Login
+                      {t("auth.login")}
                     </button>
                     <button
                       onClick={() => {
@@ -200,7 +203,7 @@ const Header = ({ profileData }) => {
                       }}
                       className="w-full text-left px-4 py-3 text-sm text-purple-400 hover:bg-white/10 transition"
                     >
-                      Register Now
+                      {t("auth.registerNow")}
                     </button>
                   </>
                 )}
@@ -218,7 +221,7 @@ const Header = ({ profileData }) => {
             setHideResults(false);
             setSearchQuery(e.target.value);
           }}
-          placeholder="Search astrologers, topics..."
+          placeholder={t("search.placeholder")}
           className="w-full bg-[#121735] border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500"
         />
 

@@ -4,18 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import LoginPromptModal from "@/components/LoginPromptModal";
+import { useLanguage } from "@/context/LanguageContext";
 
 const items = [
-  "Love & Relationships",
-  "Career & Finance",
-  "Health & Wellness",
-  "Personal Growth",
+  "categories.love",
+  "categories.career",
+  "categories.health",
+  "categories.growth",
 ];
 
 export default function Categories() {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const { isLoggedIn } = useSelector((state) => state.auth);
+  const { t } = useLanguage();
 
   const handleAction = () => {
     if (!isLoggedIn) {
@@ -36,8 +38,8 @@ export default function Categories() {
             onClick={handleAction}
             className="bg-[#121735] px-3 py-4 rounded-xl hover:bg-purple-800 cursor-pointer transition"
           >
-            <p className="font-medium text-sm">{item}</p>
-            <p className="text-sm text-gray-400 mt-1">Explore →</p>
+            <p className="font-medium text-sm">{t(item)}</p>
+            <p className="text-sm text-gray-400 mt-1">{t("categories.explore")} →</p>
           </div>
         ))}
       </div>

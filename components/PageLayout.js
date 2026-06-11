@@ -13,6 +13,7 @@ import {
   getUserRoles,
 } from "@/utils/roleAccess";
 import { getStoredRoles } from "@/utils/tokenStore";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function PageLayout({
   title,
@@ -22,6 +23,7 @@ export default function PageLayout({
   serverIsLoggedIn = false,
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const dropdownRef = useRef();
   const dispatch = useDispatch();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -180,21 +182,21 @@ export default function PageLayout({
                         {displayName}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Welcome back ✨
+                        {t("auth.welcomeBack")} ✨
                       </p>
                     </div>
                     <button
                       onClick={() => router.push(profileRoute)}
                       className="cursor-pointer w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition"
                     >
-                      Profile Details
+                      {t("auth.profileDetails")}
                     </button>
                     <button
                       onClick={handleLogout}
                       disabled={isLoggingOut}
                       className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {isLoggingOut ? "Logging out..." : "Logout"}
+                      {isLoggingOut ? t("auth.loggingOut") : t("auth.logout")}
                     </button>
                   </>
                 ) : (
@@ -203,7 +205,7 @@ export default function PageLayout({
                       onClick={handleLogin}
                       className="w-full text-left px-4 py-3 text-sm hover:bg-white/10 transition"
                     >
-                      Login
+                      {t("auth.login")}
                     </button>
                     <button
                       onClick={() => {
@@ -212,7 +214,7 @@ export default function PageLayout({
                       }}
                       className="w-full text-left px-4 py-3 text-sm text-purple-400 hover:bg-white/10 transition"
                     >
-                      Register Now
+                      {t("auth.registerNow")}
                     </button>
                   </>
                 )}

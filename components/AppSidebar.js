@@ -10,32 +10,34 @@ import {
   getUserRoles,
 } from "@/utils/roleAccess";
 import { getStoredRoles } from "@/utils/tokenStore";
+import { useLanguage } from "@/context/LanguageContext";
 
 const sidebarMenus = [
-  { label: "Home",                  icon: "🏠", route: "/" },
-  { label: "Explore Astrologers",   icon: "🔭", route: "/astrologers" },
-  { label: "Chat / Sessions",       icon: "💬", route: "/chat" },
-  { label: "Kundli / Reports",      icon: "📜", route: "/kundli" },
-  { label: "Daily Horoscope",       icon: "⭐", route: "/horoscope" },
-  { label: "Compatibility",         icon: "❤️", route: "/compatibility" },
-  { label: "Ask the Universe (AI)", icon: "🤖", route: "/ask-universe" },
-  { label: "Voice Guidance",        icon: "🎙️", route: "/voice-guidance" },
-  { label: "My Activity",           icon: "📊", route: "/activity" },
-  { label: "Saved Insights",        icon: "🔖", route: "/saved-insights" },
-  { label: "Wallet & Payments",     icon: "💰", route: "/wallet" },
-  { label: "Profile & Settings",    icon: "⚙️", route: "/profile" },
+  { labelKey: "menu.home", icon: "🏠", route: "/" },
+  { labelKey: "menu.exploreAstrologers", icon: "🔭", route: "/astrologers" },
+  { labelKey: "menu.chatSessions", icon: "💬", route: "/chat" },
+  { labelKey: "menu.kundliReports", icon: "📜", route: "/kundli" },
+  { labelKey: "menu.dailyHoroscope", icon: "⭐", route: "/horoscope" },
+  { labelKey: "menu.compatibility", icon: "❤️", route: "/compatibility" },
+  { labelKey: "menu.askUniverse", icon: "🤖", route: "/ask-universe" },
+  { labelKey: "menu.voiceGuidance", icon: "🎙️", route: "/voice-guidance" },
+  { labelKey: "menu.myActivity", icon: "📊", route: "/activity" },
+  { labelKey: "menu.savedInsights", icon: "🔖", route: "/saved-insights" },
+  { labelKey: "menu.walletPayments", icon: "💰", route: "/wallet" },
+  { labelKey: "menu.profileSettings", icon: "⚙️", route: "/profile" },
 ];
 
 const astrologerMenus = [
-  { label: "Our Profile",           icon: "🔭", route: "/astrologer-profile" },
-  { label: "Our Clients",           icon: "💬", route: "/chat" },
-  { label: "My Activity",           icon: "📊", route: "/activity" },
+  { labelKey: "menu.ourProfile", icon: "🔭", route: "/astrologer-profile" },
+  { labelKey: "menu.ourClients", icon: "💬", route: "/chat" },
+  { labelKey: "menu.myActivity", icon: "📊", route: "/activity" },
 ];
 
 export default function AppSidebar({ currentRoute }) {
   const [open, setOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
+  const { t } = useLanguage();
   const { isLoggedIn, user } = useSelector((state) => state.auth);
   const roles = [
     ...new Set([
@@ -106,7 +108,7 @@ export default function AppSidebar({ currentRoute }) {
             const active = currentRoute === item.route;
             return (
               <button
-                key={item.label}
+                key={item.labelKey}
                 onClick={() => handleNav(item)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
                   active
@@ -115,7 +117,7 @@ export default function AppSidebar({ currentRoute }) {
                 }`}
               >
                 <span className="text-base w-5 text-center shrink-0">{item.icon}</span>
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{t(item.labelKey)}</span>
               </button>
             );
           })}
@@ -124,18 +126,18 @@ export default function AppSidebar({ currentRoute }) {
         {/* Free chat promo */}
         <div className="mt-6 rounded-2xl border border-white/10 bg-linear-to-br from-[#1b1b52] to-[#0b1027] p-4">
           <h3 className="text-sm font-semibold mb-1">
-            {isAstrologer ? "Client Queue" : "First Chat Free"}
+            {isAstrologer ? t("sidebar.clientQueue") : t("sidebar.firstChatFree")}
           </h3>
           <p className="text-xs text-gray-300 leading-5">
             {isAstrologer
-              ? "Review your waiting clients and active sessions."
-              : "Get 5 minutes FREE with your first astrologer."}
+              ? t("sidebar.clientQueueText")
+              : t("sidebar.firstChatText")}
           </p>
           <button
             onClick={() => handleNav({ route: isAstrologer ? "/chat" : "/astrologers" })}
             className="mt-3 w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-xs font-semibold transition"
           >
-            {isAstrologer ? "Open Clients" : "Claim Now"}
+            {isAstrologer ? t("sidebar.openClients") : t("sidebar.claimNow")}
           </button>
         </div>
       </aside>

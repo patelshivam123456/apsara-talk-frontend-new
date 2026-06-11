@@ -1,33 +1,38 @@
 import { useSelector } from "react-redux";
+import { useLanguage } from "@/context/LanguageContext";
 
 const planets = [
   {
-    name: "Venus",
+    nameKey: "planet.venus",
+    statusKey: "planet.strong",
     status: "Strong",
     color: "text-green-400",
     icon: "🟣",
-    note: "Love & Harmony",
+    noteKey: "planet.loveHarmony",
   },
   {
-    name: "Mercury",
+    nameKey: "planet.mercury",
+    statusKey: "planet.weak",
     status: "Weak",
     color: "text-red-400",
     icon: "⚪",
-    note: "Avoid Miscommunication",
+    noteKey: "planet.avoidMiscommunication",
   },
   {
-    name: "Mars",
+    nameKey: "planet.mars",
+    statusKey: "planet.strong",
     status: "Strong",
     color: "text-green-400",
     icon: "🔴",
-    note: "High Energy",
+    noteKey: "planet.highEnergy",
   },
   {
-    name: "Jupiter",
+    nameKey: "planet.jupiter",
+    statusKey: "planet.strong",
     status: "Strong",
     color: "text-green-400",
     icon: "🟤",
-    note: "Growth & Abundance",
+    noteKey: "planet.growthAbundance",
   },
 ];
 
@@ -36,6 +41,7 @@ export default function PlanetaryHighlights() {
   const { isLoggedIn } = useSelector(
     (state) => state.auth
   );
+  const { t } = useLanguage();
   const visiblePlanets = isLoggedIn ? planets : planets.slice(0, 3);
 
   console.log(isLoggedIn);
@@ -47,11 +53,11 @@ export default function PlanetaryHighlights() {
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
-          Planetary Highlights
+          {t("planet.title")}
         </h2>
 
         <span className="text-xs text-purple-400 cursor-pointer hover:text-purple-300 transition">
-          View All →
+          {t("quick.viewAll")} →
         </span>
       </div>
 
@@ -63,7 +69,7 @@ export default function PlanetaryHighlights() {
       >
         {visiblePlanets.map((planet) => (
           <div
-            key={planet.name}
+            key={planet.nameKey}
             className="group bg-white/5 border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 hover:scale-[1.04] hover:border-white/20 transition-all duration-200 cursor-pointer flex flex-col items-center gap-2"
           >
             {/* Icon */}
@@ -72,7 +78,7 @@ export default function PlanetaryHighlights() {
             </div>
 
             {/* Name */}
-            <p className="text-sm font-semibold">{planet.name}</p>
+            <p className="text-sm font-semibold">{t(planet.nameKey)}</p>
 
             {/* Status */}
             <span
@@ -82,12 +88,12 @@ export default function PlanetaryHighlights() {
                   : "bg-red-500/15 text-red-400"
               }`}
             >
-              {planet.status === "Strong" ? "↑" : "↓"} {planet.status}
+              {planet.status === "Strong" ? "↑" : "↓"} {t(planet.statusKey)}
             </span>
 
             {/* Note */}
             <p className="text-[10px] text-gray-400 leading-snug">
-              {planet.note}
+              {t(planet.noteKey)}
             </p>
           </div>
         ))}

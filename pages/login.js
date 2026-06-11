@@ -13,6 +13,7 @@ import {
   extractAccessToken,
   setAccessToken,
 } from "@/utils/tokenStore";
+import { useLanguage } from "@/context/LanguageContext";
 
 const ASTROLOGER_ROLE = "ROLE_ASTROLOGER";
 
@@ -87,6 +88,7 @@ async function loadLoggedInProfile(isAstrologer, fallbackUser) {
 export default function LoginPage({ mode = "client" }) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { t } = useLanguage();
   const isAstrologerLogin = mode === "astrologer";
 
   const [formData, setFormData] = useState({
@@ -105,15 +107,15 @@ export default function LoginPage({ mode = "client" }) {
     const newErrors = { username: "", password: "" };
 
     if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
+      newErrors.username = t("auth.usernameRequired");
       valid = false;
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = "Password is required";
+      newErrors.password = t("auth.passwordRequired");
       valid = false;
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = t("auth.passwordMin");
       valid = false;
     }
 
@@ -138,10 +140,10 @@ export default function LoginPage({ mode = "client" }) {
       const res = await api.post("/authorization/auth/login", formData);
 
       if (!res.success) {
-        throw new Error(res?.message || "Login failed");
+        throw new Error(res?.message || t("auth.loginFailed"));
       }
 
-      toast.success(res?.message || "Login successful");
+      toast.success(res?.message || t("auth.loginSuccessful"));
 
       const accessToken = extractAccessToken(res);
 
@@ -154,7 +156,7 @@ export default function LoginPage({ mode = "client" }) {
       const destination = isAstrologer ? "/astrologer-profile" : "/";
 
       if (isAstrologerLogin && !isAstrologer) {
-        toast.info("Client account detected. Opening your client dashboard.");
+        toast.info(t("auth.clientDetected"));
       }
 
       const fallbackUser = {
@@ -184,7 +186,7 @@ export default function LoginPage({ mode = "client" }) {
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Login failed. Please try again."
+          t("auth.loginFailed")
       );
     } finally {
       setIsLoggingIn(false);
@@ -220,7 +222,7 @@ export default function LoginPage({ mode = "client" }) {
 
           <div className="mb-8">
             <h1 className="text-2xl font-semibold">
-              {isAstrologerLogin ? "Astrologer Login" : "Welcome Back to"}{" "}
+              {isAstrologerLogin ? t("auth.astrologerLogin") : t("auth.loginTitle")}{" "}
               <span className="text-xl md:text-2xl font-semibold">
                 Apsara
                 <span className="text-pink-400">Talk</span>
@@ -229,8 +231,8 @@ export default function LoginPage({ mode = "client" }) {
             </h1>
             <p className="text-gray-300 mt-2 text-sm">
               {isAstrologerLogin
-                ? "Sign in to open your consultations, clients, and public profile."
-                : "Enter your username and password to login"}
+                ? t("auth.astrologerLoginSubtitle")
+                : t("auth.loginSubtitle")}
             </p>
           </div>
 
@@ -238,13 +240,13 @@ export default function LoginPage({ mode = "client" }) {
 
             {/* USERNAME */}
             <div>
-              <label className="text-sm text-gray-300">Username</label>
+              <label className="text-sm text-gray-300">{t("auth.username")}</label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => handleChange("username", e.target.value)}
                 className="w-full mt-2 bg-[#121735] border border-white/10 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
-                placeholder="Enter username"
+                placeholder={t("auth.enterUsername")}
               />
               {errors.username && (
                 <p className="text-red-400 text-xs mt-1">{errors.username}</p>
@@ -253,13 +255,13 @@ export default function LoginPage({ mode = "client" }) {
 
             {/* PASSWORD */}
             <div>
-              <label className="text-sm text-gray-300">Password</label>
+              <label className="text-sm text-gray-300">{t("auth.password")}</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleChange("password", e.target.value)}
                 className="w-full mt-2 bg-[#121735] border border-white/10 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
-                placeholder="Enter password"
+                placeholder={t("auth.enterPassword")}
               />
               {errors.password && (
                 <p className="text-red-400 text-xs mt-1">{errors.password}</p>
@@ -272,7 +274,7 @@ export default function LoginPage({ mode = "client" }) {
                 type="button"
                 className="text-sm text-purple-400 hover:text-purple-300"
               >
-                Forgot Password?
+                {t("auth.forgotPassword")}
               </button>
             </div>
 
@@ -285,23 +287,23 @@ export default function LoginPage({ mode = "client" }) {
               {isLoggingIn ? (
                 <>
                   <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  Signing in...
+                  {t("auth.signingIn")}
                 </>
               ) : isAstrologerLogin ? (
-                "Open Astrologer Profile"
+                t("auth.openAstrologerProfile")
               ) : (
-                "Login"
+                t("auth.login")
               )}
             </button>
 
             {/* REGISTER */}
             <div className="text-center text-sm text-gray-400">
-              Don&apos;t have an account?{" "}
+              {t("auth.noAccount")}{" "}
               <Link
                 href="/register"
                 className="text-purple-400 hover:text-purple-300"
               >
-                Register Now
+                {t("auth.registerNow")}
               </Link>
             </div>
 

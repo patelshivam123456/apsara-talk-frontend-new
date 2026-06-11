@@ -1,13 +1,15 @@
 "use client";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useState } from "react";
 
 export default function ChatPanel() {
   const { chatOpen, setChatOpen } = useApp();
+  const { t } = useLanguage();
 
   // ✅ ADDED: chat state
   const [messages, setMessages] = useState([
-    { id: 1, sender: "astro", text: "Hello! How can I guide you today?" },
+    { id: 1, sender: "astro", textKey: "chat.hello" },
   ]);
   const [input, setInput] = useState("");
   const [isReplying, setIsReplying] = useState(false);
@@ -33,7 +35,7 @@ export default function ChatPanel() {
         {
           id: Date.now() + 1,
           sender: "astro",
-          text: "I see positive energy around this. Stay focused ✨",
+          textKey: "chat.reply",
         },
       ]);
       setIsReplying(false);
@@ -56,7 +58,7 @@ export default function ChatPanel() {
         
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg">Chat</h2>
+          <h2 className="text-lg">{t("chat.title")}</h2>
           <button
             onClick={() => setChatOpen(false)}
             className="text-sm text-gray-400 hover:text-white"
@@ -77,7 +79,7 @@ export default function ChatPanel() {
                     : "bg-white/10 text-gray-300"
                 }`}
             >
-              {msg.text}
+              {msg.textKey ? t(msg.textKey) : msg.text}
             </div>
           ))}
         </div>
@@ -87,7 +89,7 @@ export default function ChatPanel() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your question..."
+            placeholder={t("chat.placeholder")}
             className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none"
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             disabled={isReplying}
@@ -101,7 +103,7 @@ export default function ChatPanel() {
             {isReplying ? (
               <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             ) : (
-              "Send"
+              t("chat.send")
             )}
           </button>
         </div>

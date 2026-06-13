@@ -229,66 +229,58 @@ export default function RegisterPage() {
 
   if (!registrationType) {
     return (
-      <div className="min-h-screen bg-[#050816] px-4 py-6 md:py-8 flex items-center justify-center">
-        <div className="fixed inset-0">
-          <img
-            src="/Astrosignup.jpg"
-            alt=""
-            className="h-full w-full object-cover opacity-25"
-          />
-          <div className="absolute inset-0 bg-[#050816]/80" />
-        </div>
-
-        <div className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-[#0f1535]/95 shadow-2xl backdrop-blur grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="relative min-h-64 overflow-hidden bg-[#0b1028] p-7 md:p-9">
+      <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
+        <div className="w-full max-w-4xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="relative min-h-52 overflow-hidden bg-[#fff4df] p-5 md:p-6">
             <img
               src="/Astrosignup.jpg"
               alt="ApsaraTalk registration"
-              className="absolute inset-0 h-full w-full object-cover opacity-45"
+              className="absolute inset-0 h-full w-full object-cover opacity-25"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-[#050816]/60 to-transparent" />
-            <div className="relative flex h-full min-h-52 flex-col justify-end">
-              <p className="text-sm font-medium text-purple-200">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#fff7e8] via-[#fff7e8]/80 to-[#fff7e8]/35" />
+            <div className="relative flex h-full min-h-40 flex-col justify-end">
+              <p className="text-xs font-semibold uppercase text-amber-700">
                 ApsaraTalk
               </p>
-              <h1 className="mt-2 max-w-sm text-3xl font-semibold text-white md:text-4xl">
+              <h1 className="mt-2 max-w-sm text-2xl font-semibold text-stone-950 md:text-3xl">
                 {t("register.startPath")}
               </h1>
-              <p className="mt-3 max-w-md text-sm leading-6 text-gray-200">
+              <p className="mt-2 max-w-md text-sm leading-6 text-stone-600">
                 {t("register.pathSubtitle")}
               </p>
             </div>
           </div>
 
-          <div className="p-6 md:p-9">
-            <div className="mb-7">
-              <p className="text-sm font-medium text-purple-300">
+          <div className="p-4 md:p-6">
+            <div className="mb-5">
+              <p className="text-xs font-semibold uppercase text-amber-700">
                 {t("register.registration")}
               </p>
-              <h2 className="mt-1 text-2xl font-semibold text-white">
+              <h2 className="mt-1 text-xl font-semibold text-stone-950">
                 {t("register.chooseType")}
               </h2>
-              <p className="mt-2 text-sm text-gray-300">
+              <p className="mt-2 text-sm text-stone-600">
                 {t("register.switchBefore")}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
             <button
               type="button"
               onClick={() => router.push("/astrologer-register")}
-              className="group text-left bg-[#121735] border border-white/10 hover:border-purple-400 hover:bg-[#171d42] rounded-2xl p-5 transition focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="group rounded-lg border border-amber-100 bg-[#fffbf5] p-4 text-left shadow-sm transition hover:border-amber-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
             >
               <span className="flex items-start justify-between gap-4">
                 <span>
-                  <span className="block text-lg font-semibold text-white">
+                  <span className="block text-sm font-semibold text-stone-950">
                     {t("register.astrologer")}
                   </span>
-                  <span className="mt-1 block text-sm leading-6 text-gray-300">
+                  <span className="mt-1 block text-xs leading-5 text-stone-600">
                     {t("register.astrologerDesc")}
                   </span>
                 </span>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-600/20 text-purple-200 transition group-hover:bg-purple-600 group-hover:text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-900 transition group-hover:bg-amber-700 group-hover:text-white">
                   A
                 </span>
               </span>
@@ -297,30 +289,31 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => setRegistrationType("client")}
-              className="group text-left bg-[#121735] border border-white/10 hover:border-purple-400 hover:bg-[#171d42] rounded-2xl p-5 transition focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="group rounded-lg border border-amber-100 bg-[#fffbf5] p-4 text-left shadow-sm transition hover:border-amber-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
             >
               <span className="flex items-start justify-between gap-4">
                 <span>
-                  <span className="block text-lg font-semibold text-white">
+                  <span className="block text-sm font-semibold text-stone-950">
                     {t("register.client")}
                   </span>
-                  <span className="mt-1 block text-sm leading-6 text-gray-300">
+                  <span className="mt-1 block text-xs leading-5 text-stone-600">
                     {t("register.clientDesc")}
                   </span>
                 </span>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-500/20 text-pink-200 transition group-hover:bg-pink-500 group-hover:text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-semibold text-rose-800 transition group-hover:bg-rose-600 group-hover:text-white">
                   C
                 </span>
               </span>
             </button>
             </div>
 
-            <div className="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
+            <div className="mt-5 rounded-lg border border-amber-100 bg-[#fffbf5] p-3 text-sm text-stone-600">
               {t("register.alreadyAccount")}{" "}
-              <Link href="/login" className="font-medium text-purple-300">
+              <Link href="/login" className="font-medium text-amber-800">
                 {t("auth.login")}
               </Link>
             </div>
+          </div>
           </div>
         </div>
       </div>
@@ -328,70 +321,61 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050816] px-4 py-6 md:py-8 flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="fixed inset-0">
-        <img
-          src="/Astrosignup.jpg"
-          alt=""
-          className="h-full w-full object-cover opacity-15"
-        />
-        <div className="absolute inset-0 bg-[#050816]/88" />
-      </div>
-
-      <div className="relative w-full max-w-7xl bg-[#0f1535]/95 rounded-3xl overflow-hidden shadow-2xl border border-white/10 grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] backdrop-blur">
-        {/* LEFT SIDE */}
-        <div className="hidden lg:flex relative min-h-[720px] items-end bg-[#0b1028] p-10">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="relative hidden min-h-[560px] overflow-hidden bg-[#fff4df] lg:block">
           <img
-            src={"/Astrosignup.jpg"}
-            className="absolute inset-0 w-full h-full object-cover opacity-55"
-            alt="register"
+            src="/Astrosignup.jpg"
+            alt="ApsaraTalk client signup"
+            className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-[#050816]/45 to-transparent" />
-          <div className="relative max-w-md">
-            <p className="text-sm font-medium text-purple-200">
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/25 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <p className="text-xs font-semibold uppercase text-amber-100">
               {t("register.clientRegistration")}
             </p>
-            <h1 className="mt-2 text-4xl font-semibold leading-tight text-white">
+            <h2 className="mt-2 max-w-sm text-3xl font-semibold leading-tight text-white">
               {t("register.createAccountTitle")}
-            </h1>
-            <p className="mt-4 text-sm leading-6 text-gray-200">
+            </h2>
+            <p className="mt-3 max-w-sm text-sm leading-6 text-amber-50">
               {t("register.createAccountDesc")}
             </p>
           </div>
         </div>
 
-        {/* RIGHT SIDE FORM */}
-        <div className="p-5 md:p-8 lg:p-10">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+        <div className="border-b border-amber-100 bg-[#fff7e8] p-4 md:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-purple-300">
+              <p className="text-xs font-semibold uppercase text-amber-700">
                 {t("register.clientSignup")}
               </p>
-            <h1 className="text-2xl font-semibold text-white">
+            <h1 className="mt-1 text-2xl font-semibold text-stone-950">
               {t("register.welcomeTo")}{" "}
-              <span className="text-xl md:text-2xl font-semibold">
+              <span className="text-xl font-semibold md:text-2xl">
                 Apsara
-                <span className="text-pink-400">Talk</span>
-              </span>{" "}
-              ✨
+                <span className="text-rose-600">Talk</span>
+              </span>
             </h1>
-            <p className="mt-1 text-sm text-gray-300">
+            <p className="mt-1 text-sm text-stone-600">
               {t("register.createJourney")}
             </p>
             </div>
             <button
               type="button"
               onClick={() => setRegistrationType("")}
-              className="h-10 rounded-xl border border-white/10 px-4 text-sm text-gray-300 hover:border-purple-400 hover:text-white"
+              className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm text-stone-700 shadow-sm transition hover:border-amber-400 hover:text-amber-800"
             >
               {t("register.changeType")}
             </button>
           </div>
+        </div>
 
+        <div className="p-4 md:p-5">
           <form
             onSubmit={handleRegister}
-            className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-5"
+            className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2"
           >
             <Input
               label={t("register.firstName")}
@@ -483,9 +467,10 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-sm text-purple-200 hover:text-white"
+                className="absolute right-2 top-7 flex h-8 w-8 items-center justify-center rounded-full text-amber-800 transition hover:bg-amber-50 hover:text-amber-950"
+                aria-label={showPassword ? t("register.hide") : t("register.show")}
               >
-                {showPassword ? t("register.hide") : t("register.show")}
+                <PasswordVisibilityIcon visible={showPassword} />
               </button>
             </div>
 
@@ -503,15 +488,18 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-9 text-sm text-purple-200 hover:text-white"
+                className="absolute right-2 top-7 flex h-8 w-8 items-center justify-center rounded-full text-amber-800 transition hover:bg-amber-50 hover:text-amber-950"
+                aria-label={
+                  showConfirmPassword ? t("register.hide") : t("register.show")
+                }
               >
-                {showConfirmPassword ? t("register.hide") : t("register.show")}
+                <PasswordVisibilityIcon visible={showConfirmPassword} />
               </button>
             </div>
 
             {/* ROBOT CHECK */}
             <div className="md:col-span-2">
-              <div className="flex items-center gap-3 bg-[#121735] border border-white/10 rounded-xl p-3">
+              <div className="flex items-center gap-3 rounded-sm border border-amber-100 bg-white p-2.5 shadow-sm shadow-amber-900/10">
                 <input
                   type="checkbox"
                   checked={robotChecked}
@@ -519,13 +507,13 @@ export default function RegisterPage() {
                     setRobotChecked(e.target.checked);
                     setErrors({ ...errors, robot: "" });
                   }}
-                  className="w-4 h-4 accent-purple-600"
+                  className="h-4 w-4 accent-amber-600"
                 />
-                <span className="text-gray-300">{t("register.notRobot")}</span>
+                <span className="text-sm text-stone-700">{t("register.notRobot")}</span>
               </div>
 
               {errors.robot && (
-                <p className="text-red-400 text-xs mt-2">{errors.robot}</p>
+                <p className="mt-2 text-xs text-red-600">{errors.robot}</p>
               )}
             </div>
 
@@ -533,7 +521,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[52px] bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-950/30"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-amber-700 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <>
@@ -546,13 +534,14 @@ export default function RegisterPage() {
               </button>
             </div>
 
-            <div className="md:col-span-2 text-center text-sm text-gray-400">
+            <div className="md:col-span-2 text-center text-sm text-stone-500">
               {t("register.alreadyAccount")}{" "}
-              <Link href="/login" className="font-medium text-purple-300">
+              <Link href="/login" className="font-medium text-amber-800">
                 {t("auth.login")}
               </Link>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>
@@ -563,14 +552,43 @@ export default function RegisterPage() {
 function Input({ label, error, inputClassName = "", ...props }) {
   return (
     <div>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-xs font-medium text-stone-700">{label}</label>
       <input
         {...props}
-        className={`w-full mt-1 h-[44px] bg-[#121735] border rounded-xl px-3 text-white outline-none transition focus:border-purple-500 focus:bg-[#171d42] ${inputClassName}
-        ${error ? "border-red-500" : "border-white/10"}`}
+        className={`mt-1 h-9 w-full rounded-sm border bg-white px-3 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15 ${inputClassName}
+        ${error ? "border-red-500" : "border-amber-100"}`}
       />
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
+  );
+}
+
+function PasswordVisibilityIcon({ visible }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      {visible ? (
+        <>
+          <path d="M2 2l20 20" />
+          <path d="M10.6 10.6a2 2 0 002.8 2.8" />
+          <path d="M9.9 4.2A10.6 10.6 0 0112 4c5 0 9 4 10 8a11.8 11.8 0 01-3.1 4.8" />
+          <path d="M6.6 6.6A11.8 11.8 0 002 12c.6 2.1 2.1 4.1 4.1 5.5A10.5 10.5 0 0012 20a10.8 10.8 0 004.1-.8" />
+        </>
+      ) : (
+        <>
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+    </svg>
   );
 }
 
@@ -578,11 +596,11 @@ function Input({ label, error, inputClassName = "", ...props }) {
 function Select({ label, options, error, placeholder, ...props }) {
   return (
     <div>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-xs font-medium text-stone-700">{label}</label>
       <select
         {...props}
-        className={`w-full mt-1 h-[44px] bg-[#121735] border rounded-xl px-3 text-white outline-none transition focus:border-purple-500 focus:bg-[#171d42]
-        ${error ? "border-red-500" : "border-white/10"}`}
+        className={`mt-1 h-9 w-full rounded-sm border bg-white px-3 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15
+        ${error ? "border-red-500" : "border-amber-100"}`}
       >
         <option value="">{placeholder || `Select ${label}`}</option>
         {options.map((option) => (
@@ -591,7 +609,7 @@ function Select({ label, options, error, placeholder, ...props }) {
           </option>
         ))}
       </select>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }

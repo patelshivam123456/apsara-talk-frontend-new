@@ -26,16 +26,14 @@ const tabs = [
   "astroReg.tab2",
   "astroReg.tab3",
   "astroReg.tab4",
-  "astroReg.tab5",
 ];
 const tabDescriptions = [
   "astroReg.desc1",
   "astroReg.desc2",
   "astroReg.desc3",
   "astroReg.desc4",
-  "astroReg.desc5",
 ];
-const tabIcons = ["01", "02", "03", "04", "05"];
+const tabIcons = ["01", "02", "03", "04"];
 
 const initialFormData = {
   fullName: "",
@@ -43,35 +41,20 @@ const initialFormData = {
   email: "",
   gender: "",
   dateOfBirth: "",
+  fullAddress: "",
+  pincode: "",
   city: "",
   state: "",
-  languagesKnown: "",
+  languagesKnown: [],
   expertise: [],
-  yearsOfExperience: "",
   aboutYourself: "",
   consultationModes: [],
   aadharFront: [],
   aadharBack: [],
-  panCard: [],
-  addressProof: [],
   educationalCertificates: [],
-  astrologyCertificate: [],
-  numerologyCertificate: [],
-  vastuCertificate: [],
-  palmistryCertificate: [],
-  graphologyCertificate: [],
-  reikiCertificate: [],
-  tarotCertificate: [],
+  certificateDocuments: [],
   experienceLetter: [],
-  mediaProof: [],
-  clientTestimonials: [],
   passportPhoto: [],
-  accountHolderName: "",
-  bankName: "",
-  accountNumber: "",
-  ifscCode: "",
-  branchName: "",
-  upiId: "",
   declarationAccepted: false,
   digitalSignature: "",
   declarationDate: "",
@@ -86,23 +69,82 @@ const fileMeta = (files) =>
     size: file.size,
     type: file.type,
   }));
+const requiredFields = [
+  ["fullName", "astroReg.fullName"],
+  ["email", "astroReg.emailAddress"],
+  ["mobileNumber", "astroReg.mobileNumber"],
+  ["pincode", "astroReg.pincode"],
+  ["city", "astroReg.city"],
+  ["state", "astroReg.state"],
+  ["gender", "register.gender"],
+  ["dateOfBirth", "register.dateOfBirth"],
+];
 
 export default function AstrologerRegisterPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState(initialFormData);
+  const [languageDraft, setLanguageDraft] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const progress = useMemo(
     () => Math.round(((activeTab + 1) / tabs.length) * 100),
     [activeTab]
   );
-
   const updateField = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const fetchLocationByPincode = async (pincode) => {
+    setPincodeLoading(true);
+    try {
+      const response = await fetch(
+        `https://api.postalpincode.in/pincode/${pincode}`
+      );
+      const data = await response.json();
+      const postOffice = data?.[0]?.PostOffice?.[0];
+
+      if (!postOffice) {
+        setErrors((prev) => ({
+          ...prev,
+          pincode: "Enter valid pincode",
+        }));
+        return;
+      }
+
+      setFormData((prev) =>
+        prev.pincode === pincode
+          ? {
+              ...prev,
+              city: postOffice.District || prev.city,
+              state: postOffice.State || prev.state,
+            }
+          : prev
+      );
+      setErrors((prev) => ({ ...prev, city: "", state: "", pincode: "" }));
+    } catch {
+      setErrors((prev) => ({
+        ...prev,
+        pincode: "Unable to fetch city and state",
+      }));
+    } finally {
+      setPincodeLoading(false);
+    }
+  };
+
+  const updatePincode = (name, value) => {
+    const pincode = value.replace(/\D/g, "").slice(0, 6);
+    updateField(name, pincode);
+
+    if (pincode.length === 6) {
+      fetchLocationByPincode(pincode);
+    }
   };
 
   const toggleArrayValue = (name, value) => {
@@ -118,7 +160,7 @@ export default function AstrologerRegisterPage() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const updateFiles = (name, files, multiple = false) => {
+  const updateFiles = (name, files, multiple = false, maxFiles) => {
     const selectedFiles = Array.from(files || []);
     const invalidFile = selectedFiles.find(
       (file) => !ALLOWED_FILE_TYPES.includes(file.type)
@@ -132,105 +174,80 @@ export default function AstrologerRegisterPage() {
       return;
     }
 
-    updateField(name, multiple ? selectedFiles : selectedFiles.slice(0, 1));
+    const nextFiles = multiple
+      ? [...formData[name], ...selectedFiles]
+      : selectedFiles.slice(0, 1);
+    updateField(name, maxFiles ? nextFiles.slice(0, maxFiles) : nextFiles);
+  };
+
+  const addLanguage = () => {
+    const language = languageDraft.trim();
+
+    if (!language) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      languagesKnown: prev.languagesKnown.some(
+        (item) => item.toLowerCase() === language.toLowerCase()
+      )
+        ? prev.languagesKnown
+        : [...prev.languagesKnown, language],
+    }));
+    setLanguageDraft("");
+  };
+
+  const removeLanguage = (language) => {
+    updateField(
+      "languagesKnown",
+      formData.languagesKnown.filter((item) => item !== language)
+    );
+  };
+
+  const removeFile = (name, fileIndex) => {
+    updateField(
+      name,
+      formData[name].filter((_, index) => index !== fileIndex)
+    );
   };
 
   const validateTab = (tabIndex) => {
     const nextErrors = {};
-    const required = (name, label) => {
-      const value = formData[name];
-      if (Array.isArray(value) ? value.length === 0 : !textValue(value)) {
-        nextErrors[name] = t("register.required").replace("{field}", label);
-      }
-    };
 
     if (tabIndex === 0) {
-      [
-        ["fullName", t("astroReg.fullName")],
-        ["mobileNumber", t("astroReg.mobileNumber")],
-        ["email", t("astroReg.emailAddress")],
-        ["gender", t("register.gender")],
-        ["dateOfBirth", t("register.dateOfBirth")],
-        ["city", t("astroReg.city")],
-        ["state", t("astroReg.state")],
-        ["languagesKnown", t("astroReg.languagesKnown")],
-        ["expertise", t("astroReg.expertise")],
-        ["yearsOfExperience", t("astroReg.yearsExperience")],
-        ["aboutYourself", t("astroReg.aboutYourself")],
-        ["consultationModes", t("astroReg.consultationModes")],
-      ].forEach(([name, label]) => required(name, label));
+      requiredFields.forEach(([name, labelKey]) => {
+        if (!textValue(formData[name])) {
+          nextErrors[name] = t("register.required").replace(
+            "{field}",
+            t(labelKey)
+          );
+        }
+      });
 
-      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      if (!nextErrors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         nextErrors.email = "Enter valid email address";
       }
 
-      if (formData.mobileNumber && !/^[0-9]{10}$/.test(formData.mobileNumber)) {
+      if (!nextErrors.mobileNumber && !/^[0-9]{10}$/.test(formData.mobileNumber)) {
         nextErrors.mobileNumber = "Mobile number must be 10 digits";
       }
 
-      if (
-        formData.yearsOfExperience &&
-        Number(formData.yearsOfExperience) < 0
-      ) {
-        nextErrors.yearsOfExperience = "Experience cannot be negative";
+      if (!nextErrors.pincode && !/^[0-9]{6}$/.test(formData.pincode)) {
+        nextErrors.pincode = "Pincode must be 6 digits";
       }
-    }
-
-    if (tabIndex === 1) {
-      [
-        ["aadharFront", t("astroReg.aadharFront")],
-        ["aadharBack", t("astroReg.aadharBack")],
-        ["panCard", t("astroReg.panCard")],
-        ["addressProof", t("astroReg.addressProof")],
-      ].forEach(([name, label]) => required(name, label));
-    }
-
-    if (tabIndex === 2) {
-      required("educationalCertificates", t("astroReg.educationalCertificate"));
     }
 
     if (tabIndex === 3) {
-      required("passportPhoto", t("astroReg.passportPhoto"));
-
-      const supportingDocs = [
-        ...formData.experienceLetter,
-        ...formData.mediaProof,
-        ...formData.clientTestimonials,
-      ];
-
-      if (supportingDocs.length === 0) {
-        nextErrors.supportingDocuments =
-          t("astroReg.supportingRequired");
-      }
-    }
-
-    if (tabIndex === 4) {
-      [
-        ["accountHolderName", t("astroReg.accountHolderName")],
-        ["bankName", t("astroReg.bankName")],
-        ["accountNumber", t("astroReg.accountNumber")],
-        ["ifscCode", t("astroReg.ifscCode")],
-        ["branchName", t("astroReg.branchName")],
-        ["digitalSignature", t("astroReg.digitalSignature")],
-        ["declarationDate", t("astroReg.date")],
-        ["password", t("auth.password")],
-        ["confirmPassword", t("register.confirmPassword")],
-      ].forEach(([name, label]) => required(name, label));
-
-      if (formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(formData.ifscCode)) {
-        nextErrors.ifscCode = "Enter valid IFSC code";
-      }
-
       if (formData.password && formData.password.length < 6) {
         nextErrors.password = t("auth.passwordMin");
       }
 
-      if (formData.confirmPassword !== formData.password) {
+      if (
+        (formData.password || formData.confirmPassword) &&
+        formData.confirmPassword !== formData.password
+      ) {
         nextErrors.confirmPassword = t("register.passwordsMismatch");
-      }
-
-      if (!formData.declarationAccepted) {
-        nextErrors.declarationAccepted = t("astroReg.declarationRequired");
       }
     }
 
@@ -240,7 +257,7 @@ export default function AstrologerRegisterPage() {
 
   const goNext = () => {
     if (!validateTab(activeTab)) {
-      toast.error(t("astroReg.requiredToast"));
+      toast.error(t("astroReg.fixFields"));
       return;
     }
 
@@ -261,42 +278,25 @@ export default function AstrologerRegisterPage() {
       email: textValue(formData.email),
       gender: textValue(formData.gender),
       dateOfBirth: textValue(formData.dateOfBirth),
+      address: textValue(formData.fullAddress),
+      pincode: textValue(formData.pincode),
       city: textValue(formData.city),
       state: textValue(formData.state),
-      languagesKnown: textValue(formData.languagesKnown),
+      languagesKnown: formData.languagesKnown.join(", "),
       expertise: formData.expertise,
-      yearsOfExperience: Number(formData.yearsOfExperience || 0),
       aboutYourself: textValue(formData.aboutYourself),
       consultationModes: formData.consultationModes,
       identityVerification: {
         aadharFront: fileMeta(formData.aadharFront),
         aadharBack: fileMeta(formData.aadharBack),
-        panCard: fileMeta(formData.panCard),
-        addressProof: fileMeta(formData.addressProof),
       },
       educationCertification: {
         educationalCertificates: fileMeta(formData.educationalCertificates),
-        astrologyCertificate: fileMeta(formData.astrologyCertificate),
-        numerologyCertificate: fileMeta(formData.numerologyCertificate),
-        vastuCertificate: fileMeta(formData.vastuCertificate),
-        palmistryCertificate: fileMeta(formData.palmistryCertificate),
-        graphologyCertificate: fileMeta(formData.graphologyCertificate),
-        reikiCertificate: fileMeta(formData.reikiCertificate),
-        tarotCertificate: fileMeta(formData.tarotCertificate),
+        certificateDocuments: fileMeta(formData.certificateDocuments),
       },
       experienceDocuments: {
         experienceLetter: fileMeta(formData.experienceLetter),
-        mediaProof: fileMeta(formData.mediaProof),
-        clientTestimonials: fileMeta(formData.clientTestimonials),
         passportPhoto: fileMeta(formData.passportPhoto),
-      },
-      bankDetails: {
-        accountHolderName: textValue(formData.accountHolderName),
-        bankName: textValue(formData.bankName),
-        accountNumber: textValue(formData.accountNumber),
-        ifscCode: textValue(formData.ifscCode).toUpperCase(),
-        branchName: textValue(formData.branchName),
-        upiId: textValue(formData.upiId),
       },
       declaration: {
         accepted: formData.declarationAccepted,
@@ -364,52 +364,52 @@ export default function AstrologerRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050816] px-4 py-6 md:py-8">
+    <div className="min-h-screen bg-[#f6ead7] px-3 py-3 text-stone-900 md:py-5">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="mx-auto max-w-7xl">
-        <div className="astro-dark-surface mb-5 overflow-hidden rounded-3xl border border-white/10 bg-[#17112f] shadow-2xl">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-3 overflow-hidden rounded-lg border border-amber-200 bg-[#fff9ef] shadow-lg shadow-amber-900/10">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="p-6 md:p-8 lg:p-10">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="w-fit rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase text-purple-100">
+            <div className="p-4 md:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase text-amber-800">
                   {t("register.astrologer")}
                 </p>
                 <Link
                   href="/register"
-                  className="w-fit rounded-full border border-white/15 px-4 py-2 text-sm text-purple-100 transition hover:bg-white/10"
+                  className="w-fit rounded-full border border-amber-200 bg-white px-3 py-1 text-xs text-stone-700 shadow-sm transition hover:border-amber-300 hover:text-amber-800"
                 >
                   {t("astroReg.back")}
                 </Link>
               </div>
 
-              <h1 className="mt-7 max-w-3xl text-3xl font-semibold leading-tight text-white md:text-5xl">
+              <h1 className="mt-4 max-w-3xl text-2xl font-semibold leading-tight text-stone-950 md:text-3xl">
                 {t("astroReg.title")}
               </h1>
-              <p className="astro-muted mt-4 max-w-2xl text-sm leading-7 md:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
                 {t("astroReg.subtitle")}
               </p>
             </div>
 
-            <div className="border-t border-white/10 bg-white/5 p-6 md:p-8 lg:border-l lg:border-t-0">
-              <div className="rounded-2xl border border-white/10 bg-black/15 p-5">
+            <div className="border-t border-amber-100 bg-[#fff4df] p-4 md:p-5 lg:border-l lg:border-t-0">
+              <div className="rounded-lg border border-amber-200 bg-white p-3 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="astro-subtle text-sm">{t("astroReg.progress")}</p>
-                    <p className="mt-1 text-3xl font-semibold text-white">
+                    <p className="text-xs text-stone-500">{t("astroReg.progress")}</p>
+                    <p className="mt-1 text-2xl font-semibold text-stone-950">
                       {progress}%
                     </p>
                   </div>
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full border border-purple-300/30 bg-purple-500/20 text-lg font-semibold text-purple-100">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-sm font-semibold text-amber-900">
                     {activeTab + 1}/{tabs.length}
                   </div>
                 </div>
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-amber-100">
                   <div
-                    className="h-full rounded-full bg-purple-500 transition-all"
+                    className="h-full rounded-full bg-amber-600 transition-all"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="astro-muted mt-4 text-sm">
+                <p className="mt-3 text-xs text-stone-600">
                   {t("astroReg.currentStep")}: {t(tabs[activeTab])}
                 </p>
               </div>
@@ -419,20 +419,20 @@ export default function AstrologerRegisterPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="overflow-hidden rounded-3xl border border-white/10 bg-[#0f1535] shadow-2xl"
+          className="overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
-            <div className="astro-dark-surface border-b border-white/10 bg-[#17112f] p-4 md:p-6 lg:border-b-0 lg:border-r">
-              <div className="mb-5">
-                <p className="text-sm font-semibold text-white">
+          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr]">
+            <div className="border-b border-amber-100 bg-[#fff7e8] p-3 lg:border-b-0 lg:border-r">
+              <div className="mb-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-stone-900">
                   {t("astroReg.stepsTitle")}
                 </p>
-                <p className="astro-subtle mt-1 text-sm">
+                <p className="mt-1 text-xs text-stone-500">
                   {t("astroReg.stepsSubtitle")}
                 </p>
               </div>
 
-              <div className="flex gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+              <div className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
                 {tabs.map((tab, index) => (
                   <button
                     key={tab}
@@ -442,27 +442,27 @@ export default function AstrologerRegisterPage() {
                         setActiveTab(index);
                       }
                     }}
-                    className={`min-w-[250px] rounded-2xl border p-4 text-left transition lg:min-w-0 ${
+                    className={`min-w-[210px] rounded-lg border p-2.5 text-left transition lg:min-w-0 ${
                       activeTab === index
-                        ? "border-purple-300/60 bg-purple-500/20 shadow-lg shadow-purple-950/30"
-                        : "border-white/10 bg-white/5 hover:border-purple-300/40 hover:bg-white/10"
+                        ? "border-amber-300 bg-white shadow-sm"
+                        : "border-amber-100 bg-[#fffbf5] hover:border-amber-300 hover:bg-white"
                     }`}
                   >
-                    <span className="flex items-start gap-3">
+                    <span className="flex items-start gap-2.5">
                       <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                           activeTab === index
-                            ? "bg-purple-500 text-white"
-                            : "bg-white/10 text-purple-100"
+                            ? "bg-amber-600 text-white"
+                            : "bg-amber-100 text-amber-900"
                         }`}
                       >
                         {tabIcons[index]}
                       </span>
                       <span>
-                        <span className="block text-sm font-semibold text-white">
+                        <span className="block text-xs font-semibold text-stone-900">
                           {t(tab)}
                         </span>
-                        <span className="astro-subtle mt-1 block text-xs leading-5">
+                        <span className="mt-1 block text-[11px] leading-4 text-stone-500">
                           {t(tabDescriptions[index])}
                         </span>
                       </span>
@@ -472,30 +472,31 @@ export default function AstrologerRegisterPage() {
               </div>
             </div>
 
-            <div className="p-4 md:p-6 lg:p-8">
-            <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-              <p className="text-sm font-medium text-purple-300">
-                {t("astroReg.step")} {activeTab + 1} of {tabs.length}
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-white">
-                {t(tabs[activeTab])}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
-                {t(tabDescriptions[activeTab])}
-              </p>
-            </div>
+            <div className="p-3 md:p-4 lg:p-5">
+              <div className="mb-4 rounded-lg border border-amber-100 bg-[#fffbf5] p-3">
+                <p className="text-xs font-medium text-amber-700">
+                  {t("astroReg.step")} {activeTab + 1} of {tabs.length}
+                </p>
+                <h2 className="mt-1 text-lg font-semibold text-stone-950">
+                  {t(tabs[activeTab])}
+                </h2>
+                <p className="mt-1 text-xs leading-5 text-stone-500">
+                  {t(tabDescriptions[activeTab])}
+                </p>
+              </div>
 
             {activeTab === 0 && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input label={t("astroReg.fullName")} name="fullName" value={formData.fullName} onChange={updateField} error={errors.fullName} />
-                <Input label={t("astroReg.mobileNumber")} name="mobileNumber" value={formData.mobileNumber} maxLength={10} onChange={(name, value) => updateField(name, value.replace(/\D/g, ""))} error={errors.mobileNumber} />
-                <Input label={t("astroReg.emailAddress")} name="email" value={formData.email} onChange={updateField} error={errors.email} />
-                <Select label={t("register.gender")} name="gender" value={formData.gender} onChange={updateField} options={["Male", "Female", "Other"]} error={errors.gender} />
-                <Input label={t("register.dateOfBirth")} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={updateField} error={errors.dateOfBirth} />
-                <Input label={t("astroReg.city")} name="city" value={formData.city} onChange={updateField} error={errors.city} />
-                <Input label={t("astroReg.state")} name="state" value={formData.state} onChange={updateField} error={errors.state} />
-                <Input label={t("astroReg.languagesKnown")} name="languagesKnown" value={formData.languagesKnown} onChange={updateField} error={errors.languagesKnown} />
-                <Input label={t("astroReg.yearsExperience")} name="yearsOfExperience" type="number" min="0" value={formData.yearsOfExperience} onChange={updateField} error={errors.yearsOfExperience} />
+              <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <Input required label={t("astroReg.fullName")} name="fullName" value={formData.fullName} onChange={updateField} error={errors.fullName} />
+                <Input required label={t("astroReg.mobileNumber")} name="mobileNumber" value={formData.mobileNumber} maxLength={10} onChange={(name, value) => updateField(name, value.replace(/\D/g, ""))} error={errors.mobileNumber} />
+                <Input required label={t("astroReg.emailAddress")} name="email" value={formData.email} onChange={updateField} error={errors.email} />
+                <Input required label={t("astroReg.pincode")} name="pincode" value={formData.pincode} maxLength={6} onChange={updatePincode} error={errors.pincode} helper={pincodeLoading ? t("astroReg.fetchingLocation") : ""} />
+                <Input required label={t("astroReg.city")} name="city" value={formData.city} onChange={updateField} error={errors.city} />
+                <Input required label={t("astroReg.state")} name="state" value={formData.state} onChange={updateField} error={errors.state} />
+                <Select required label={t("register.gender")} name="gender" value={formData.gender} onChange={updateField} options={["Male", "Female", "Other"]} error={errors.gender} />
+                <Input required label={t("register.dateOfBirth")} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={updateField} error={errors.dateOfBirth} />
+                <Textarea className="md:col-span-2" label={t("register.fullAddress")} name="fullAddress" value={formData.fullAddress} onChange={updateField} error={errors.fullAddress} />
+                <LanguageInput label={t("astroReg.languagesKnown")} value={languageDraft} badges={formData.languagesKnown} onChange={setLanguageDraft} onAdd={addLanguage} onRemove={removeLanguage} error={errors.languagesKnown} />
                 <CheckboxGroup label={t("astroReg.consultationModes")} name="consultationModes" values={formData.consultationModes} options={consultationOptions} onChange={toggleArrayValue} error={errors.consultationModes} />
                 <CheckboxGroup className="md:col-span-2" label={t("astroReg.expertise")} name="expertise" values={formData.expertise} options={expertiseOptions} onChange={toggleArrayValue} error={errors.expertise} />
                 <Textarea className="md:col-span-2" label={t("astroReg.aboutYourself")} name="aboutYourself" value={formData.aboutYourself} onChange={updateField} error={errors.aboutYourself} />
@@ -503,72 +504,61 @@ export default function AstrologerRegisterPage() {
             )}
 
             {activeTab === 1 && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FileUpload label={t("astroReg.aadharFront")} name="aadharFront" files={formData.aadharFront} onChange={updateFiles} error={errors.aadharFront} />
-                <FileUpload label={t("astroReg.aadharBack")} name="aadharBack" files={formData.aadharBack} onChange={updateFiles} error={errors.aadharBack} />
-                <FileUpload label={t("astroReg.panCard")} name="panCard" files={formData.panCard} onChange={updateFiles} error={errors.panCard} />
-                <FileUpload label={t("astroReg.addressProof")} name="addressProof" files={formData.addressProof} onChange={updateFiles} error={errors.addressProof} />
+              <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <FileUpload label={t("astroReg.aadharFront")} name="aadharFront" files={formData.aadharFront} onChange={updateFiles} onRemove={removeFile} error={errors.aadharFront} />
+                <FileUpload label={t("astroReg.aadharBack")} name="aadharBack" files={formData.aadharBack} onChange={updateFiles} onRemove={removeFile} error={errors.aadharBack} />
               </section>
             )}
 
             {activeTab === 2 && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FileUpload label={t("astroReg.educationalCertificate")} name="educationalCertificates" files={formData.educationalCertificates} onChange={updateFiles} error={errors.educationalCertificates} multiple />
-                <FileUpload label={t("astroReg.astrologyCertificate")} name="astrologyCertificate" files={formData.astrologyCertificate} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.numerologyCertificate")} name="numerologyCertificate" files={formData.numerologyCertificate} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.vastuCertificate")} name="vastuCertificate" files={formData.vastuCertificate} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.palmistryCertificate")} name="palmistryCertificate" files={formData.palmistryCertificate} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.graphologyCertificate")} name="graphologyCertificate" files={formData.graphologyCertificate} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.reikiCertificate")} name="reikiCertificate" files={formData.reikiCertificate} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.tarotCertificate")} name="tarotCertificate" files={formData.tarotCertificate} onChange={updateFiles} multiple />
+              <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <FileUpload label={t("astroReg.educationalCertificate")} name="educationalCertificates" files={formData.educationalCertificates} onChange={updateFiles} onRemove={removeFile} />
+                <FileUpload label={t("astroReg.certificateDocuments")} name="certificateDocuments" files={formData.certificateDocuments} onChange={updateFiles} onRemove={removeFile} multiple maxFiles={3} />
+                <FileUpload label={t("astroReg.experienceLetter")} name="experienceLetter" files={formData.experienceLetter} onChange={updateFiles} onRemove={removeFile} />
+                <FileUpload label={t("astroReg.passportPhoto")} name="passportPhoto" files={formData.passportPhoto} onChange={updateFiles} onRemove={removeFile} />
               </section>
             )}
 
             {activeTab === 3 && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <p className="text-sm text-gray-300 mb-2">
-                    {t("astroReg.supportingPrompt")}
-                  </p>
-                  {errors.supportingDocuments && (
-                    <p className="text-red-400 text-xs mb-2">
-                      {errors.supportingDocuments}
-                    </p>
-                  )}
+              <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="relative">
+                  <Input label={t("auth.password")} name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={updateField} error={errors.password} inputClassName="pr-12" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-7 flex h-8 w-8 items-center justify-center rounded-full text-amber-800 transition hover:bg-amber-50 hover:text-amber-950"
+                    aria-label={showPassword ? t("register.hide") : t("register.show")}
+                  >
+                    <PasswordVisibilityIcon visible={showPassword} />
+                  </button>
                 </div>
-                <FileUpload label={t("astroReg.experienceLetter")} name="experienceLetter" files={formData.experienceLetter} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.mediaProof")} name="mediaProof" files={formData.mediaProof} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.clientTestimonials")} name="clientTestimonials" files={formData.clientTestimonials} onChange={updateFiles} multiple />
-                <FileUpload label={t("astroReg.passportPhoto")} name="passportPhoto" files={formData.passportPhoto} onChange={updateFiles} error={errors.passportPhoto} />
-              </section>
-            )}
-
-            {activeTab === 4 && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input label={t("astroReg.accountHolderName")} name="accountHolderName" value={formData.accountHolderName} onChange={updateField} error={errors.accountHolderName} />
-                <Input label={t("astroReg.bankName")} name="bankName" value={formData.bankName} onChange={updateField} error={errors.bankName} />
-                <Input label={t("astroReg.accountNumber")} name="accountNumber" value={formData.accountNumber} onChange={updateField} error={errors.accountNumber} />
-                <Input label={t("astroReg.ifscCode")} name="ifscCode" value={formData.ifscCode} onChange={(name, value) => updateField(name, value.toUpperCase())} error={errors.ifscCode} />
-                <Input label={t("astroReg.branchName")} name="branchName" value={formData.branchName} onChange={updateField} error={errors.branchName} />
-                <Input label={t("astroReg.upiId")} name="upiId" value={formData.upiId} onChange={updateField} />
-                <Input label={t("auth.password")} name="password" type="password" value={formData.password} onChange={updateField} error={errors.password} />
-                <Input label={t("register.confirmPassword")} name="confirmPassword" type="password" value={formData.confirmPassword} onChange={updateField} error={errors.confirmPassword} />
-                <div className="md:col-span-2 bg-[#121735] border border-white/10 rounded-xl p-4">
-                  <label className="flex items-start gap-3 text-sm text-gray-300">
+                <div className="relative">
+                  <Input label={t("register.confirmPassword")} name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={updateField} error={errors.confirmPassword} inputClassName="pr-12" />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2 top-7 flex h-8 w-8 items-center justify-center rounded-full text-amber-800 transition hover:bg-amber-50 hover:text-amber-950"
+                    aria-label={showConfirmPassword ? t("register.hide") : t("register.show")}
+                  >
+                    <PasswordVisibilityIcon visible={showConfirmPassword} />
+                  </button>
+                </div>
+                <div className="md:col-span-2 rounded-lg border border-amber-100 bg-[#fffbf5] p-3">
+                  <label className="flex items-start gap-3 text-xs leading-5 text-stone-600">
                     <input
                       type="checkbox"
                       checked={formData.declarationAccepted}
                       onChange={(event) =>
                         updateField("declarationAccepted", event.target.checked)
                       }
-                      className="mt-1 h-4 w-4 accent-purple-600"
+                      className="mt-1 h-4 w-4 accent-amber-600"
                     />
                     <span>
                       {t("astroReg.declaration")}
                     </span>
                   </label>
                   {errors.declarationAccepted && (
-                    <p className="text-red-400 text-xs mt-2">
+                    <p className="text-red-600 text-xs mt-2">
                       {errors.declarationAccepted}
                     </p>
                   )}
@@ -578,40 +568,40 @@ export default function AstrologerRegisterPage() {
               </section>
             )}
 
-            <div className="mt-8 flex flex-col-reverse gap-3 border-t border-white/10 pt-5 md:flex-row md:items-center md:justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              disabled={activeTab === 0 || loading}
-              className="h-12 rounded-xl border border-white/10 px-5 text-gray-300 transition hover:border-purple-400 hover:text-white disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-gray-300"
-            >
-              {t("astroReg.backButton")}
-            </button>
-            {activeTab < tabs.length - 1 ? (
-              <button
-                type="button"
-                onClick={goNext}
-                className="h-12 rounded-xl bg-purple-600 px-7 font-semibold text-white shadow-lg shadow-purple-950/30 transition hover:bg-purple-700"
-              >
-                {t("astroReg.continue")}
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-purple-600 px-7 font-semibold text-white shadow-lg shadow-purple-950/30 transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    {t("astroReg.submitting")}
-                  </>
+              <div className="mt-5 flex flex-col-reverse gap-3 border-t border-amber-100 pt-4 md:flex-row md:items-center md:justify-between">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  disabled={activeTab === 0 || loading}
+                  className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm text-stone-700 shadow-sm transition hover:border-amber-400 hover:text-amber-800 disabled:opacity-40 disabled:hover:border-amber-200 disabled:hover:text-stone-700"
+                >
+                  {t("astroReg.backButton")}
+                </button>
+                {activeTab < tabs.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    className="h-9 rounded-md bg-amber-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800"
+                  >
+                    {t("astroReg.continue")}
+                  </button>
                 ) : (
-                  t("astroReg.submit")
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex h-9 items-center justify-center gap-2 rounded-md bg-amber-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        {t("astroReg.submitting")}
+                      </>
+                    ) : (
+                      t("astroReg.submit")
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
-            </div>
+              </div>
             </div>
           </div>
         </form>
@@ -620,35 +610,132 @@ export default function AstrologerRegisterPage() {
   );
 }
 
-function Input({ label, name, error, onChange, className = "", ...props }) {
+function Input({
+  label,
+  name,
+  error,
+  helper,
+  required = false,
+  onChange,
+  className = "",
+  inputClassName = "",
+  ...props
+}) {
   return (
     <div className={className}>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-xs font-medium text-stone-700">
+        {label}
+        {required && <span className="text-red-600"> *</span>}
+      </label>
       <input
         {...props}
         name={name}
         onChange={(event) => onChange(name, event.target.value)}
-        className={`mt-2 h-12 w-full rounded-2xl border bg-[#121735] px-4 text-white outline-none transition placeholder:text-gray-500 focus:border-purple-500 focus:bg-[#171d42] focus:ring-4 focus:ring-purple-500/10 ${
-          error ? "border-red-500" : "border-white/10"
+        className={`mt-1 h-9 w-full rounded-sm border bg-white px-3 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15 ${inputClassName} ${
+          error ? "border-red-500" : "border-amber-100"
         }`}
       />
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {helper && !error && <p className="mt-1 text-xs text-amber-700">{helper}</p>}
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }
 
-function Select({ label, name, options, value, error, onChange }) {
+function PasswordVisibilityIcon({ visible }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      {visible ? (
+        <>
+          <path d="M2 2l20 20" />
+          <path d="M10.6 10.6a2 2 0 002.8 2.8" />
+          <path d="M9.9 4.2A10.6 10.6 0 0112 4c5 0 9 4 10 8a11.8 11.8 0 01-3.1 4.8" />
+          <path d="M6.6 6.6A11.8 11.8 0 002 12c.6 2.1 2.1 4.1 4.1 5.5A10.5 10.5 0 0012 20a10.8 10.8 0 004.1-.8" />
+        </>
+      ) : (
+        <>
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function LanguageInput({
+  label,
+  value,
+  badges,
+  error,
+  onChange,
+  onAdd,
+  onRemove,
+}) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-stone-700">{label}</label>
+      <input
+        value={value}
+        placeholder="Add language and press Enter"
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            onAdd();
+          }
+        }}
+        className={`mt-1 h-9 w-full rounded-sm border bg-white px-3 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15 ${
+          error ? "border-red-500" : "border-amber-100"
+        }`}
+      />
+      {badges.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {badges.map((language) => (
+            <span
+              key={language}
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900"
+            >
+              <span className="truncate">{language}</span>
+              <button
+                type="button"
+                onClick={() => onRemove(language)}
+                className="flex h-4 w-4 items-center justify-center rounded-full text-amber-700 transition hover:bg-amber-100 hover:text-amber-950"
+                aria-label={`Remove ${language}`}
+              >
+                x
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
+    </div>
+  );
+}
+
+function Select({ label, name, options, value, error, required = false, onChange }) {
   const { t } = useLanguage();
 
   return (
     <div>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-xs font-medium text-stone-700">
+        {label}
+        {required && <span className="text-red-600"> *</span>}
+      </label>
       <select
         name={name}
         value={value}
         onChange={(event) => onChange(name, event.target.value)}
-        className={`mt-2 h-12 w-full rounded-2xl border bg-[#121735] px-4 text-white outline-none transition focus:border-purple-500 focus:bg-[#171d42] focus:ring-4 focus:ring-purple-500/10 ${
-          error ? "border-red-500" : "border-white/10"
+        className={`mt-1 h-9 w-full rounded-sm border bg-white px-3 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15 ${
+          error ? "border-red-500" : "border-amber-100"
         }`}
       >
         <option value="">{t("register.selectGender")}</option>
@@ -658,7 +745,7 @@ function Select({ label, name, options, value, error, onChange }) {
           </option>
         ))}
       </select>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }
@@ -666,17 +753,17 @@ function Select({ label, name, options, value, error, onChange }) {
 function Textarea({ label, name, value, error, onChange, className = "" }) {
   return (
     <div className={className}>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-xs font-medium text-stone-700">{label}</label>
       <textarea
         name={name}
         value={value}
         onChange={(event) => onChange(name, event.target.value)}
-        rows={4}
-        className={`mt-2 min-h-32 w-full rounded-2xl border bg-[#121735] px-4 py-3 text-white outline-none transition placeholder:text-gray-500 focus:border-purple-500 focus:bg-[#171d42] focus:ring-4 focus:ring-purple-500/10 ${
-          error ? "border-red-500" : "border-white/10"
+        rows={3}
+        className={`mt-1 min-h-20 w-full rounded-sm border bg-white px-3 py-2 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15 ${
+          error ? "border-red-500" : "border-amber-100"
         }`}
       />
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }
@@ -692,32 +779,32 @@ function CheckboxGroup({
 }) {
   return (
     <div className={className}>
-      <p className="mb-2 text-sm font-medium text-gray-300">{label}</p>
+      <p className="mb-1 text-xs font-medium text-stone-700">{label}</p>
       <div
-        className={`grid grid-cols-1 gap-2 rounded-2xl border bg-[#121735] p-3 sm:grid-cols-2 lg:grid-cols-3 ${
-          error ? "border-red-500" : "border-white/10"
+        className={`grid grid-cols-1 gap-1.5 rounded-sm border bg-white p-2 shadow-sm shadow-amber-900/10 sm:grid-cols-2 lg:grid-cols-3 ${
+          error ? "border-red-500" : "border-amber-100"
         }`}
       >
         {options.map((option) => (
           <label
             key={option}
-            className={`flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm transition ${
+            className={`flex min-h-8 items-center gap-2 rounded-sm border px-2.5 text-xs transition ${
               values.includes(option)
-                ? "border-purple-400 bg-purple-600/15 text-white"
-                : "border-white/10 bg-white/5 text-gray-300 hover:border-purple-400"
+                ? "border-amber-300 bg-amber-50 text-amber-900"
+                : "border-amber-100 bg-white text-stone-600 hover:border-amber-300"
             }`}
           >
             <input
               type="checkbox"
               checked={values.includes(option)}
               onChange={() => onChange(name, option)}
-              className="h-4 w-4 accent-purple-600"
+              className="h-4 w-4 accent-amber-600"
             />
             {option}
           </label>
         ))}
       </div>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }
@@ -727,69 +814,88 @@ function FileUpload({
   name,
   files,
   onChange,
+  onRemove,
   error,
   multiple = false,
+  maxFiles,
 }) {
   const { t } = useLanguage();
 
   return (
     <div>
-      <label className="text-sm font-medium text-gray-300">{label}</label>
+      <label className="text-xs font-medium text-stone-700">{label}</label>
       <div
-        className={`mt-2 rounded-2xl border bg-[#121735] p-4 transition ${
-          error ? "border-red-500" : "border-white/10"
+        className={`mt-1 rounded-sm border bg-white p-2.5 shadow-sm shadow-amber-900/10 transition ${
+          error ? "border-red-500" : "border-amber-100"
         }`}
       >
-        <div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-4">
+        <div className="rounded-sm border border-dashed border-amber-200 bg-[#fffbf5] p-2.5">
         <input
           type="file"
           accept=".jpg,.jpeg,.png,.pdf"
           multiple={multiple}
-          onChange={(event) => onChange(name, event.target.files, multiple)}
-          className="w-full text-sm text-gray-300 file:mr-3 file:rounded-full file:border-0 file:bg-purple-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+          onChange={(event) => {
+            onChange(name, event.target.files, multiple, maxFiles);
+            event.target.value = "";
+          }}
+          className="w-full text-xs text-stone-600 file:mr-3 file:rounded-sm file:border-0 file:bg-amber-700 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-amber-800"
         />
-          <p className="mt-3 text-xs text-gray-400">
-            {t("astroReg.allowed")}
+          <p className="mt-2 text-[11px] text-stone-500">
+            {maxFiles
+              ? `${t("astroReg.allowed")} | ${t("astroReg.maxFiles").replace(
+                  "{count}",
+                  maxFiles
+                )}`
+              : t("astroReg.allowed")}
           </p>
         </div>
         {files.length > 0 && (
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {files.map((file) => (
-              <FilePreview key={`${file.name}-${file.size}`} file={file} />
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {files.map((file, index) => (
+              <FilePreview
+                key={`${file.name}-${file.size}-${index}`}
+                file={file}
+                onRemove={() => onRemove(name, index)}
+              />
             ))}
           </div>
         )}
       </div>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
   );
 }
 
-function FilePreview({ file }) {
+function FilePreview({ file, onRemove }) {
   const isImage = file.type.startsWith("image/");
   const previewUrl = isImage ? URL.createObjectURL(file) : "";
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-2">
+    <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 py-1 pl-1 pr-2 text-amber-900">
       {isImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={previewUrl}
           alt={file.name}
-          className="h-12 w-12 rounded-lg object-cover"
+          className="h-7 w-7 rounded-full object-cover"
           onLoad={() => URL.revokeObjectURL(previewUrl)}
         />
       ) : (
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-600/30 text-xs font-semibold text-purple-200">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-200 text-[10px] font-semibold text-amber-900">
           PDF
         </div>
       )}
-      <div className="min-w-0">
-        <p className="truncate text-sm text-white">{file.name}</p>
-        <p className="text-xs text-gray-400">
-          {(file.size / 1024).toFixed(1)} KB
-        </p>
+      <div className="min-w-0 max-w-[180px]">
+        <p className="truncate text-xs font-medium">{file.name}</p>
       </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="flex h-5 w-5 items-center justify-center rounded-full text-xs text-amber-700 transition hover:bg-amber-100 hover:text-amber-950"
+        aria-label={`Remove ${file.name}`}
+      >
+        x
+      </button>
     </div>
   );
 }

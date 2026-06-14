@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/router";
-import { useSelector } from "react-redux";
-import LoginPromptModal from "@/components/LoginPromptModal";
 import { useLanguage } from "@/context/LanguageContext";
 
 const items = [
@@ -13,6 +10,7 @@ const items = [
     accent: "from-[#ff6aa7] to-[#8b00cc]",
     surface: "from-[#fff0f6] to-[#f7ecff]",
     image: "/guidance-love.svg",
+    route: "/services/love-guidance",
     path: (
       <path d="M12 20s-7-4.3-7-10.1A4.1 4.1 0 0 1 12 7a4.1 4.1 0 0 1 7 2.9C19 15.7 12 20 12 20Z" />
     ),
@@ -23,6 +21,7 @@ const items = [
     accent: "from-[#4b8cff] to-[#7c3aed]",
     surface: "from-[#eef5ff] to-[#f4edff]",
     image: "/guidance-career.svg",
+    route: "/services/career-guidance",
     path: (
       <>
         <path d="M9 7V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8V7" />
@@ -37,6 +36,7 @@ const items = [
     accent: "from-[#2ccf7a] to-[#0ea5e9]",
     surface: "from-[#effdf4] to-[#edf9ff]",
     image: "/guidance-health.svg",
+    route: "/services/health-guidance",
     path: (
       <>
         <path d="M12 19c4-2.5 6-5.5 6-9.2C18 6.6 15.4 4 12 4S6 6.6 6 9.8C6 13.5 8 16.5 12 19Z" />
@@ -50,6 +50,7 @@ const items = [
     accent: "from-[#f6b73c] to-[#18a058]",
     surface: "from-[#fff8dc] to-[#effdf4]",
     image: "/guidance-growth.svg",
+    route: "/services/personal-growth-guidance",
     path: (
       <>
         <path d="M12 20V9" />
@@ -61,23 +62,15 @@ const items = [
 ];
 
 export default function LifeGuidance() {
-  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
-  const { isLoggedIn } = useSelector((state) => state.auth);
   const { t } = useLanguage();
 
-  const handleAction = () => {
-    if (!isLoggedIn) {
-      setShowModal(true);
-    } else {
-      router.push("/thankyou");
-    }
+  const handleAction = (route = "/services/love-guidance") => {
+    router.push(route);
   };
 
   return (
     <>
-      {showModal && <LoginPromptModal onClose={() => setShowModal(false)} />}
-
       <section className="relative overflow-hidden rounded-[22px] bg-[#fffaf0] p-4 text-[#211704] shadow-[0_16px_38px_rgba(87,60,12,0.10)] sm:p-5">
         <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full border border-[#d9b857]/25" />
         <div className="pointer-events-none absolute -left-16 bottom-0 h-40 w-40 rounded-full bg-[#fff0b8]/55 blur-3xl" />
@@ -97,7 +90,7 @@ export default function LifeGuidance() {
           </div>
 
           <button
-            onClick={handleAction}
+            onClick={() => handleAction("/services/love-guidance")}
             className="inline-flex min-h-10 w-fit items-center justify-center rounded-full bg-[#dfff00] px-4 py-2 text-xs font-bold text-[#312d1e] shadow-[0_12px_24px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
           >
             {t("categories.explore")} →
@@ -109,7 +102,7 @@ export default function LifeGuidance() {
           {items.map((item, index) => (
             <button
               key={item.titleKey}
-              onClick={handleAction}
+              onClick={() => handleAction(item.route)}
               className="group relative overflow-hidden rounded-[18px] bg-[linear-gradient(135deg,#d9b857_0%,#fff6d4_42%,#c8a027_100%)] p-[1.5px] text-left shadow-[0_10px_24px_rgba(94,70,12,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(94,70,12,0.14)]"
             >
               <div

@@ -1,5 +1,5 @@
 "use client";
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import { useState } from "react";
 
 const signs = [
@@ -28,56 +28,57 @@ export default function HoroscopePage() {
   const [selected, setSelected] = useState(null);
 
   return (
-    <PageLayout title="Daily Horoscope" icon="⭐">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Signs grid */}
-        <div className="lg:col-span-2 grid grid-cols-3 sm:grid-cols-4 gap-3">
+    <PublicPageLayout
+      eyebrow="Daily insight"
+      title="Daily Horoscope"
+      description="Select your zodiac sign for a warm, practical reading across love, career, health, and finance."
+    >
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-3 gap-3 rounded-[24px] bg-white/92 p-4 shadow-[0_18px_42px_rgba(107,82,12,0.13)] sm:grid-cols-4 sm:p-5 lg:col-span-2">
           {signs.map((s) => (
             <button
               key={s.name}
               onClick={() => setSelected(s)}
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-200 ${
+              className={`flex min-h-[112px] flex-col items-center justify-center gap-1.5 rounded-2xl border p-3 text-[#211704] transition-all duration-200 ${
                 selected?.name === s.name
-                  ? "bg-purple-600/30 border-purple-500/50 scale-[1.04]"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                  ? "scale-[1.03] border-[#d8ce76] bg-[#fbf8cc] shadow-[0_14px_28px_rgba(126,98,10,0.16)]"
+                  : "border-[#eee8d5] bg-[#fffdf8] hover:bg-[#fff8dc]"
               }`}
             >
               <span className="text-2xl">{s.symbol}</span>
-              <p className="text-xs font-medium">{s.name}</p>
-              <p className="text-[10px] text-gray-400">{s.dates}</p>
+              <p className="text-xs font-bold">{s.name}</p>
+              <p className="text-center text-[10px] font-medium text-[#6f5930]">{s.dates}</p>
             </button>
           ))}
         </div>
 
-        {/* Reading panel */}
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-6 flex flex-col justify-center min-h-[300px]">
+        <div className="flex min-h-[320px] flex-col justify-center rounded-[24px] border border-[#eadcae] bg-[#fffdf8] p-5 text-[#211704] shadow-[0_18px_42px_rgba(107,82,12,0.13)] sm:p-6">
           {selected ? (
             <div>
-              <div className="flex items-center gap-3 mb-5">
+              <div className="mb-5 flex items-center gap-3">
                 <span className="text-4xl">{selected.symbol}</span>
                 <div>
-                  <h2 className="text-lg font-bold">{selected.name}</h2>
-                  <p className="text-xs text-gray-400">{selected.dates}</p>
+                  <h2 className="text-lg font-extrabold">{selected.name}</h2>
+                  <p className="text-xs font-medium text-[#6f5930]">{selected.dates}</p>
                 </div>
               </div>
               <div className="space-y-3">
                 {Object.entries(readings).map(([key, val]) => (
-                  <div key={key} className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-xs text-purple-400 font-semibold mb-1">{key}</p>
-                    <p className="text-xs text-gray-300 leading-relaxed">{val}</p>
+                  <div key={key} className="rounded-xl border border-[#eee8d5] bg-[#fff8dc] p-3">
+                    <p className="mb-1 text-xs font-extrabold text-[#8a6106]">{key}</p>
+                    <p className="text-xs leading-relaxed text-[#60481f]">{val}</p>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="text-center text-gray-400">
-              <p className="text-5xl mb-3">⭐</p>
-              <p className="text-sm">Select your zodiac sign to read today&apos;s horoscope</p>
+            <div className="text-center text-[#6f5930]">
+              <p className="mb-3 text-5xl">★</p>
+              <p className="text-sm font-semibold">Select your zodiac sign to read today&apos;s horoscope</p>
             </div>
           )}
         </div>
       </div>
-    </PageLayout>
+    </PublicPageLayout>
   );
 }

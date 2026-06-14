@@ -1,5 +1,5 @@
 "use client";
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import { useState } from "react";
 
 const signs = ["Aries ♈","Taurus ♉","Gemini ♊","Cancer ♋","Leo ♌","Virgo ♍","Libra ♎","Scorpio ♏","Sagittarius ♐","Capricorn ♑","Aquarius ♒","Pisces ♓"];
@@ -15,28 +15,32 @@ export default function CompatibilityPage() {
   const [sign2, setSign2] = useState("");
   const score = getScore(sign1, sign2);
 
-  const color = score >= 85 ? "text-green-400" : score >= 70 ? "text-yellow-400" : "text-red-400";
-  const label = score >= 85 ? "Excellent Match 💫" : score >= 70 ? "Good Match ✨" : "Challenging Pair 🌱";
+  const color = score >= 85 ? "text-[#237a24]" : score >= 70 ? "text-[#9a6f08]" : "text-[#b91c1c]";
+  const label = score >= 85 ? "Excellent Match" : score >= 70 ? "Good Match" : "Challenging Pair";
 
   return (
-    <PageLayout title="Compatibility" icon="❤️">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-6 space-y-6">
+    <PublicPageLayout
+      eyebrow="Relationship match"
+      title="Compatibility"
+      description="Choose two zodiac signs to check a simple match score with love, trust, communication, and values cues."
+    >
+      <div className="mx-auto max-w-3xl">
+        <div className="space-y-6 rounded-[24px] border border-[#eadcae] bg-white/92 p-5 text-[#211704] shadow-[0_18px_42px_rgba(107,82,12,0.13)] sm:p-6">
 
-          <p className="text-sm text-gray-400 text-center">Choose two zodiac signs to check cosmic compatibility</p>
+          <p className="text-center text-sm font-medium text-[#60481f]">Choose two zodiac signs to check cosmic compatibility</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[{ label: "Your Sign", value: sign1, set: setSign1 },
               { label: "Partner's Sign", value: sign2, set: setSign2 }].map(({ label, value, set }) => (
               <div key={label}>
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-1.5">{label}</p>
+                <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-[#8a6106]">{label}</p>
                 <select
                   value={value}
                   onChange={(e) => set(e.target.value)}
-                  className="w-full bg-[#121735] border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-500 text-white appearance-none cursor-pointer"
+                  className="w-full cursor-pointer appearance-none rounded-xl border border-[#eee8d5] bg-[#fffdf8] px-4 py-3 text-sm font-semibold text-[#211704] outline-none focus:border-[#d8ce76]"
                 >
                   <option value="">Select sign</option>
-                  {signs.map((s) => <option key={s} value={s} className="bg-[#0f1535]">{s}</option>)}
+                  {signs.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
             ))}
@@ -63,12 +67,12 @@ export default function CompatibilityPage() {
                   <span className={`text-3xl font-bold ${color}`}>{score}%</span>
                 </div>
               </div>
-              <p className={`text-base font-semibold ${color}`}>{label}</p>
+              <p className={`text-base font-extrabold ${color}`}>{label}</p>
               <div className="grid grid-cols-2 gap-3 text-left">
                 {[["Love", "High emotional connection"], ["Trust", "Deeply loyal bond"], ["Communication", "Flows naturally"], ["Values", "Aligned life goals"]].map(([k,v]) => (
-                  <div key={k} className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <p className="text-xs text-purple-400 font-semibold">{k}</p>
-                    <p className="text-xs text-gray-400 mt-1">{v}</p>
+                  <div key={k} className="rounded-xl border border-[#eee8d5] bg-[#fff8dc] p-3">
+                    <p className="text-xs font-extrabold text-[#8a6106]">{k}</p>
+                    <p className="mt-1 text-xs text-[#60481f]">{v}</p>
                   </div>
                 ))}
               </div>
@@ -76,6 +80,6 @@ export default function CompatibilityPage() {
           )}
         </div>
       </div>
-    </PageLayout>
+    </PublicPageLayout>
   );
 }

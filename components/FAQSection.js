@@ -42,7 +42,16 @@ export default function FAQSection() {
   return (
     <section className="overflow-hidden rounded-[26px] border border-[#d8bd68]/60 bg-[#fffdf6] text-[#1f1608] shadow-[0_18px_44px_rgba(87,60,12,0.10)]">
       <div className="grid gap-0 lg:grid-cols-[0.72fr_1fr]">
-        <div className="relative min-h-[320px] overflow-hidden bg-[#211704] lg:min-h-full">
+        <div className="border-b border-[#e6e1d4] bg-[#fffdf6] p-4 lg:hidden">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#916805]">
+            Help Center
+          </p>
+          <h2 className="mt-1 text-xl font-extrabold leading-tight">
+            Frequently Asked Questions
+          </h2>
+        </div>
+
+        <div className="relative hidden min-h-[320px] overflow-hidden bg-[#211704] lg:block lg:min-h-full">
           <Image
             src="/Astro_Banner.jpg"
             alt="Astrology guidance"

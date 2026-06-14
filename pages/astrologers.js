@@ -1,13 +1,17 @@
 "use client";
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import Astrologers from "@/components/Astrologers";
 import { config } from "@/constants/URLConfig";
 
 export default function AstrologersPage({ astrologerData=[] }) {
   return (
-    <PageLayout title="Explore Astrologers" icon="🔭">
+    <PublicPageLayout
+      eyebrow="Verified experts"
+      title="Explore Astrologers"
+      description="Browse astrologers by language, specialty, city, and experience, then choose chat or call when you are ready."
+    >
       <Astrologers astrologerData={astrologerData} />
-    </PageLayout>
+    </PublicPageLayout>
   );
 }
 

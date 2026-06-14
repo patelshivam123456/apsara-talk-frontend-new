@@ -1,4 +1,4 @@
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
@@ -117,6 +117,16 @@ export default function ProfilePage({
 
     loadProfile();
   }, [dispatch, isAuthLoaded, isLoggedIn]);
+
+  useEffect(() => {
+    if (!isAuthLoaded) {
+      return;
+    }
+
+    if (!isLoggedIn && !serverIsLoggedIn) {
+      router.replace("/login");
+    }
+  }, [isAuthLoaded, isLoggedIn, router, serverIsLoggedIn]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -287,15 +297,15 @@ export default function ProfilePage({
   const displayName =
     `${formData?.firstName || "Apsara"} ${formData?.lastName || "Member"}`.trim();
   const completionStrokeStyle = {
-    background: `conic-gradient(#14b8a6 ${profileCompletionPercentage * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
+    background: `conic-gradient(#dfff00 ${profileCompletionPercentage * 3.6}deg, #efe6c7 0deg)`,
   };
 
   const renderField = (label, field, disabled = false, type = "text") => (
     <div
       key={field}
-      className="rounded-xl border border-white/10 bg-[#17112f] px-4 py-3 text-white transition focus-within:border-teal-400/70"
+      className="rounded-[18px] border border-[#eadcae] bg-[#fffdf8] px-4 py-3 text-[#211704] transition focus-within:border-[#d8ce76] focus-within:bg-white"
     >
-      <label className="text-xs uppercase tracking-[0.16em] text-white">
+      <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8a6106]">
         {label}
       </label>
 
@@ -304,10 +314,10 @@ export default function ProfilePage({
           type={type}
           value={formData?.[field] || ""}
           onChange={(e) => handleChange(field, e.target.value)}
-          className="mt-2 h-10 w-full bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/60"
+          className="mt-2 h-10 w-full bg-transparent text-sm font-semibold text-[#211704] outline-none placeholder:text-[#8a7a55]"
         />
       ) : (
-        <p className="mt-2 min-h-6 break-words text-sm font-medium text-white">
+        <p className="mt-2 min-h-6 break-words text-sm font-semibold text-[#211704]">
           {formData?.[field] || "Not added"}
         </p>
       )}
@@ -315,10 +325,10 @@ export default function ProfilePage({
   );
 
   const renderSection = (title, description, fields) => (
-    <section className="rounded-2xl border border-white/10 bg-[#0f1535]/90 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
+    <section className="rounded-[24px] border border-[#eadcae] bg-white/92 p-5 shadow-[0_18px_42px_rgba(107,82,12,0.13)]">
       <div className="mb-5">
-        <h3 className="text-base font-semibold text-white">{title}</h3>
-        <p className="mt-1 text-sm text-gray-400">{description}</p>
+        <h3 className="text-base font-extrabold text-[#211704]">{title}</h3>
+        <p className="mt-1 text-sm text-[#60481f]">{description}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -329,20 +339,29 @@ export default function ProfilePage({
     </section>
   );
 
+  if (!isAuthLoaded && !serverIsLoggedIn) {
+    return null;
+  }
+
+  if (!isLoggedIn && !serverIsLoggedIn) {
+    return null;
+  }
+
   return (
-    <PageLayout
+    <PublicPageLayout
+      eyebrow="Account center"
       title="Profile & Settings"
-      icon="⚙️"
-      serverIsLoggedIn={serverIsLoggedIn || !!profileData}
+      description="Keep your personal, birth, contact, and family details ready for faster, more accurate guidance."
+      profileData={profileData}
     >
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[#0f1535] border border-white/10 rounded-2xl p-6 w-[90%] max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-white mb-2">
+          <div className="w-[90%] max-w-md rounded-[24px] border border-[#eadcae] bg-white p-6 text-[#211704] shadow-xl">
+            <h2 className="mb-2 text-lg font-extrabold">
               Deactivate Profile
             </h2>
 
-            <p className="text-sm text-gray-300 mb-6">
+            <p className="mb-6 text-sm leading-6 text-[#60481f]">
               Are you sure you want to deactivate your profile? This action cannot
               be undone.
             </p>
@@ -351,7 +370,7 @@ export default function ProfilePage({
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-lg bg-white/10 text-gray-300 hover:bg-white/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="rounded-full border border-[#eadcae] bg-[#fffdf8] px-4 py-2 text-sm font-bold text-[#60481f] hover:bg-[#fff8dc] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -359,7 +378,7 @@ export default function ProfilePage({
               <button
                 onClick={handleDeleteProfile}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-20"
+                className="flex min-w-20 items-center justify-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isDeleting ? (
                   <>
@@ -376,12 +395,12 @@ export default function ProfilePage({
       )}
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="mx-auto max-w-6xl space-y-5">
-        <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f1535] shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
+        <section className="overflow-hidden rounded-[28px] border border-[#eadcae] bg-white/92 text-[#211704] shadow-[0_22px_70px_rgba(87,60,12,0.12)]">
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.8fr]">
             <div className="p-6 md:p-8">
               <div className="flex flex-col gap-5 sm:flex-row ">
-                <div className="relative h-24 w-24 shrink-0 rounded-full border bg-white border-none shadow-2xl">
-                  <div className="flex h-full w-full items-center justify-center rounded-full  text-3xl font-bold text-white">
+                <div className="relative h-24 w-24 shrink-0 rounded-full border-4 border-[#d8ce76] bg-[#211704] shadow-2xl">
+                  <div className="flex h-full w-full items-center justify-center rounded-full text-3xl font-black text-[#dfff00]">
                     {getInitials(formData?.firstName, formData?.lastName) || "AT"}
                   </div>
                 </div>
@@ -390,10 +409,10 @@ export default function ProfilePage({
                   {/* <p className="text-xs uppercase tracking-[0.22em] text-teal-300">
                     Premium Client Profile
                   </p> */}
-                  <h2 className=" break-words text-3xl font-semibold text-white">
+                  <h2 className="break-words text-3xl font-extrabold text-[#211704]">
                     {displayName}
                   </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-400">
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#60481f]">
                     Keep your birth, contact, and family details complete for a
                     sharper consultation experience.
                   </p>
@@ -401,7 +420,7 @@ export default function ProfilePage({
                   <div className="mt-5 flex flex-wrap gap-3">
                     <button
                       onClick={handleEditToggle}
-                      className="cursor-pointer rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-[#071018] transition hover:bg-teal-400"
+                      className="cursor-pointer rounded-full bg-[#dfff00] px-5 py-2.5 text-sm font-bold text-[#312d1e] shadow-[0_14px_26px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
                     >
                       {isEditing ? "Cancel Editing" : "Edit Profile"}
                     </button>
@@ -410,7 +429,7 @@ export default function ProfilePage({
                       <button
                         onClick={handleUpdateProfile}
                         disabled={isSaving}
-                        className="cursor-pointer rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#071018] transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="cursor-pointer rounded-full bg-[#211704] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#3a2909] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isSaving ? "Saving..." : "Save Changes"}
                       </button>
@@ -418,7 +437,7 @@ export default function ProfilePage({
 
                     <Link
                       href="/change-password"
-                      className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                      className="rounded-full border border-[#d8ce76] bg-[#fffdf8] px-5 py-2.5 text-sm font-bold text-[#60481f] transition hover:bg-[#fff8dc]"
                     >
                       Change Password
                     </Link>
@@ -427,28 +446,28 @@ export default function ProfilePage({
               </div>
             </div>
 
-            <div className="border-t border-white/10 bg-[#17112f] p-6 text-white lg:border-l lg:border-t-0 md:p-8">
+            <div className="border-t border-[#eadcae] bg-[#fff8dc] p-6 text-[#211704] lg:border-l lg:border-t-0 md:p-8">
               <div className="flex h-full flex-col items-center justify-center text-center">
                 <div
                   className="grid h-40 w-40 place-items-center rounded-full p-3"
                   style={completionStrokeStyle}
                 >
-                  <div className="grid h-full w-full place-items-center rounded-full bg-[#0f1536]">
+                  <div className="grid h-full w-full place-items-center rounded-full bg-white">
                     <div>
-                      <p className="text-4xl font-semibold text-black">
+                      <p className="text-4xl font-extrabold text-[#211704]">
                         {profileCompletionPercentage}%
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-gray-400">
+                      <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-[#8a6106]">
                         Complete
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <p className="mt-5 text-sm font-medium text-white">
+                <p className="mt-5 text-sm font-bold text-[#211704]">
                   {completedRequiredFields} of {PROFILE_COMPLETION_FIELDS.length} key fields complete
                 </p>
-                <p className="mt-2 text-sm leading-6 text-gray-400">
+                <p className="mt-2 text-sm leading-6 text-[#60481f]">
                   Add missing details to raise your profile score and improve
                   personalization.
                 </p>
@@ -481,10 +500,10 @@ export default function ProfilePage({
         </div>
 
         <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_0.8fr]">
-          <div className="rounded-2xl border border-white/10 bg-[#0f1535]/90 p-5">
+          <div className="rounded-[24px] border border-[#eadcae] bg-white/92 p-5 shadow-[0_18px_42px_rgba(107,82,12,0.10)]">
             <div className="mb-4">
-              <h3 className="text-base font-semibold text-white">Preferences</h3>
-              <p className="mt-1 text-sm text-gray-400">
+              <h3 className="text-base font-extrabold text-[#211704]">Preferences</h3>
+              <p className="mt-1 text-sm text-[#60481f]">
                 Control how ApsaraTalk keeps you updated.
               </p>
             </div>
@@ -504,16 +523,16 @@ export default function ProfilePage({
               ].map(({ label, value, toggle }) => (
                 <div
                   key={label}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-[#10162f] px-4 py-4"
+                  className="flex items-center justify-between rounded-[18px] border border-[#eadcae] bg-[#fffdf8] px-4 py-4"
                 >
-                  <span className="text-sm font-medium text-white">{label}</span>
+                  <span className="text-sm font-bold text-[#211704]">{label}</span>
 
                   <button
                     onClick={() => toggle(!value)}
                     className={`relative h-6 w-11 cursor-pointer rounded-full border transition-all ${
                       value
-                        ? "border-teal-400 bg-teal-500"
-                        : "border-white/20 bg-white/10"
+                        ? "border-[#d8ce76] bg-[#dfff00]"
+                        : "border-[#eadcae] bg-[#fff8dc]"
                     }`}
                     aria-pressed={value}
                   >
@@ -528,22 +547,22 @@ export default function ProfilePage({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-5">
-            <h3 className="text-base font-semibold text-white">Account Actions</h3>
-            <p className="mt-1 text-sm leading-6 text-red-100/75">
+          <div className="rounded-[24px] border border-red-200 bg-red-50 p-5">
+            <h3 className="text-base font-extrabold text-[#211704]">Account Actions</h3>
+            <p className="mt-1 text-sm leading-6 text-red-700">
               Deactivation removes access to your profile and saved consultation
               details.
             </p>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="mt-5 w-full cursor-pointer rounded-xl border border-red-400/40 bg-red-500/20 px-5 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-500/30"
+              className="mt-5 w-full cursor-pointer rounded-full border border-red-300 bg-white px-5 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100"
             >
               Deactivate Account
             </button>
           </div>
         </section>
       </div>
-    </PageLayout>
+    </PublicPageLayout>
   );
 }
 

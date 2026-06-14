@@ -1,30 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import LoginPromptModal from "@/components/LoginPromptModal";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Sidebar() {
-  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const { isLoggedIn } = useSelector((state) => state.auth);
   const { balance } = useSelector((state) => state.wallet);
   const { t } = useLanguage();
 
-  const handleAction = () => {
-    if (!isLoggedIn) {
-      setShowModal(true);
-    } else {
-      router.push("/thankyou");
-    }
+  const handleAction = (route = "/services/chat-with-astrologer") => {
+    router.push(route);
   };
 
   return (
     <>
-      {showModal && <LoginPromptModal onClose={() => setShowModal(false)} />}
-
       <section className="rounded-[18px] bg-white/90 p-3 shadow-xl sm:p-5">
         <div className="grid grid-cols-1 gap-3 sm:gap-4">
           {isLoggedIn ? (
@@ -63,7 +54,7 @@ export default function Sidebar() {
                 </div>
               </div>
               <button
-                onClick={handleAction}
+                onClick={() => handleAction("/services/chat-with-astrologer")}
                 className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000]"
               >
                 Get Free Chat
@@ -75,7 +66,7 @@ export default function Sidebar() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="font-extrabold">{t("sidebar.dailyHoroscope")}</h3>
             <button
-              onClick={handleAction}
+              onClick={() => handleAction("/services/daily-horoscope")}
               className="text-xs font-semibold text-[#8b55f6] transition hover:text-[#5b21b6]"
             >
               {t("sidebar.viewAll")}
@@ -127,7 +118,7 @@ export default function Sidebar() {
           <h3 className="font-extrabold">{t("sidebar.upcomingSession")}</h3>
           <p className="mt-3 text-sm font-medium">Dr. Aryan Sharma</p>
           <button
-            onClick={handleAction}
+            onClick={() => handleAction("/chat")}
             className="inline-flex w-[100%]  shrink-0 mt-4 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000]"
           >
             {t("sidebar.joinSession")}

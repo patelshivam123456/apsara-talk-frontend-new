@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export const languages = [
-  { code: "en", label: "English", nativeLabel: "English", dir: "ltr" },
+  { code: "en", label: "English", nativeLabel: "ENG", dir: "ltr" },
   { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", dir: "ltr" },
   { code: "pa", label: "Punjabi", nativeLabel: "ਪੰਜਾਬੀ", dir: "ltr" },
   { code: "ta", label: "Tamil", nativeLabel: "தமிழ்", dir: "ltr" },

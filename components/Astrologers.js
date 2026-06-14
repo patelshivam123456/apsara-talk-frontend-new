@@ -42,7 +42,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
   const categoryFilters = useMemo(() => {
     const categories = [
       ...new Set(
-        astrologerData.map((astro) => astro.specialization)
+        astrologerData.map((astro) => astro.specialization).filter(Boolean)
       ),
     ];
 
@@ -51,7 +51,10 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
   const languageFilters = useMemo(() => {
     const langs = astrologerData.flatMap((astro) =>
-      astro.language.split(",").map((lang) => lang.trim())
+      String(astro.language || "")
+        .split(",")
+        .map((lang) => lang.trim())
+        .filter(Boolean)
     );
 
     return ["All", ...new Set(langs)];
@@ -59,7 +62,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
   const locationFilters = useMemo(() => {
     const locations = [
-      ...new Set(astrologerData.map((astro) => astro.city)),
+      ...new Set(astrologerData.map((astro) => astro.city).filter(Boolean)),
     ];
 
     return ["All", ...locations];
@@ -106,32 +109,36 @@ export default function Astrologers({ limit,astrologerData = [] }) {
   ========================= */
 
   const filteredAstrologers = astrologerData.filter((astro) => {
+    const displayName = String(astro.displayName || "");
+    const specialization = String(astro.specialization || "");
+    const astroLanguage = String(astro.language || "");
+    const city = String(astro.city || "");
     const matchesSearch =
       !searchQuery ||
-      astro.displayName
+      displayName
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      astro.specialization
+      specialization
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      astro.language
+      astroLanguage
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      astro.city
+      city
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
     const matchesCategory =
       active === "All" ||
-      astro.specialization === active;
+      specialization === active;
 
     const matchesLanguage =
       language === "All" ||
-      astro.language.includes(language);
+      astroLanguage.includes(language);
 
     const matchesLocation =
       location === "All" ||
-      astro.city === location;
+      city === location;
 
     const experience = Number(astro.yearsOfExperience);
 
@@ -157,6 +164,12 @@ export default function Astrologers({ limit,astrologerData = [] }) {
     }`.toUpperCase();
   };
 
+  const getLanguages = (value) =>
+    String(value || "")
+      .split(",")
+      .map((lang) => lang.trim())
+      .filter(Boolean);
+
   return (
     <>
       {showModal && (
@@ -165,7 +178,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
         />
       )}
 
-      <div className="bg-[#0f1535]/80 z-30 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
+      <div className="z-30 rounded-[22px] bg-white p-4 text-[#211704] shadow-2xl sm:p-5">
 
         {/* =========================
             HEADER
@@ -174,18 +187,18 @@ export default function Astrologers({ limit,astrologerData = [] }) {
         <div className="flex flex-col gap-4 mb-5">
 
           {/* TOP BAR */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
             <div className="flex items-center gap-2">
 
               {/* FILTER BUTTON */}
               <button
                 onClick={() => setFilterOpen(!filterOpen)}
-                className={`relative flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200
+                className={`relative flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-200
                 ${
                   filterOpen || activeFilterCount > 0
-                    ? "bg-purple-600 border-purple-500 text-white shadow-[0_0_12px_rgba(139,92,246,0.35)]"
-                    : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
+                    ? "border-[#b88a00] bg-[#b88a00] text-white shadow-[0_10px_22px_rgba(184,138,0,0.24)]"
+                    : "border-[#dbc45f] bg-[#fff3bd] text-[#2b2108] hover:bg-[#f7e38e]"
                 }`}
               >
 
@@ -203,7 +216,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
                 {/* FILTER COUNT */}
                 {activeFilterCount > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-white text-purple-700 text-[9px] font-bold flex items-center justify-center">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[9px] font-bold text-[#8b6500]">
                     {activeFilterCount}
                   </span>
                 )}
@@ -225,7 +238,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                 </svg>
               </button>
 
-              <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
+              <h2 className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#261b08]">
                 {t("astro.top")}
               </h2>
             </div>
@@ -234,7 +247,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
             {activeFilterCount > 0 && (
               <button
                 onClick={resetFilters}
-                className="text-xs text-red-400 hover:text-red-300 transition"
+                className="self-start rounded-full border border-[#e5c94c] px-3 py-1.5 text-xs font-bold text-[#9a3b22] transition hover:bg-[#fff2c7] sm:self-auto"
               >
                 {t("astro.resetFilters")}
               </button>
@@ -246,11 +259,11 @@ export default function Astrologers({ limit,astrologerData = [] }) {
           ========================= */}
 
           {filterOpen && (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-4 rounded-[18px] border border-[#e0c85a] bg-[#fff5cf] p-4 shadow-inner">
 
               {/* CATEGORY */}
               <div>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#8d6a0a]">
                   {t("astro.category")}
                 </p>
 
@@ -259,11 +272,11 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                     <button
                       key={item}
                       onClick={() => setActive(item)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-all duration-200
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200
                       ${
                         active === item
-                          ? "bg-purple-600 text-white border-purple-600 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
-                          : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                          ? "border-[#b88a00] bg-[#b88a00] text-white shadow-[0_8px_16px_rgba(184,138,0,0.18)]"
+                          : "border-[#e5cc63] bg-white/60 text-[#4b3b13] hover:bg-white"
                       }`}
                     >
                       {item === "All" ? t("common.all") : item}
@@ -274,7 +287,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
               {/* LANGUAGE */}
               <div>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#8d6a0a]">
                   {t("astro.language")}
                 </p>
 
@@ -283,11 +296,11 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                     <button
                       key={item}
                       onClick={() => setLanguage(item)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-all duration-200
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200
                       ${
                         language === item
-                          ? "bg-purple-600 text-white border-purple-600"
-                          : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                          ? "border-[#b88a00] bg-[#b88a00] text-white"
+                          : "border-[#e5cc63] bg-white/60 text-[#4b3b13] hover:bg-white"
                       }`}
                     >
                       {item === "All" ? t("common.all") : item}
@@ -298,7 +311,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
               {/* LOCATION */}
               <div>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#8d6a0a]">
                   {t("astro.location")}
                 </p>
 
@@ -307,11 +320,11 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                     <button
                       key={item}
                       onClick={() => setLocation(item)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-all duration-200
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200
                       ${
                         location === item
-                          ? "bg-purple-600 text-white border-purple-600"
-                          : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                          ? "border-[#b88a00] bg-[#b88a00] text-white"
+                          : "border-[#e5cc63] bg-white/60 text-[#4b3b13] hover:bg-white"
                       }`}
                     >
                       {item === "All" ? t("common.all") : item}
@@ -322,7 +335,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
               {/* EXPERIENCE */}
               <div>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#8d6a0a]">
                   {t("astro.experience")}
                 </p>
 
@@ -331,11 +344,11 @@ export default function Astrologers({ limit,astrologerData = [] }) {
                     <button
                       key={item.labelKey}
                       onClick={() => setExperienceRange(index)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-all duration-200
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200
                       ${
                         experienceRange === index
-                          ? "bg-purple-600 text-white border-purple-600"
-                          : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                          ? "border-[#b88a00] bg-[#b88a00] text-white"
+                          : "border-[#e5cc63] bg-white/60 text-[#4b3b13] hover:bg-white"
                       }`}
                     >
                       {t(item.labelKey)}
@@ -351,99 +364,134 @@ export default function Astrologers({ limit,astrologerData = [] }) {
             CARDS
         ========================= */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 
-          {(limit ? filteredAstrologers.slice(0, limit) : filteredAstrologers).map((astro) => (
-            <div
-              key={astro.publicId}
-              className="relative bg-linear-to-b from-[#1a1f4a] to-[#0f1535] border border-white/10 rounded-2xl p-4 hover:scale-[1.02] hover:border-purple-500/30 hover:shadow-[0_4px_24px_rgba(139,92,246,0.15)] transition-all duration-200 flex flex-col gap-3"
-            >
+          {(limit ? filteredAstrologers.slice(0, limit) : filteredAstrologers).map((astro) => {
+            const languages = getLanguages(astro.language);
 
-              {/* CITY BADGE */}
-              <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 border border-white/10">
-                {astro.city}
-              </span>
-
-              {/* CONTENT */}
-              <div className="flex flex-col items-center text-center gap-2 mt-3">
-
-                {/* INITIALS */}
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-lg font-bold border-2 border-purple-400/30">
-                  {getInitials(
-                    astro.firstName,
-                    astro.lastName
-                  )}
-                </div>
-
-                {/* NAME */}
-                <h3 className="text-sm font-semibold mt-1">
-                  {astro.displayName}
-                </h3>
-
-                {/* SPECIALIZATION */}
-                <p className="text-[11px] text-gray-400">
-                  {astro.specialization}
-                </p>
-
-                {/* EXPERIENCE */}
-                <p className="text-[11px] text-purple-400 font-medium">
-                  {astro.yearsOfExperience}+ {t("astro.yearsExperience")}
-                </p>
-              </div>
-
-              {/* LANGUAGES */}
-              <div className="flex flex-wrap gap-1 justify-center">
-                {astro.language
-                  .split(",")
-                  .map((lang) => (
-                    <span
-                      key={lang}
-                      className="text-[10px] px-2 py-0.5 bg-white/10 rounded-full text-gray-300"
-                    >
-                      {lang.trim()}
-                    </span>
-                  ))}
-              </div>
-
-              {/* BIO */}
-              <p className="text-[11px] text-gray-400 text-center leading-relaxed">
-                {astro.bio}
-              </p>
-
-              {/* BUTTONS */}
-              <div className="flex gap-2 mt-auto">
-
-                <button
-                  onClick={handleAction}
-                  className="flex-1 text-xs font-medium bg-white/5 py-2 rounded-lg hover:bg-white/10 transition"
-                >
-                  {t("astro.chat")}
-                </button>
-
-                <button
-                  onClick={handleAction}
-                  className="flex-1 text-xs font-medium bg-purple-600 py-2 rounded-lg hover:bg-purple-700 transition"
-                >
-                  {t("astro.call")}
-                </button>
-              </div>
-
-              {/* VIEW PROFILE */}
-              <button
-                onClick={() => router.push(`/astrologers/${astro.publicId}`)}
-                className="w-full text-xs text-purple-400 hover:text-purple-300 py-1 transition text-center"
+            return (
+              <div
+                key={astro.publicId}
+                className="group relative rounded-[20px] bg-[linear-gradient(135deg,#d9b857_0%,#fff6d4_34%,#e000a9_72%,#5b21b6_100%)] p-[1.5px] shadow-[0_16px_34px_rgba(94,70,12,0.12),0_0_0_1px_rgba(217,184,87,0.22)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(94,70,12,0.18),0_0_28px_rgba(224,0,169,0.16)]"
               >
-                {t("astro.viewProfile")} →
-              </button>
-            </div>
-          ))}
+                <div className="relative flex min-h-[292px] flex-col overflow-hidden rounded-[18.5px] bg-[#fffdf8]">
+                  <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-[#b88a00] via-[#e000a9] to-[#5b21b6]" />
+                  <div className="absolute -right-12 -top-16 h-36 w-36 rounded-full bg-[#fff0b8]/80 blur-2xl" />
+
+                  <div className="relative flex flex-1 flex-col p-4 pl-5">
+                  <div className="flex items-start gap-3">
+                    <div className="relative shrink-0">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[#211704] text-lg font-black text-[#ffd447] shadow-[0_12px_22px_rgba(33,23,4,0.18)]">
+                        {getInitials(
+                          astro.firstName,
+                          astro.lastName
+                        )}
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#18a058] text-[10px] font-black text-white">
+                        ✓
+                      </span>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="truncate text-[15px] font-extrabold leading-5 text-[#201404]">
+                            {astro.displayName}
+                          </h3>
+                          <p className="mt-1 line-clamp-1 text-[11px] font-semibold text-[#7b6322]">
+                            {astro.specialization}
+                          </p>
+                        </div>
+
+                        <span className="shrink-0 rounded-full border border-[#dec45f] bg-[#fff7d8] px-2.5 py-1 text-[10px] font-bold text-[#5e4810]">
+                          {astro.city || astro.state}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => router.push(`/astrologers/${astro.publicId}`)}
+                        className="mt-3 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#8b00cc] transition hover:text-[#650095]"
+                      >
+                        {t("astro.viewProfile")} →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-3 overflow-hidden rounded-[14px] border border-[#ead783] bg-[#fff8dc]">
+                    <div className="px-3 py-2 text-center">
+                      <p className="text-sm font-black leading-none text-[#211704]">
+                        {astro.yearsOfExperience}+
+                      </p>
+                      <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-[#8d6a0a]">
+                        Exp
+                      </p>
+                    </div>
+                    <div className="border-x border-[#ead783] px-3 py-2 text-center">
+                      <p className="text-sm font-black leading-none text-[#211704]">
+                        {languages.length || 1}
+                      </p>
+                      <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-[#8d6a0a]">
+                        Lang
+                      </p>
+                    </div>
+                    <div className="px-3 py-2 text-center">
+                      <p className="text-sm font-black leading-none text-[#211704]">
+                        4.9
+                      </p>
+                      <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-[#8d6a0a]">
+                        Rating
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {languages.slice(0, 3).map((lang) => (
+                      <span
+                        key={lang}
+                        className="rounded-md bg-[#f4ecd0] px-2.5 py-1 text-[10px] font-bold text-[#5d4a1b]"
+                      >
+                        {lang}
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="mt-3 line-clamp-2 min-h-[38px] text-[11px] leading-relaxed text-[#665d4d]">
+                    {astro.bio}
+                  </p>
+
+                  <div className="mt-auto flex items-center gap-2 pt-4">
+                    <button
+                      onClick={handleAction}
+                      className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#dfff00] px-4 py-2.5 text-xs font-bold text-[#3b382d] shadow-[0_16px_30px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
+                    >
+                      <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+                      </svg>
+                      {t("astro.chat")}
+                    </button>
+
+                    <button
+                      onClick={handleAction}
+                      className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-[#e6ddc5] bg-[#fffdf6] px-4 py-2.5 text-xs font-bold text-[#4c493f] shadow-sm transition hover:border-[#d3bd7d] hover:bg-white"
+                    >
+                      <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.32 1.77.59 2.61a2 2 0 0 1-.45 2.11L8 9.69a16 16 0 0 0 6.31 6.31l1.25-1.25a2 2 0 0 1 2.11-.45c.84.27 1.71.47 2.61.59A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      {t("astro.call")}
+                    </button>
+                  </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
           {/* VIEW MORE */}
           {limit && filteredAstrologers.length > limit && (
-            <div className="col-span-1 sm:col-span-2 xl:col-span-3 flex justify-center pt-2">
+            <div className="w-full sm:w-[20%] mx-auto col-span-1 sm:col-span-2 xl:col-span-3 flex justify-center pt-2">
               <button
                 onClick={() => router.push("/astrologers")}
-                className="px-6 py-2 text-sm font-medium bg-purple-600 hover:bg-purple-700 rounded-xl transition shadow-[0_0_16px_rgba(139,92,246,0.25)]"
+                className="inline-flex min-h-11  flex-1 items-center justify-center gap-2 rounded-full bg-[#dfff00] px-4 py-2.5 text-xs font-bold text-[#3b382d] shadow-[0_16px_30px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
               >
                 {t("astro.viewMore")} →
               </button>
@@ -452,7 +500,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
           {/* EMPTY STATE */}
           {filteredAstrologers.length === 0 && (
-            <div className="col-span-1 sm:col-span-2 xl:col-span-3 py-12 flex flex-col items-center gap-3 text-gray-400">
+            <div className="col-span-1 flex flex-col items-center gap-3 py-12 text-[#665d4d] sm:col-span-2 xl:col-span-3">
 
               <span className="text-4xl">
                 🔭
@@ -464,7 +512,7 @@ export default function Astrologers({ limit,astrologerData = [] }) {
 
               <button
                 onClick={resetFilters}
-                className="text-xs text-purple-400 hover:text-purple-300 transition"
+                className="text-xs font-bold text-[#8b00cc] transition hover:text-[#650095]"
               >
                 {t("astro.resetFilters")}
               </button>

@@ -290,6 +290,7 @@ export default function LoginPage({ mode = "client" }) {
             <div className="flex justify-end">
               <button
                 type="button"
+                onClick={() => router.push("/reset-password")}
                 className="text-sm text-amber-800 hover:text-amber-950"
               >
                 {t("auth.forgotPassword")}

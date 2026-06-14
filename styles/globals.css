@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdf4e3;
+  --foreground: #1f1608;
 }
 
 @theme inline {
@@ -22,7 +22,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), sans-serif;
-  @apply bg-[#0b0f2a] text-white;
+  @apply bg-[#fdf4e3] text-[#1f1608];
 }
 
 /* ============================================================
@@ -30,11 +30,13 @@ body {
    ============================================================ */
 .theme-root {
   min-height: 100vh;
+  font-family: var(--font-poppins), sans-serif;
 }
 
 /* DashboardPage radial background (moved from inline style) */
 .dashboard-bg {
-  background: radial-gradient(circle at top, #1a1446 0%, #050816 45%, #02030d 100%);
+  background:
+    radial-gradient(circle at top left, rgba(255, 248, 238, 0.95) 0%, rgba(253, 244, 227, 0.96) 42%, rgba(245, 233, 212, 0.98) 100%);
 }
 
 /* ============================================================
@@ -349,6 +351,108 @@ body {
 /* Logo / star icon */
 [data-theme="dark-gold"] [class*="border-[#ffb86c]"]     { border-color: #d4780a !important; }
 [data-theme="dark-gold"] [class*="text-[#ffb86c]"]       { color: #e8a020 !important; }
+
+/* Full-page night mode for newer cream/white dashboard surfaces. */
+[data-theme="dark-gold"].theme-root,
+[data-theme="dark-gold"] .dashboard-bg {
+  background:
+    radial-gradient(circle at 20% 22%, rgba(223,255,0,0.20), transparent 28%),
+    radial-gradient(circle at 55% 52%, rgba(164,72,38,0.22), transparent 30%),
+    radial-gradient(circle at 78% 78%, rgba(45,135,70,0.24), transparent 30%),
+    linear-gradient(180deg, #050500 0%, #110900 46%, #070300 100%) !important;
+  color: #fdf3e3 !important;
+}
+
+[data-theme="dark-gold"] .dashboard-feature-panel,
+[data-theme="dark-gold"] [class*="bg-white"],
+[data-theme="dark-gold"] [class*="bg-[#fff"],
+[data-theme="dark-gold"] [class*="bg-[#fb"],
+[data-theme="dark-gold"] [class*="bg-[#fdf"],
+[data-theme="dark-gold"] [class*="bg-[#fef"],
+[data-theme="dark-gold"] [class*="bg-[#f5e"],
+[data-theme="dark-gold"] [class*="bg-[#f4e"],
+[data-theme="dark-gold"] [class*="bg-[#f6e"],
+[data-theme="dark-gold"] [class*="bg-[#ead"],
+[data-theme="dark-gold"] [class*="bg-[#efe"] {
+  background-color: rgba(29, 16, 2, 0.92) !important;
+  border-color: rgba(216, 168, 74, 0.28) !important;
+  color: #fdf3e3 !important;
+}
+
+[data-theme="dark-gold"] [class*="bg-[linear-gradient"] {
+  background-image:
+    linear-gradient(135deg, rgba(216,184,87,0.28), rgba(29,16,2,0.96) 42%, rgba(9,5,0,0.98)) !important;
+}
+
+[data-theme="dark-gold"] header [class*="bg-white"],
+[data-theme="dark-gold"] header [class*="bg-[#fb"],
+[data-theme="dark-gold"] header [class*="bg-[#f5"] {
+  background-color: rgba(18, 12, 3, 0.92) !important;
+  border-color: rgba(223, 255, 0, 0.22) !important;
+  color: #fff8d8 !important;
+}
+
+[data-theme="dark-gold"] header :where(a, button, span, select, p),
+[data-theme="dark-gold"] [class*="text-[#1f1608]"],
+[data-theme="dark-gold"] [class*="text-[#211704]"],
+[data-theme="dark-gold"] [class*="text-[#201404]"],
+[data-theme="dark-gold"] [class*="text-[#1d1607]"],
+[data-theme="dark-gold"] [class*="text-[#261b08]"],
+[data-theme="dark-gold"] [class*="text-[#4d4a45]"],
+[data-theme="dark-gold"] [class*="text-[#4a4844]"],
+[data-theme="dark-gold"] [class*="text-[#5c5952]"],
+[data-theme="dark-gold"] [class*="text-[#4c493f]"],
+[data-theme="dark-gold"] [class*="text-[#4d4d4d]"] {
+  color: #fdf3e3 !important;
+}
+
+[data-theme="dark-gold"] [class*="text-[#6f5930]"],
+[data-theme="dark-gold"] [class*="text-[#60481f]"],
+[data-theme="dark-gold"] [class*="text-[#665d4d]"],
+[data-theme="dark-gold"] [class*="text-[#62543d]"],
+[data-theme="dark-gold"] [class*="text-[#5d4a1b]"],
+[data-theme="dark-gold"] [class*="text-[#6b6b6b]"],
+[data-theme="dark-gold"] [class*="text-[#77736a]"] {
+  color: #c8a882 !important;
+}
+
+[data-theme="dark-gold"] [class*="text-[#9a6f08]"],
+[data-theme="dark-gold"] [class*="text-[#916805]"],
+[data-theme="dark-gold"] [class*="text-[#8a6106]"],
+[data-theme="dark-gold"] [class*="text-[#8d6a0a]"],
+[data-theme="dark-gold"] [class*="text-[#8b6500]"],
+[data-theme="dark-gold"] [class*="text-[#a06c00]"] {
+  color: #f0c040 !important;
+}
+
+[data-theme="dark-gold"] [class*="border-[#d8"],
+[data-theme="dark-gold"] [class*="border-[#e"],
+[data-theme="dark-gold"] [class*="border-amber"] {
+  border-color: rgba(216, 168, 74, 0.34) !important;
+}
+
+[data-theme="dark-gold"] [class*="shadow-xl"],
+[data-theme="dark-gold"] [class*="shadow-2xl"],
+[data-theme="dark-gold"] [class*="shadow-[0_"] {
+  --tw-shadow-color: rgba(0, 0, 0, 0.42) !important;
+}
+
+[data-theme="dark-gold"] [class*="bg-[#dfff00]"],
+[data-theme="dark-gold"] [class*="hover:bg-[#cdf000]"]:hover,
+[data-theme="dark-gold"] header [class*="bg-[#eef000]"] {
+  background-color: #dfff00 !important;
+  color: #211704 !important;
+  border-color: rgba(223, 255, 0, 0.55) !important;
+}
+
+[data-theme="dark-gold"] [class*="bg-[#dfff00]"] :where(*) ,
+[data-theme="dark-gold"] header [class*="bg-[#eef000]"] :where(*) {
+  color: #211704 !important;
+}
+
+[data-theme="dark-gold"] img {
+  filter: saturate(0.95) brightness(0.88);
+}
 
 /* Dark cards must stay readable inside light themes. */
 .astro-dark-surface,

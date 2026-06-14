@@ -11,8 +11,10 @@ import LifeGuidance from "@/components/LifeGuidance";
 import ChatPanel from "@/components/ChatPanel";
 import NotificationPanel from "@/components/NotificationPanel";
 import DashboardPage from "@/components/DashboardPage";
+import Footer from "@/components/Footer";
+import FAQSection from "@/components/FAQSection";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelector,useDispatch } from "react-redux";
 import { config } from "@/constants/URLConfig";
 import { updateProfileName } from "@/redux/slices/authSlice";
@@ -24,9 +26,7 @@ export default function Home({
   profileData,
   astrologerData=[]
 }) {
-  // ✅ Sidebar state (BOOLEAN only)
   const dispatch = useDispatch();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Redux state takes over after hydration; server prop covers the first render
   const { isLoggedIn: reduxIsLoggedIn } = useSelector(
@@ -50,51 +50,41 @@ export default function Home({
   }
 }, [profileData, dispatch]);
 
-  // ✅ Toggle sidebar
-  const handleOpenSidebar = () => {
-    setSidebarOpen((value) => !value);
-  };
-
-
   // ✅ Logged-in dashboard
   if (isLoggedIn) {
     return (
       <DashboardPage
-        sidebarOpen={sidebarOpen}
-        handleOpenSidebar={handleOpenSidebar}
         profileData={profileData}
         astrologerData={astrologerData}
       />
     );
   }
 
-  // ✅ Pre-login public page
   return (
-    <div className="min-h-screen dashboard-bg text-white">
-      {/* OVERLAY PANELS */}
+    <div className="min-h-screen dashboard-bg text-[#1f1608]">
       <ChatPanel />
       <NotificationPanel />
 
-      <div className="flex flex-col lg:flex-row">
-        {/* MAIN CONTENT */}
-        <div className="flex-1 min-w-0 p-3 sm:p-4 md:p-6 space-y-4">
+      <div className="mx-auto w-full max-w-[1500px] p-3 sm:p-4 md:p-6">
+        <main className="min-w-0 flex-1 space-y-4">
           <Header/>
           <Hero />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <QuickActions />
-            <PlanetaryHighlights
-              isLoggedIn={isLoggedIn}
-            />
+          <div className="flex w-full flex-col gap-4 lg:flex-row">
+          <div className="dashboard-feature-panel w-full space-y-4 rounded-xl bg-white p-3 shadow-xl sm:p-5 lg:w-[70%]">
+          <PlanetaryHighlights isLoggedIn={isLoggedIn} />
+          <QuickActions />
           </div>
-
+          {/* <div className="mx-4 border border-black/10"></div> */}
+          <div className="w-full lg:w-[30%]">
+          <Sidebar />
+          </div>
+          </div>
           <Astrologers limit={3} astrologerData={astrologerData}/>
-          <Categories />
+          {/* <Categories /> */}
           <LifeGuidance />
-        </div>
-
-        {/* RIGHT SIDEBAR */}
-        <Sidebar />
+          <FAQSection />
+          <Footer />
+        </main>
       </div>
     </div>
   );

@@ -7,10 +7,30 @@ import LoginPromptModal from "@/components/LoginPromptModal";
 import { useLanguage } from "@/context/LanguageContext";
 
 const actions = [
-  { titleKey: "quick.talk", icon: "💬" },
-  { titleKey: "quick.horoscope", icon: "⭐" },
-  { titleKey: "quick.kundli", icon: "✉️" },
-  { titleKey: "quick.compatibility", icon: "❤️" },
+  // {
+  //   titleKey: "quick.talk",
+  //   description: "Connect with an expert now",
+  //   icon: "💬",
+  //   route: "/astrologers",
+  // },
+  {
+    titleKey: "quick.horoscope",
+    description: "Read your daily insight",
+    icon: "★",
+    route: "/horoscope",
+  },
+  {
+    titleKey: "quick.kundli",
+    description: "Create your birth report",
+    icon: "▰",
+    route: "/kundli",
+  },
+  {
+    titleKey: "quick.compatibility",
+    description: "Check relationship match",
+    icon: "♥",
+    route: "/compatibility",
+  },
 ];
 
 export default function QuickActions() {
@@ -19,11 +39,11 @@ export default function QuickActions() {
   const { t } = useLanguage();
   const [showModal, setShowModal] = useState(false);
 
-  const handleAction = () => {
+  const handleAction = (route = "/thankyou") => {
     if (!isLoggedIn) {
       setShowModal(true);
     } else {
-      router.push("/thankyou");
+      router.push(route);
     }
   };
 
@@ -31,42 +51,47 @@ export default function QuickActions() {
     <>
       {showModal && <LoginPromptModal onClose={() => setShowModal(false)} />}
 
-      <div className={`quick-actions bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5 backdrop-blur-md ${isLoggedIn ? "h-[280px] sm:h-[180px]" : "h-[280px] sm:h-full"}`}>
-
-        {/* Header */}
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
-            {t("quick.title")}
-          </h2>
-          <span
-            onClick={handleAction}
-            className="text-xs text-purple-400 cursor-pointer hover:text-purple-300 transition"
+      <section className="quick-actions rounded-[22px] bg-white/92 p-4 text-[#211704] shadow-[0_18px_42px_rgba(107,82,12,0.13)] sm:rounded-[26px] sm:p-6">
+        <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#9a6f08]">
+              Shortcuts
+            </p>
+            <h2 className="mt-1 text-xl font-extrabold text-black sm:text-3xl">
+              {t("quick.title")}
+            </h2>
+          </div>
+          <button
+            onClick={() => handleAction("/astrologers")}
+            className="inline-flex w-full shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000] sm:w-auto"
           >
             {t("quick.viewAll")} →
-          </span>
+          </button>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 h-[120px] sm:h-[70px]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {actions.map((item) => (
-            <div
+            <button
               key={item.titleKey}
-              onClick={handleAction}
-              className="group flex flex-col items-center justify-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-purple-600/20 hover:border-purple-500/40 hover:scale-[1.04] hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] transition-all duration-200 cursor-pointer"
+              onClick={() => handleAction(item.route)}
+              className="group flex min-h-[92px] items-center gap-3 rounded-[16px] border border-[#ffffbf]/85 bg-[#ffffbf] p-3 text-left shadow-[0_10px_24px_rgba(126,98,10,0.12)] transition hover:-translate-y-0.5 hover:border-[#ffffbf] hover:bg-[#fffaa4] hover:shadow-[0_16px_34px_rgba(126,98,10,0.18)] sm:min-h-[104px] sm:gap-4 sm:p-4"
             >
-              {/* Icon Circle */}
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg group-hover:shadow-purple-500/40 transition-all duration-200">
-                <span className="text-lg">{item.icon}</span>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-white text-lg font-bold text-[#a06c00] shadow-[0_12px_22px_rgba(126,98,10,0.14)] ring-1 ring-[#d7c747]/80 sm:h-14 sm:w-14 sm:rounded-[16px] sm:text-xl">
+                {item.icon}
               </div>
 
-              {/* Label */}
-              <p className="text-xs text-center text-gray-300 group-hover:text-white transition font-medium leading-tight">
-                {t(item.titleKey)}
-              </p>
-            </div>
+              <div className="min-w-0">
+                <p className="text-sm font-extrabold text-[#211704] sm:text-base">
+                  {t(item.titleKey)}
+                </p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[#6f5930] sm:text-sm">
+                  {item.description}
+                </p>
+              </div>
+            </button>
           ))}
         </div>
-      </div>
+      </section>
     </>
   );
 }

@@ -10,7 +10,6 @@ import { LanguageProvider } from "@/context/LanguageContext";
 
 import AuthLoader from "@/components/AuthLoader";
 import RoleRouteGuard from "@/components/RoleRouteGuard";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -21,7 +20,10 @@ const poppins = Poppins({
 
 export default function App({ Component, pageProps }) {
   return (
-    <div className={poppins.variable} style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
+    <div
+      className={`${poppins.variable} min-h-screen font-sans`}
+      style={{ fontFamily: "var(--font-poppins), sans-serif" }}
+    >
       <Provider store={store}>
         <AppProvider>
           <LanguageProvider>
@@ -30,7 +32,6 @@ export default function App({ Component, pageProps }) {
             {/* Restore auth from the cookie-backed server session */}
             <AuthLoader />
             <RoleRouteGuard />
-            <LanguageSwitcher />
 
             <Component {...pageProps} />
 

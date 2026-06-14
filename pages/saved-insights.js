@@ -1,5 +1,5 @@
 "use client";
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import { useState } from "react";
 
 const insights = [
@@ -15,32 +15,36 @@ export default function SavedInsightsPage() {
   const remove = (i) => setSaved((prev) => prev.filter((x) => x !== i));
 
   return (
-    <PageLayout title="Saved Insights" icon="🔖">
+    <PublicPageLayout
+      eyebrow="Blog and insights"
+      title="Saved Insights"
+      description="Keep horoscope notes, planetary readings, session summaries, and AI guidance in one clean place."
+    >
       {saved.length === 0 ? (
-        <div className="text-center text-gray-400 py-20">
-          <p className="text-5xl mb-4">🔖</p>
-          <p className="text-sm">No saved insights yet.</p>
+        <div className="rounded-[24px] border border-[#eadcae] bg-white/92 py-20 text-center text-[#60481f] shadow-[0_12px_28px_rgba(94,70,12,0.10)]">
+          <p className="mb-4 text-5xl">🔖</p>
+          <p className="text-sm font-medium">No saved insights yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
           {insights.map((item, i) => saved.includes(i) && (
-            <div key={i} className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5 flex flex-col gap-3 hover:border-purple-500/30 transition">
+            <div key={i} className="flex flex-col gap-3 rounded-[22px] border border-[#eadcae] bg-white/92 p-5 text-[#211704] shadow-[0_12px_28px_rgba(94,70,12,0.10)] transition hover:-translate-y-0.5 hover:border-[#d8ce76]">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{item.icon}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-300">{item.category}</span>
+                  <span className="rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-2 py-1 text-[10px] font-bold text-[#8a6106]">{item.category}</span>
                 </div>
-                <button onClick={() => remove(i)} className="text-gray-500 hover:text-red-400 transition text-xs">✕</button>
+                <button onClick={() => remove(i)} className="text-xs font-bold text-[#8a7a55] transition hover:text-red-600">×</button>
               </div>
               <div>
-                <h3 className="text-sm font-semibold">{item.title}</h3>
-                <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.desc}</p>
+                <h3 className="text-sm font-extrabold">{item.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-[#60481f]">{item.desc}</p>
               </div>
-              <p className="text-[10px] text-gray-500">Saved {item.saved}</p>
+              <p className="text-[10px] font-medium text-[#8a7a55]">Saved {item.saved}</p>
             </div>
           ))}
         </div>
       )}
-    </PageLayout>
+    </PublicPageLayout>
   );
 }

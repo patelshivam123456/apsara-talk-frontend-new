@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/router";
-import { useSelector } from "react-redux";
-import LoginPromptModal from "@/components/LoginPromptModal";
 import { useLanguage } from "@/context/LanguageContext";
 
 const actions = [
@@ -35,22 +32,14 @@ const actions = [
 
 export default function QuickActions() {
   const router = useRouter();
-  const { isLoggedIn } = useSelector((state) => state.auth);
   const { t } = useLanguage();
-  const [showModal, setShowModal] = useState(false);
 
   const handleAction = (route = "/thankyou") => {
-    if (!isLoggedIn) {
-      setShowModal(true);
-    } else {
-      router.push(route);
-    }
+    router.push(route);
   };
 
   return (
     <>
-      {showModal && <LoginPromptModal onClose={() => setShowModal(false)} />}
-
       <section className="quick-actions rounded-[22px] bg-white/92 p-4 text-[#211704] shadow-[0_18px_42px_rgba(107,82,12,0.13)] sm:rounded-[26px] sm:p-6">
         <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -63,7 +52,7 @@ export default function QuickActions() {
           </div>
           <button
             onClick={() => handleAction("/astrologers")}
-            className="inline-flex w-full shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000] sm:w-auto"
+            className="hidden shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000] sm:inline-flex"
           >
             {t("quick.viewAll")} →
           </button>
@@ -91,6 +80,12 @@ export default function QuickActions() {
             </button>
           ))}
         </div>
+        <button
+          onClick={() => handleAction("/astrologers")}
+          className="mt-4 inline-flex w-full shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000] sm:hidden"
+        >
+          {t("quick.viewAll")} →
+        </button>
       </section>
     </>
   );

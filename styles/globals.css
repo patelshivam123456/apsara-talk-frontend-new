@@ -393,6 +393,12 @@ body {
 }
 
 [data-theme="dark-gold"] header :where(a, button, span, select, p),
+[data-theme="dark-gold"] .text-black,
+[data-theme="dark-gold"] [class*="text-black"],
+[data-theme="dark-gold"] [class*="text-stone-"],
+[data-theme="dark-gold"] [class*="text-slate-"],
+[data-theme="dark-gold"] [class*="text-neutral-"],
+[data-theme="dark-gold"] [class*="text-zinc-"],
 [data-theme="dark-gold"] [class*="text-[#1f1608]"],
 [data-theme="dark-gold"] [class*="text-[#211704]"],
 [data-theme="dark-gold"] [class*="text-[#201404]"],
@@ -402,8 +408,15 @@ body {
 [data-theme="dark-gold"] [class*="text-[#4a4844]"],
 [data-theme="dark-gold"] [class*="text-[#5c5952]"],
 [data-theme="dark-gold"] [class*="text-[#4c493f]"],
-[data-theme="dark-gold"] [class*="text-[#4d4d4d]"] {
+[data-theme="dark-gold"] [class*="text-[#4d4d4d]"],
+[data-theme="dark-gold"] [class*="text-[#312d1e]"],
+[data-theme="dark-gold"] [class*="text-[#3b382d]"],
+[data-theme="dark-gold"] [class*="text-[#3f3a15]"] {
   color: #fdf3e3 !important;
+}
+
+[data-theme="dark-gold"] :where(h1, h2, h3, h4, h5, h6) {
+  color: #fff8d8 !important;
 }
 
 [data-theme="dark-gold"] [class*="text-[#6f5930]"],
@@ -439,14 +452,16 @@ body {
 
 [data-theme="dark-gold"] [class*="bg-[#dfff00]"],
 [data-theme="dark-gold"] [class*="hover:bg-[#cdf000]"]:hover,
-[data-theme="dark-gold"] header [class*="bg-[#eef000]"] {
+[data-theme="dark-gold"] header [class*="bg-[#eef000]"],
+[data-theme="dark-gold"] [class*="bg-[#eef000]"] {
   background-color: #dfff00 !important;
   color: #211704 !important;
   border-color: rgba(223, 255, 0, 0.55) !important;
 }
 
 [data-theme="dark-gold"] [class*="bg-[#dfff00]"] :where(*) ,
-[data-theme="dark-gold"] header [class*="bg-[#eef000]"] :where(*) {
+[data-theme="dark-gold"] header [class*="bg-[#eef000]"] :where(*),
+[data-theme="dark-gold"] [class*="bg-[#eef000]"] :where(*) {
   color: #211704 !important;
 }
 

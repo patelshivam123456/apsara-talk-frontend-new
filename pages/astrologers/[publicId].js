@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import LoginPromptModal from "@/components/LoginPromptModal";
 // import { astrologerData } from "@/constants/Astrologer-Home-Data";
 import { config } from "@/constants/URLConfig";
@@ -41,29 +41,37 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
   /* ── Not found ── */
   if (publicId && !astro) {
     return (
-      <PageLayout title="Astrologer Not Found" icon="🔭">
-        <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-400">
+      <PublicPageLayout
+        eyebrow="Profile"
+        title="Astrologer Not Found"
+        description="This astrologer profile is not available right now."
+      >
+        <div className="flex flex-col items-center justify-center gap-4 rounded-[24px] border border-[#eadcae] bg-white/92 py-24 text-[#60481f] shadow-[0_12px_28px_rgba(94,70,12,0.10)]">
           <span className="text-5xl">🌌</span>
           <p className="text-base">No astrologer found with this profile ID.</p>
           <button
             onClick={() => router.push("/astrologers")}
-            className="text-sm text-purple-400 hover:text-purple-300 transition"
+            className="text-sm font-bold text-[#8a6106] transition hover:text-[#211704]"
           >
             ← Back to Astrologers
           </button>
         </div>
-      </PageLayout>
+      </PublicPageLayout>
     );
   }
 
   /* ── Loading (query not hydrated yet) ── */
   if (!astro) {
     return (
-      <PageLayout title="Loading…" icon="🔭">
-        <div className="flex items-center justify-center py-24 text-gray-400 text-sm">
+      <PublicPageLayout
+        eyebrow="Profile"
+        title="Loading..."
+        description="Loading astrologer profile details."
+      >
+        <div className="flex items-center justify-center rounded-[24px] border border-[#eadcae] bg-white/92 py-24 text-sm text-[#60481f] shadow-[0_12px_28px_rgba(94,70,12,0.10)]">
           Loading profile…
         </div>
-      </PageLayout>
+      </PublicPageLayout>
     );
   }
 
@@ -73,83 +81,79 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
     <>
       {showModal && <LoginPromptModal onClose={() => setShowModal(false)} />}
 
-      <PageLayout title={astro.displayName} icon="🔭">
+      <PublicPageLayout
+        eyebrow={astro.specialization || "Astrologer profile"}
+        title={astro.displayName}
+        description={astro.bio || "View astrologer details, experience, languages, and consultation options."}
+      >
 
         <div className="max-w-2xl mx-auto flex flex-col gap-5">
 
-          {/* ── PROFILE CARD ── */}
-          <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-6 backdrop-blur-md flex flex-col items-center gap-4 text-center">
+          <div className="flex flex-col items-center gap-4 rounded-[24px] border border-[#eadcae] bg-white/92 p-6 text-center text-[#211704] shadow-[0_18px_42px_rgba(107,82,12,0.13)]">
 
-            {/* Avatar */}
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold border-2 border-purple-400/30">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#d8ce76] bg-[#211704] text-3xl font-bold text-[#dfff00]">
               {getInitials(astro.firstName, astro.lastName)}
             </div>
 
-            {/* Name */}
             <div>
-              <h2 className="text-xl font-bold">{astro.displayName}</h2>
-              <p className="text-sm text-gray-400 mt-0.5">
+              <h2 className="text-xl font-extrabold">{astro.displayName}</h2>
+              <p className="mt-0.5 text-sm font-medium text-[#6f5930]">
                 {astro.firstName} {astro.middleName} {astro.lastName}
               </p>
             </div>
 
-            {/* Specialization + Experience */}
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 text-xs rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-300 font-medium">
+              <span className="rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-3 py-1 text-xs font-bold text-[#8a6106]">
                 {astro.specialization}
               </span>
-              <span className="px-3 py-1 text-xs rounded-full bg-white/10 border border-white/10 text-gray-300">
+              <span className="rounded-full border border-[#eee8d5] bg-[#fff8dc] px-3 py-1 text-xs font-bold text-[#60481f]">
                 {astro.yearsOfExperience}+ Years Experience
               </span>
             </div>
 
-            {/* Languages */}
             <div className="flex flex-wrap justify-center gap-1.5">
               {languages.map((lang) => (
                 <span
                   key={lang}
-                  className="text-[11px] px-2 py-0.5 bg-white/10 rounded-full text-gray-300"
+                  className="rounded-full bg-[#f4ecd0] px-2 py-1 text-[11px] font-bold text-[#5d4a1b]"
                 >
                   {lang}
                 </span>
               ))}
             </div>
 
-            {/* Bio */}
-            <p className="text-sm text-gray-400 leading-relaxed max-w-md">
+            <p className="max-w-md text-sm leading-relaxed text-[#60481f]">
               {astro.bio}
             </p>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 w-full max-w-xs pt-2">
               <button
                 onClick={handleAction}
-                className="flex-1 py-2.5 text-sm font-medium bg-white/5 rounded-xl hover:bg-white/10 border border-white/10 transition"
+                className="flex-1 rounded-full border border-[#e6ddc5] bg-[#fffdf6] py-2.5 text-sm font-bold text-[#4c493f] transition hover:border-[#d3bd7d] hover:bg-white"
               >
                 Chat
               </button>
               <button
                 onClick={handleAction}
-                className="flex-1 py-2.5 text-sm font-medium bg-purple-600 rounded-xl hover:bg-purple-700 transition shadow-[0_0_16px_rgba(139,92,246,0.3)]"
+                className="flex-1 rounded-full bg-[#dfff00] py-2.5 text-sm font-bold text-[#312d1e] shadow-[0_16px_30px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
               >
                 Call
               </button>
             </div>
           </div>
 
-          {/* ── DETAILS CARD ── */}
-          <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
-            <p className="text-[14px] text-gray-400 font-semibold uppercase tracking-widest mb-4">
+          <div className="rounded-[24px] border border-[#eadcae] bg-white/92 p-5 text-[#211704] shadow-[0_12px_28px_rgba(94,70,12,0.10)]">
+            <p className="mb-4 text-[14px] font-extrabold uppercase tracking-widest text-[#8a6106]">
               Profile Details
             </p>
 
             <div className="grid grid-cols-2 gap-3">
               {INFO_ITEMS.map(({ label, key }) => (
-                <div key={key} className="bg-white/5 rounded-xl px-4 py-3">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <div key={key} className="rounded-xl bg-[#fff8dc] px-4 py-3">
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#8a7a55]">
                     {label}
                   </p>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-semibold">
                     {astro[key] || "—"}
                   </p>
                 </div>
@@ -158,7 +162,7 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
           </div>
 
         </div>
-      </PageLayout>
+      </PublicPageLayout>
     </>
   );
 }

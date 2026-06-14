@@ -1,5 +1,5 @@
 "use client";
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import { useState } from "react";
 
 const guides = [
@@ -15,28 +15,31 @@ export default function VoiceGuidancePage() {
   const [playing, setPlaying] = useState(null);
 
   return (
-    <PageLayout title="Voice Guidance" icon="🎙️">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <PublicPageLayout
+      eyebrow="Voice guidance"
+      title="Call with Astrologer"
+      description="Browse short voice-led guidance cards and start the flow that feels most relevant right now."
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {guides.map((g) => (
-          <div key={g.title} className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-5 flex flex-col gap-3 hover:border-purple-500/30 transition">
+          <div key={g.title} className="flex flex-col gap-3 rounded-[22px] border border-[#eadcae] bg-white/92 p-5 text-[#211704] shadow-[0_14px_32px_rgba(94,70,12,0.10)] transition hover:-translate-y-0.5 hover:border-[#d8ce76]">
             <div className="flex items-start justify-between">
               <span className="text-3xl">{g.icon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-300">
+              <span className="rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-2 py-1 text-[10px] font-bold text-[#8a6106]">
                 {g.category}
               </span>
             </div>
             <div>
-              <h3 className="text-sm font-semibold">{g.title}</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Duration: {g.duration}</p>
+              <h3 className="text-sm font-extrabold">{g.title}</h3>
+              <p className="mt-0.5 text-xs font-medium text-[#6f5930]">Duration: {g.duration}</p>
             </div>
 
-            {/* Fake waveform */}
             <div className="flex items-center gap-0.5 h-6">
               {Array.from({ length: 24 }).map((_, i) => (
                 <div
                   key={i}
                   className={`flex-1 rounded-full transition-all duration-300 ${
-                    playing === g.title ? "bg-purple-500" : "bg-white/20"
+                    playing === g.title ? "bg-[#b88a00]" : "bg-[#ead783]"
                   }`}
                   style={{ height: `${20 + Math.sin(i * 0.8) * 14}px` }}
                 />
@@ -45,10 +48,10 @@ export default function VoiceGuidancePage() {
 
             <button
               onClick={() => setPlaying(playing === g.title ? null : g.title)}
-              className={`w-full py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition ${
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition ${
                 playing === g.title
-                  ? "bg-purple-700 text-white"
-                  : "bg-purple-600 hover:bg-purple-700 text-white"
+                  ? "bg-[#211704] text-white"
+                  : "bg-[#dfff00] text-[#312d1e] hover:bg-[#cdf000]"
               }`}
             >
               {playing === g.title ? "⏸ Pause" : "▶ Play"}
@@ -56,6 +59,6 @@ export default function VoiceGuidancePage() {
           </div>
         ))}
       </div>
-    </PageLayout>
+    </PublicPageLayout>
   );
 }

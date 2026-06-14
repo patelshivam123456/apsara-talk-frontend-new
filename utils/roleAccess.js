@@ -8,6 +8,22 @@ export const ASTROLOGER_ALLOWED_ROUTES = new Set([
   "/activity",
 ]);
 
+const PUBLIC_ROUTE_PREFIXES = [
+  "/services/",
+  "/astrologers/",
+];
+
+const PUBLIC_ROUTES = new Set([
+  "/",
+  "/astrologers",
+  "/horoscope",
+  "/kundli",
+  "/compatibility",
+  "/ask-universe",
+  "/voice-guidance",
+  "/saved-insights",
+]);
+
 export function normalizeRoles(value) {
   if (!value) {
     return [];
@@ -51,6 +67,13 @@ export function getProfileRoute(roles = []) {
 }
 
 export function canAccessRoute(pathname, roles = []) {
+  if (
+    PUBLIC_ROUTES.has(pathname) ||
+    PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  ) {
+    return true;
+  }
+
   if (!roles.length || hasRole(roles, ADMIN_ROLE)) {
     return true;
   }

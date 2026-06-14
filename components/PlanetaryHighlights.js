@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { useRouter } from "next/router";
 import { useLanguage } from "@/context/LanguageContext";
 
 const planets = [
@@ -41,6 +42,7 @@ export default function PlanetaryHighlights() {
   const { isLoggedIn } = useSelector(
     (state) => state.auth
   );
+  const router = useRouter();
   const { t } = useLanguage();
   const visiblePlanets = isLoggedIn ? planets.slice(0, 3) : planets.slice(0, 3);
 
@@ -56,7 +58,10 @@ export default function PlanetaryHighlights() {
               {t("planet.title")}
             </h2>
           </div>
-          <button className="inline-flex  shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000]">
+          <button
+            onClick={() => router.push("/services/planetary-highlights")}
+            className="hidden shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000] sm:inline-flex"
+          >
             {t("quick.viewAll")} →
           </button>
         </div>
@@ -69,6 +74,7 @@ export default function PlanetaryHighlights() {
           {visiblePlanets.map((planet) => (
             <div
               key={planet.nameKey}
+              onClick={() => router.push("/services/planetary-highlights")}
               className="group cursor-pointer flex min-h-[104px] items-center gap-4 rounded-[16px] border border-[#ffffbf]/85 bg-[#ffffbf]/20 p-4 shadow-md transition hover:-translate-y-0.5 hover:border-[#ffffbf] hover:bg-[#ffffbf]/20 hover:shadow-[0_16px_34px_rgba(126,98,10,0.18)]"
             >
               <div
@@ -99,6 +105,12 @@ export default function PlanetaryHighlights() {
             </div>
           ))}
         </div>
+        <button
+          onClick={() => router.push("/services/planetary-highlights")}
+          className="mt-4 inline-flex w-full shrink-0 items-center justify-center rounded-full bg-[#dfff00] px-4 py-3 text-xs font-bold text-[#312d1e] transition hover:bg-[#cdf000] sm:hidden"
+        >
+          {t("quick.viewAll")} →
+        </button>
       </div>
     </section>
   );

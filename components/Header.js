@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useApp } from "@/context/AppContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { slugifyServiceLabel } from "@/constants/servicePages";
 import { logout } from "@/redux/slices/authSlice";
 import { clearServerSession } from "@/utils/authFetch";
 import {
@@ -20,51 +21,57 @@ import {
   getUserRoles,
 } from "@/utils/roleAccess";
 
-const consultationItems = [
-  { label: "Chat with Astrologer", route: "/chat" },
-  { label: "Call with Astrologer", route: "/voice-guidance" },
-];
+const withServiceRoutes = (labels) =>
+  labels.map((label) => ({
+    label,
+    route: `/services/${slugifyServiceLabel(label)}`,
+  }));
 
-const horoscopeItems = [
-  { label: "Daily Horoscope", route: "/horoscope" },
-  { label: "Tomorrow's Horoscope", route: "/horoscope" },
-  { label: "Yesterday's Horoscope", route: "/horoscope" },
-  { label: "Weekly Horoscope", route: "/horoscope" },
-  { label: "Monthly Horoscope", route: "/horoscope" },
-  { label: "Yearly Horoscope", route: "/horoscope" },
-];
+const consultationItems = withServiceRoutes([
+  "Chat with Astrologer",
+  "Call with Astrologer",
+]);
 
-const freeServiceItems = [
-  { label: "Free Kundli", route: "/kundli" },
-  { label: "Kundli Matching", route: "/kundli" },
-  { label: "Compatibility", route: "/compatibility" },
-  { label: "Tarot", route: "/ask-universe" },
-];
+const horoscopeItems = withServiceRoutes([
+  "Daily Horoscope",
+  "Tomorrow's Horoscope",
+  "Yesterday's Horoscope",
+  "Weekly Horoscope",
+  "Monthly Horoscope",
+  "Yearly Horoscope",
+]);
 
-const calculatorItems = [
-  { label: "Love Calculator", route: "/compatibility" },
-  { label: "Numerology Calculator", route: "/ask-universe" },
-  { label: "Rising Sign Calculator", route: "/kundli" },
-  { label: "Dasha Calculator", route: "/kundli" },
-  { label: "Mangal Dosha Calculator", route: "/kundli" },
-  { label: "Moon Phase Calculator", route: "/horoscope" },
-  { label: "Flames Calculator", route: "/compatibility" },
-  { label: "Friendship Calculator", route: "/compatibility" },
-  { label: "Transit Chart Calculator", route: "/kundli" },
-  { label: "Name Compatibility Calculator", route: "/compatibility" },
-];
+const freeServiceItems = withServiceRoutes([
+  "Free Kundli",
+  "Kundli Matching",
+  "Compatibility",
+  "Tarot",
+]);
 
-const panchangItems = [
-  { label: "Today Panchang", route: "/horoscope" },
-  { label: "Rahu Kaal", route: "/horoscope" },
-  { label: "Choghadiya", route: "/horoscope" },
-  { label: "Tithi", route: "/horoscope" },
-  { label: "Vaar", route: "/horoscope" },
-  { label: "Hora", route: "/horoscope" },
-  { label: "Karana", route: "/horoscope" },
-  { label: "Tomorrow Panchang", route: "/horoscope" },
-  { label: "Numerology", route: "/ask-universe" },
-];
+const calculatorItems = withServiceRoutes([
+  "Love Calculator",
+  "Numerology Calculator",
+  "Rising Sign Calculator",
+  "Dasha Calculator",
+  "Mangal Dosha Calculator",
+  "Moon Phase Calculator",
+  "Flames Calculator",
+  "Friendship Calculator",
+  "Transit Chart Calculator",
+  "Name Compatibility Calculator",
+]);
+
+const panchangItems = withServiceRoutes([
+  "Today Panchang",
+  "Rahu Kaal",
+  "Choghadiya",
+  "Tithi",
+  "Vaar",
+  "Hora",
+  "Karana",
+  "Tomorrow Panchang",
+  "Numerology",
+]);
 
 function getMenuGroups() {
   return [
@@ -194,13 +201,13 @@ export default function Header({ profileData }) {
                     onClick={() =>
                       setActiveMenu(activeMenu === group.label ? null : group.label)
                     }
-                    className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                    className={`rounded-full px-3 py-2 text-sm font-medium transition flex items-center ${
                       activeMenu === group.label
                         ? "bg-[#fbf8cc] text-[#4a4844] shadow-sm ring-1 ring-[#d8ce76]"
                         : "text-[#5c5952] hover:bg-[#fbf8cc]"
                     }`}
                   >
-                    {group.label}⌄
+                    {group.label}&nbsp;<div className="text-[11px] text-[#dfff00]">▼</div>
                   </button>
 
                   {activeMenu === group.label && (
@@ -295,9 +302,23 @@ export default function Header({ profileData }) {
                 ) : (
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="rounded-full bg-[#eef000] px-4 py-2 text-xs font-bold text-[#3f3a15]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef000] text-[#3f3a15] ring-2 ring-[#d9db00]"
+                    aria-label="Open login menu"
                   >
-                    Login
+                    <svg
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                      <path d="m10 17 5-5-5-5" />
+                      <path d="M15 12H3" />
+                    </svg>
                   </button>
                 )}
 
@@ -405,6 +426,24 @@ export default function Header({ profileData }) {
             </div>
 
             <div className="space-y-2 px-4 py-4">
+              <div className="rounded-2xl border border-[#eee8d5] bg-[#fbf8cc] p-3">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-[#8a6106]">
+                  Language
+                </label>
+                <select
+                  value={language}
+                  onChange={(event) => setLanguage(event.target.value)}
+                  className="h-10 w-full rounded-full border border-[#d8ce76] bg-white px-3 text-xs font-semibold text-[#4d4a45] outline-none"
+                  aria-label="Select language"
+                >
+                  {languages.map((item) => (
+                    <option key={item.code} value={item.code}>
+                      {item.nativeLabel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {menuGroups.map((group) => (
                 <div key={group.label}>
                   <button

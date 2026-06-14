@@ -15,19 +15,39 @@ const footerLinks = [
 const footerColumns = [
   {
     title: "Consultations",
-    links: ["Tomorrow's Horoscope", "Weekly Horoscope", "Monthly Horoscope", "Yearly Horoscope"],
+    links: [
+      { label: "Tomorrow's Horoscope", route: "/services/tomorrows-horoscope" },
+      { label: "Weekly Horoscope", route: "/services/weekly-horoscope" },
+      { label: "Monthly Horoscope", route: "/services/monthly-horoscope" },
+      { label: "Yearly Horoscope", route: "/services/yearly-horoscope" },
+    ],
   },
   {
     title: "Important Links",
-    links: ["How to read kundali", "Chat with Astrologer", "Talk to Astrologer", "Astrology Yoga"],
+    links: [
+      { label: "How to read kundali", route: "/kundli" },
+      { label: "Chat with Astrologer", route: "/services/chat-with-astrologer" },
+      { label: "Talk to Astrologer", route: "/services/call-with-astrologer" },
+      { label: "Astrology Yoga", route: "/services/personal-growth-guidance" },
+    ],
   },
   {
     title: "Astrologer",
-    links: ["Astrologer Login", "Astrologer Registration", "Contact us", "Support"],
+    links: [
+      { label: "Astrologer Login", route: "/astrologer-login" },
+      { label: "Astrologer Registration", route: "/astrologer-register" },
+      { label: "Contact us", route: "/services/chat-with-astrologer" },
+      { label: "Support", route: "/services/chat-with-astrologer" },
+    ],
   },
   {
     title: "Secure",
-    links: ["Private & Confidential", "Verified Astrologers", "Secure Payments", "Trusted Guidance"],
+    links: [
+      { label: "Private & Confidential", route: "/services/chat-with-astrologer" },
+      { label: "Verified Astrologers", route: "/astrologers" },
+      { label: "Secure Payments", route: "/wallet" },
+      { label: "Trusted Guidance", route: "/services/love-guidance" },
+    ],
   },
 ];
 
@@ -106,15 +126,16 @@ export default function Footer() {
               <div className="mt-4 space-y-3">
                 {column.links.map((link) => (
                   <button
-                    key={link}
+                    key={link.label}
                     type="button"
+                    onClick={() => router.push(link.route)}
                     className={`block text-left text-xs transition ${
                       isNight
                         ? "text-[#cfc3a2] hover:text-white"
                         : "text-[#6f5930] hover:text-[#211704]"
                     }`}
                   >
-                    {link}
+                    {link.label}
                   </button>
                 ))}
               </div>

@@ -1,5 +1,5 @@
 "use client";
-import PageLayout from "@/components/PageLayout";
+import PublicPageLayout from "@/components/PublicPageLayout";
 import { useState } from "react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -271,7 +271,11 @@ export default function KundliPage() {
   };
 
   return (
-    <PageLayout title="Kundli / Reports" icon="📜">
+    <PublicPageLayout
+      eyebrow="Birth chart"
+      title="Kundli / Reports"
+      description="Enter birth details to generate a Vedic-style chart with planetary positions, house details, and dasha sequence."
+    >
 
       {/* ── Input Form ────────────────────────────────────────── */}
       <div className="bg-[#0f1535]/80 border border-white/10 rounded-2xl p-6 mb-6 max-w-xl">
@@ -499,6 +503,6 @@ export default function KundliPage() {
 
         </div>
       )}
-    </PageLayout>
+    </PublicPageLayout>
   );
 }

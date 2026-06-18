@@ -267,7 +267,7 @@ export default function LoginPage({ mode = "client" }) {
                   setForgotPasswordOpen(false);
                   setForgotPasswordError("");
                 }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-100 text-stone-500 transition hover:border-amber-300 hover:text-stone-900"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d8ce76] bg-[#fbf8cc] text-stone-500 transition hover:bg-[#f5efbf] hover:text-stone-900"
                 aria-label="Close forgot password popup"
               >
                 x
@@ -305,7 +305,7 @@ export default function LoginPage({ mode = "client" }) {
                   setForgotPasswordError("");
                 }}
                 disabled={isSendingReset}
-                className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-300 hover:text-amber-900 disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-9 rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-4 text-sm font-black text-[#3f3a15] transition hover:bg-[#f5efbf] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Close
               </button>
@@ -313,7 +313,7 @@ export default function LoginPage({ mode = "client" }) {
                 type="button"
                 onClick={handleForgotPassword}
                 disabled={isSendingReset}
-                className="flex h-9 min-w-24 items-center justify-center gap-2 rounded-md bg-amber-700 px-4 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-9 min-w-24 items-center justify-center gap-2 rounded-full bg-[#dfff00] px-5 text-sm font-black text-[#211704] shadow-[0_10px_24px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSendingReset ? (
                   <>
@@ -427,7 +427,7 @@ export default function LoginPage({ mode = "client" }) {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-amber-700 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#dfff00] text-sm font-black text-[#211704] shadow-[0_14px_26px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoggingIn ? (
                 <>

@@ -341,7 +341,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => router.push("/signup?type=astrologer")}
-              className="group rounded-lg border border-amber-100 bg-[#fffbf5] p-4 text-left shadow-sm transition hover:border-amber-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="group rounded-2xl border border-[#d8ce76] bg-[#fbf8cc] p-4 text-left shadow-[0_10px_24px_rgba(151,165,0,0.12)] transition hover:bg-[#f5efbf] focus:outline-none focus:ring-2 focus:ring-[#dfff00]/40"
             >
               <span className="flex items-start justify-between gap-4">
                 <span>
@@ -361,7 +361,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => router.push("/signup?type=client")}
-              className="group rounded-lg border border-amber-100 bg-[#fffbf5] p-4 text-left shadow-sm transition hover:border-amber-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="group rounded-2xl border border-[#d8ce76] bg-[#fbf8cc] p-4 text-left shadow-[0_10px_24px_rgba(151,165,0,0.12)] transition hover:bg-[#f5efbf] focus:outline-none focus:ring-2 focus:ring-[#dfff00]/40"
             >
               <span className="flex items-start justify-between gap-4">
                 <span>
@@ -449,7 +449,7 @@ export default function RegisterPage() {
                 setRegistrationType("");
                 router.push("/register");
               }}
-              className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm text-stone-700 shadow-sm transition hover:border-amber-400 hover:text-amber-800"
+              className="h-9 rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-4 text-sm font-black text-[#3f3a15] shadow-sm transition hover:bg-[#f5efbf]"
             >
               {t("register.changeType")}
             </button>
@@ -605,7 +605,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-amber-700 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#dfff00] text-sm font-black text-[#211704] shadow-[0_14px_26px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <>

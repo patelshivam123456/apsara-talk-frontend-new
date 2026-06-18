@@ -77,8 +77,8 @@ export default function OtpVerificationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 px-4">
-      <div className="w-full max-w-md bg-white px-8 py-7 shadow-xl shadow-stone-900/20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/30 px-3 py-4">
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white px-4 py-5 shadow-xl shadow-stone-900/20 sm:px-8 sm:py-7">
         <p className="text-sm font-semibold text-stone-800">
           ApsaraAstro Verification
         </p>
@@ -90,7 +90,7 @@ export default function OtpVerificationModal({
           <span className="font-semibold text-stone-950">{email}</span>
         </p>
 
-        <div className="mt-3 flex max-w-full gap-0.5 overflow-x-auto pb-1">
+        <div className="mt-3 grid max-w-full grid-cols-6 gap-1.5 sm:gap-0.5">
           {Array.from({ length: OTP_LENGTH }).map((_, index) => (
             <input
               key={index}
@@ -105,7 +105,7 @@ export default function OtpVerificationModal({
               onKeyDown={(event) => handleKeyDown(index, event)}
               onPaste={handlePaste}
               aria-label={`OTP digit ${index + 1}`}
-              className={`h-12 w-12 shrink-0 border bg-white text-center text-lg font-semibold text-stone-950 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 ${
+              className={`h-11 min-w-0 border bg-white text-center text-lg font-semibold text-stone-950 outline-none transition focus:border-[#d8ce76] focus:ring-2 focus:ring-[#dfff00]/30 sm:h-12 ${
                 error ? "border-red-500" : "border-stone-400"
               }`}
               maxLength={1}
@@ -115,14 +115,14 @@ export default function OtpVerificationModal({
 
         {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
 
-        <div className="mt-6 flex items-center justify-between gap-4">
-          <Link href={`/signup?type=${signupType}`} className="text-xs text-blue-600">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <Link href={`/signup?type=${signupType}`} className="text-xs font-semibold text-[#5f5f00]">
             Didn&apos;t get OTP or try other username?
           </Link>
           <button
             type="button"
             onClick={onVerify}
-            className="h-8 rounded-full bg-blue-600 px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="h-9 rounded-full bg-[#dfff00] px-5 text-xs font-black text-[#211704] shadow-[0_10px_24px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
           >
             Verify
           </button>

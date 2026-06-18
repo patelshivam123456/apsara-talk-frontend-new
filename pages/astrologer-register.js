@@ -662,7 +662,7 @@ export default function AstrologerRegisterPage() {
                   type="button"
                   onClick={goBack}
                   disabled={activeTab === 0 || loading}
-                  className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm text-stone-700 shadow-sm transition hover:border-amber-400 hover:text-amber-800 disabled:opacity-40 disabled:hover:border-amber-200 disabled:hover:text-stone-700"
+                  className="h-9 rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-4 text-sm font-black text-[#3f3a15] shadow-sm transition hover:bg-[#f5efbf] disabled:opacity-40"
                 >
                   {t("astroReg.backButton")}
                 </button>
@@ -670,7 +670,7 @@ export default function AstrologerRegisterPage() {
                   <button
                     type="button"
                     onClick={goNext}
-                    className="h-9 rounded-md bg-amber-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800"
+                    className="h-9 rounded-full bg-[#dfff00] px-5 text-sm font-black text-[#211704] shadow-[0_10px_24px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
                   >
                     {t("astroReg.continue")}
                   </button>
@@ -678,7 +678,7 @@ export default function AstrologerRegisterPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex h-9 items-center justify-center gap-2 rounded-md bg-amber-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex h-9 items-center justify-center gap-2 rounded-full bg-[#dfff00] px-5 text-sm font-black text-[#211704] shadow-[0_10px_24px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? (
                       <>

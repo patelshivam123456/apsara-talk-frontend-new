@@ -102,6 +102,9 @@ export default function LoginPage({ mode = "client" }) {
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordError, setForgotPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const validate = () => {
@@ -196,18 +199,16 @@ export default function LoginPage({ mode = "client" }) {
   };
 
   const handleForgotPassword = async () => {
-    const username = formData.username.trim();
+    const username = forgotPasswordEmail.trim();
 
     if (!username) {
-      setErrors((prev) => ({
-        ...prev,
-        username: t("auth.usernameRequired"),
-      }));
+      setForgotPasswordError(t("auth.usernameRequired"));
       return;
     }
 
     try {
       setIsSendingReset(true);
+      setForgotPasswordError("");
       const res = await api.post("/authorization/auth/forgot-password", null, {
         params: { username },
       });
@@ -215,8 +216,10 @@ export default function LoginPage({ mode = "client" }) {
       if (!res?.success) {
         throw new Error(res?.message || t("auth.forgotPasswordFailed"));
       }
-    console.log(res.message)
+
       toast.success(res?.message || t("auth.forgotPasswordSent"));
+      setForgotPasswordOpen(false);
+      setForgotPasswordEmail("");
     } catch (error) {
       toast.error(
         error?.response?.data?.errorDescription ||
@@ -243,6 +246,88 @@ export default function LoginPage({ mode = "client" }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
       <ToastContainer position="top-right" autoClose={2500} />
+      {forgotPasswordOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/30 px-4">
+          <div className="w-full max-w-md rounded-lg border border-amber-200 bg-white p-5 shadow-xl shadow-stone-900/20">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase text-amber-700">
+                  {t("auth.forgotPassword")}
+                </p>
+                <h2 className="mt-1 text-xl font-semibold text-stone-950">
+                  Reset your password
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-stone-600">
+                  Enter your user email and we will send a reset link.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotPasswordOpen(false);
+                  setForgotPasswordError("");
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-100 text-stone-500 transition hover:border-amber-300 hover:text-stone-900"
+                aria-label="Close forgot password popup"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs font-medium text-stone-700">
+                User Email
+              </label>
+              <input
+                type="email"
+                value={forgotPasswordEmail}
+                onChange={(event) => {
+                  setForgotPasswordEmail(event.target.value);
+                  setForgotPasswordError("");
+                }}
+                className={`mt-1 h-10 w-full rounded-sm border bg-white px-3 text-sm text-stone-900 shadow-sm shadow-amber-900/10 outline-none transition placeholder:text-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/15 ${
+                  forgotPasswordError ? "border-red-500" : "border-amber-100"
+                }`}
+                placeholder="Enter user email"
+              />
+              {forgotPasswordError && (
+                <p className="mt-1 text-xs text-red-600">
+                  {forgotPasswordError}
+                </p>
+              )}
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotPasswordOpen(false);
+                  setForgotPasswordError("");
+                }}
+                disabled={isSendingReset}
+                className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm font-semibold text-stone-700 transition hover:border-amber-300 hover:text-amber-900 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={isSendingReset}
+                className="flex h-9 min-w-24 items-center justify-center gap-2 rounded-md bg-amber-700 px-4 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSendingReset ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Sending...
+                  </>
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10 md:grid-cols-[0.9fr_1.1fr]">
 
         {/* LEFT IMAGE */}
@@ -326,13 +411,15 @@ export default function LoginPage({ mode = "client" }) {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={handleForgotPassword}
+                onClick={() => {
+                  setForgotPasswordEmail(formData.username);
+                  setForgotPasswordError("");
+                  setForgotPasswordOpen(true);
+                }}
                 disabled={isSendingReset}
                 className="text-sm text-amber-800 hover:text-amber-950 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSendingReset
-                  ? t("auth.sendingResetLink")
-                  : t("auth.forgotPassword")}
+                {t("auth.forgotPassword")}
               </button>
             </div>
 

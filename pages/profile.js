@@ -18,7 +18,7 @@ const PROFILE_COMPLETION_FIELDS = [
   "firstName",
   "lastName",
   "email",
-  "phone",
+  "mobileNo",
   "gender",
   "dateOfBirth",
   "timeOfBirth",
@@ -149,7 +149,7 @@ export default function ProfilePage({
         middleName: formData?.middleName || "",
         lastName: formData?.lastName || "",
         email: formData?.email || "",
-        phone: formData?.phone || "",
+        mobileNo: formData?.mobileNo || "",
         address: formData?.address || "",
         city: formData?.city || "",
         state: formData?.state || "",
@@ -259,7 +259,7 @@ export default function ProfilePage({
     { label: "Middle Name", field: "middleName" },
     { label: "Last Name", field: "lastName" },
     { label: "Email", field: "email", disabled: true },
-    { label: "Mobile", field: "phone" },
+    { label: "Mobile", field: "mobileNo" },
     { label: "Gender", field: "gender" },
   ];
 
@@ -287,6 +287,12 @@ export default function ProfilePage({
     { label: "Father Name", field: "fatherName" },
     { label: "Mother Name", field: "motherName" },
     { label: "Spouse Name", field: "spouseName" },
+    {
+      label: "Spouse Relationship",
+      field: "spouseRelationship",
+      type: "select",
+      options: ["Husband", "Wife"],
+    },
     { label: "Child Name", field: "childName" },
   ];
 
@@ -300,7 +306,13 @@ export default function ProfilePage({
     background: `conic-gradient(#dfff00 ${profileCompletionPercentage * 3.6}deg, #efe6c7 0deg)`,
   };
 
-  const renderField = (label, field, disabled = false, type = "text") => (
+  const renderField = (
+    label,
+    field,
+    disabled = false,
+    type = "text",
+    options = []
+  ) => (
     <div
       key={field}
       className="rounded-[18px] border border-[#eadcae] bg-[#fffdf8] px-4 py-3 text-[#211704] transition focus-within:border-[#d8ce76] focus-within:bg-white"
@@ -309,7 +321,20 @@ export default function ProfilePage({
         {label}
       </label>
 
-      {isEditing && !disabled ? (
+      {isEditing && !disabled && type === "select" ? (
+        <select
+          value={formData?.[field] || ""}
+          onChange={(e) => handleChange(field, e.target.value)}
+          className="mt-2 h-10 w-full bg-transparent text-sm font-semibold text-[#211704] outline-none"
+        >
+          <option value="">Select</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      ) : isEditing && !disabled ? (
         <input
           type={type}
           value={formData?.[field] || ""}
@@ -332,8 +357,8 @@ export default function ProfilePage({
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {fields.map(({ label, field, disabled, type }) =>
-          renderField(label, field, disabled, type)
+        {fields.map(({ label, field, disabled, type, options }) =>
+          renderField(label, field, disabled, type, options)
         )}
       </div>
     </section>

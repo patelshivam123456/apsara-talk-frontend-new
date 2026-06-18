@@ -222,7 +222,7 @@ export default function Header({ profileData }) {
                         <button
                           key={`${group.label}-${item.label}`}
                           onClick={() => goTo(item.route)}
-                          className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[#4d4a45] transition hover:bg-[#fbf8df] hover:text-[#111]"
+                          className="block w-full rounded-xl px-3 py-2.5 text-left text-sm text-[#4d4a45] transition hover:bg-[#fbf8df] hover:text-[#111]"
                         >
                           {item.label}
                         </button>
@@ -234,13 +234,13 @@ export default function Header({ profileData }) {
 
               <button
                 onClick={() => goTo("/astrologers")}
-                className="rounded-full px-3 py-2 text-sm font-medium text-[#5c5952] transition hover:bg-[#fbf8cc]"
+                className="rounded-full px-3 py-2 text-sm  text-[#5c5952] transition hover:bg-[#fbf8cc]"
               >
                 Shop
               </button>
               <button
                 onClick={() => goTo("/saved-insights")}
-                className="rounded-full px-3 py-2 text-sm font-medium text-[#5c5952] transition hover:bg-[#fbf8cc]"
+                className="rounded-full px-3 py-2 text-sm  text-[#5c5952] transition hover:bg-[#fbf8cc]"
               >
                 Blog
               </button>
@@ -259,7 +259,7 @@ export default function Header({ profileData }) {
               <select
                 value={language}
                 onChange={(event) => setLanguage(event.target.value)}
-                className="hidden h-9 rounded-full border border-[#eee8d5] bg-white px-3 text-xs font-semibold text-[#4d4a45] outline-none lg:block"
+                className="hidden h-9 rounded-full border border-[#eee8d5] bg-white px-1.5 text-xs font-semibold text-[#4d4a45] outline-none lg:block"
                 aria-label="Select language"
               >
                 {languages.map((item) => (

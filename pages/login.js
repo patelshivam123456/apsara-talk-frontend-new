@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useDispatch } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import api from "@/utils/api";
 import { stripAuthFields } from "@/utils/authState";
 import {
@@ -101,6 +101,7 @@ export default function LoginPage({ mode = "client" }) {
     password: "",
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const validate = () => {
@@ -193,6 +194,40 @@ export default function LoginPage({ mode = "client" }) {
       setIsLoggingIn(false);
     }
   };
+
+  const handleForgotPassword = async () => {
+    const username = formData.username.trim();
+
+    if (!username) {
+      setErrors((prev) => ({
+        ...prev,
+        username: t("auth.usernameRequired"),
+      }));
+      return;
+    }
+
+    try {
+      setIsSendingReset(true);
+      const res = await api.post("/authorization/auth/forgot-password", null, {
+        params: { username },
+      });
+
+      if (!res?.success) {
+        throw new Error(res?.message || t("auth.forgotPasswordFailed"));
+      }
+    console.log(res.message)
+      toast.success(res?.message || t("auth.forgotPasswordSent"));
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.errorDescription ||
+          error?.response?.data?.message ||
+          error?.message ||
+          t("auth.forgotPasswordFailed")
+      );
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
 //  const handleLogin = (e) => {
 //     e.preventDefault();
 
@@ -207,6 +242,7 @@ export default function LoginPage({ mode = "client" }) {
 //   };
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
+      <ToastContainer position="top-right" autoClose={2500} />
       <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10 md:grid-cols-[0.9fr_1.1fr]">
 
         {/* LEFT IMAGE */}
@@ -290,10 +326,13 @@ export default function LoginPage({ mode = "client" }) {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => router.push("/reset-password")}
-                className="text-sm text-amber-800 hover:text-amber-950"
+                onClick={handleForgotPassword}
+                disabled={isSendingReset}
+                className="text-sm text-amber-800 hover:text-amber-950 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {t("auth.forgotPassword")}
+                {isSendingReset
+                  ? t("auth.sendingResetLink")
+                  : t("auth.forgotPassword")}
               </button>
             </div>
 

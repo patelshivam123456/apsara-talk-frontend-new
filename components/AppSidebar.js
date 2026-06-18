@@ -92,7 +92,7 @@ export default function AppSidebar({ currentRoute }) {
             <div className="w-9 h-9 rounded-full border border-[#ffb86c] flex items-center justify-center text-[#ffb86c] text-lg">
               ✦
             </div>
-            <span className="text-sm font-semibold text-white">ApsaraTalk</span>
+            <span className="text-sm font-semibold text-white">ApsaraAstro</span>
           </div>
           <button
             onClick={() => setOpen(false)}

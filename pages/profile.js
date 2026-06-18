@@ -504,7 +504,7 @@ export default function ProfilePage({
             <div className="mb-4">
               <h3 className="text-base font-extrabold text-[#211704]">Preferences</h3>
               <p className="mt-1 text-sm text-[#60481f]">
-                Control how ApsaraTalk keeps you updated.
+                Control how ApsaraAstro keeps you updated.
               </p>
             </div>
 

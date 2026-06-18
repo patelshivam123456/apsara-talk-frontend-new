@@ -9,9 +9,25 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "@/utils/api";
 import { useLanguage } from "@/context/LanguageContext";
+import OtpVerificationModal, { OTP_LENGTH } from "@/components/OtpVerificationModal";
 
 const CLIENT_ROLE_ID = 2;
 const textValue = (value) => value?.trim?.() || "";
+const getPendingClientSignup = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const pendingSignup = JSON.parse(
+      window.sessionStorage.getItem("apsaraPendingSignup") || "null"
+    );
+
+    return pendingSignup?.type === "client" ? pendingSignup : null;
+  } catch {
+    return null;
+  }
+};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,19 +36,25 @@ export default function RegisterPage() {
   const [registrationType, setRegistrationType] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [otpModalOpen, setOtpModalOpen] = useState(() =>
+    Boolean(getPendingClientSignup())
+  );
   const [robotChecked, setRobotChecked] = useState(false);
 
   // ALL FIELDS (UNCHANGED - for API payload)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => {
+    const pendingSignup = getPendingClientSignup();
+
+    return {
     username: "",
     password: "",
-    confirmPassword: "",
+    confirmPassword: pendingSignup?.confirmPassword || "",
     firstName: "",
     middleName: "",
     lastName: "",
 
-    email: "",
-    phone: "",
+    email: pendingSignup?.email || "",
+    phone: pendingSignup?.phone || "",
 
     address: "",
     city: "",
@@ -66,6 +88,15 @@ export default function RegisterPage() {
     spouseRelationship: "",
 
     childName: "",
+
+    otp: pendingSignup?.otp || "",
+    ...(pendingSignup
+      ? {
+          username: pendingSignup.email || "",
+          password: pendingSignup.password || "",
+        }
+      : {}),
+    };
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -97,6 +128,7 @@ export default function RegisterPage() {
       placeOfBirth: t("register.birthPlace"),
       password: t("auth.password"),
       confirmPassword: t("register.confirmPassword"),
+      otp: t("signup.otp"),
     };
 
     const requiredFields = Object.keys(fieldLabels);
@@ -132,6 +164,10 @@ export default function RegisterPage() {
       newErrors.confirmPassword = t("register.passwordsMismatch");
     }
 
+    if (formData.otp && !new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+      newErrors.otp = `OTP must be ${OTP_LENGTH} digits`;
+    }
+
     // DOB basic check
     if (formData.dateOfBirth && isNaN(Date.parse(formData.dateOfBirth))) {
       newErrors.dateOfBirth = t("register.validDob");
@@ -144,7 +180,12 @@ export default function RegisterPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+        setOtpModalOpen(true);
+      }
+      return;
+    }
 
     setLoading(true);
 
@@ -152,6 +193,7 @@ export default function RegisterPage() {
       const payload = {
         username: textValue(formData.username),
         password: formData.password,
+        otp: textValue(formData.otp),
         roleId: CLIENT_ROLE_ID,
 
         clientDto: {
@@ -163,6 +205,7 @@ export default function RegisterPage() {
 
           email: textValue(formData.username),
           phone: textValue(formData.phone),
+          otp: textValue(formData.otp),
 
           gender: textValue(formData.gender),
 
@@ -213,21 +256,50 @@ export default function RegisterPage() {
       }
 
       toast.success(res?.message || t("register.success"));
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem("apsaraPendingSignup");
+      }
       router.push("/login");
     } catch (error) {
       console.error(error);
-      toast.error(
+      const errorMessage =
         error?.response?.data?.errorDescription ||
-          error?.response?.data?.message ||
-          error?.message ||
-          t("register.somethingWrong")
-      );
+        error?.response?.data?.message ||
+        error?.message ||
+        t("register.somethingWrong");
+
+      toast.error(errorMessage);
+
+      if (errorMessage.toLowerCase().includes("otp")) {
+        setErrors((prev) => ({ ...prev, otp: errorMessage }));
+        setOtpModalOpen(true);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (!registrationType) {
+  const handleOtpChange = (otp) => {
+    setFormData((prev) => ({ ...prev, otp }));
+    setErrors((prev) => ({ ...prev, otp: "" }));
+  };
+
+  const handleOtpVerify = () => {
+    if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+      setErrors((prev) => ({
+        ...prev,
+        otp: `OTP must be ${OTP_LENGTH} digits`,
+      }));
+      return;
+    }
+
+    setOtpModalOpen(false);
+  };
+
+  const selectedRegistrationType =
+    registrationType || (router.query.type === "client" ? "client" : "");
+
+  if (!selectedRegistrationType) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
         <div className="w-full max-w-4xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10">
@@ -235,13 +307,13 @@ export default function RegisterPage() {
           <div className="relative min-h-52 overflow-hidden bg-[#fff4df] p-5 md:p-6">
             <img
               src="/Astrosignup.jpg"
-              alt="ApsaraTalk registration"
+              alt="ApsaraAstro registration"
               className="absolute inset-0 h-full w-full object-cover opacity-25"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#fff7e8] via-[#fff7e8]/80 to-[#fff7e8]/35" />
             <div className="relative flex h-full min-h-40 flex-col justify-end">
               <p className="text-xs font-semibold uppercase text-amber-700">
-                ApsaraTalk
+                ApsaraAstro
               </p>
               <h1 className="mt-2 max-w-sm text-2xl font-semibold text-stone-950 md:text-3xl">
                 {t("register.startPath")}
@@ -268,7 +340,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 gap-3">
             <button
               type="button"
-              onClick={() => router.push("/astrologer-register")}
+              onClick={() => router.push("/signup?type=astrologer")}
               className="group rounded-lg border border-amber-100 bg-[#fffbf5] p-4 text-left shadow-sm transition hover:border-amber-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
             >
               <span className="flex items-start justify-between gap-4">
@@ -288,7 +360,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              onClick={() => setRegistrationType("client")}
+              onClick={() => router.push("/signup?type=client")}
               className="group rounded-lg border border-amber-100 bg-[#fffbf5] p-4 text-left shadow-sm transition hover:border-amber-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
             >
               <span className="flex items-start justify-between gap-4">
@@ -323,11 +395,20 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
       <ToastContainer position="top-right" autoClose={3000} />
+      <OtpVerificationModal
+        open={otpModalOpen}
+        email={formData.username}
+        otp={formData.otp}
+        error={errors.otp}
+        signupType="client"
+        onChange={handleOtpChange}
+        onVerify={handleOtpVerify}
+      />
       <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="relative hidden min-h-[560px] overflow-hidden bg-[#fff4df] lg:block">
           <img
             src="/Astrosignup.jpg"
-            alt="ApsaraTalk client signup"
+            alt="ApsaraAstro client signup"
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/25 to-transparent" />
@@ -364,7 +445,10 @@ export default function RegisterPage() {
             </div>
             <button
               type="button"
-              onClick={() => setRegistrationType("")}
+              onClick={() => {
+                setRegistrationType("");
+                router.push("/register");
+              }}
               className="h-9 rounded-md border border-amber-200 bg-white px-4 text-sm text-stone-700 shadow-sm transition hover:border-amber-400 hover:text-amber-800"
             >
               {t("register.changeType")}

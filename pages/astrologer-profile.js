@@ -271,7 +271,7 @@ export default function AstrologerProfilePage() {
                     {isOnline ? "Online now" : "Offline"}
                   </span>
                   <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white">
-                    Verified ApsaraTalk Expert
+                    Verified ApsaraAstro Expert
                   </span>
                 </div>
 

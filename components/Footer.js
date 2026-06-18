@@ -145,7 +145,7 @@ export default function Footer() {
 
         <div className="flex flex-col gap-4 border-t border-current/12 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <p className={`text-[11px] ${isNight ? "text-[#bdae86]" : "text-[#7a6a43]"}`}>
-            © 2026 ApsaraTalk. All Rights Reserved
+            © 2026 ApsaraAstro. All Rights Reserved
           </p>
 
           <div

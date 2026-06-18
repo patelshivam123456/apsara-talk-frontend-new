@@ -1,6 +1,8 @@
 "use client";
 
+import Head from "next/head";
 import { useRouter } from "next/router";
+import PlanetaryHighlights from "@/components/PlanetaryHighlights";
 import PublicPageLayout from "@/components/PublicPageLayout";
 import { servicePages, serviceSlugs } from "@/constants/servicePages";
 
@@ -337,23 +339,50 @@ export default function ServiceInnerPage({ page, slug, category }) {
     return null;
   }
 
+  if (slug === "planetary-highlights") {
+    return (
+      <>
+        <Head>
+          <title>Planetary Highlights | ApsaraAstro</title>
+          <meta
+            name="description"
+            content="Discover how current planetary movements influence your career, relationships, finances, health, and spiritual growth."
+          />
+          <meta property="og:title" content="Planetary Highlights | ApsaraAstro" />
+          <meta
+            property="og:description"
+            content="Explore today's planetary overview, transits, aspects, energy scores, remedies, and personalized astrology insights."
+          />
+          <meta property="og:type" content="website" />
+        </Head>
+        <PlanetaryHighlights fullPage />
+      </>
+    );
+  }
+
   return (
-    <PublicPageLayout
-      eyebrow={page.eyebrow}
-      title={page.title}
-      description={page.description}
-      actions={
-        <button
-          onClick={() => router.push(page.ctaRoute)}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#dfff00] px-6 py-3 text-sm font-bold text-[#312d1e] shadow-[0_16px_30px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
-        >
-          {page.cta} →
-        </button>
-      }
-    >
-      <Layout page={page} config={config} slug={slug} />
-      <DetailGrid config={config} />
-    </PublicPageLayout>
+    <>
+      <Head>
+        <title>{page.title} | ApsaraAstro</title>
+        <meta name="description" content={page.description} />
+      </Head>
+      <PublicPageLayout
+        eyebrow={page.eyebrow}
+        title={page.title}
+        description={page.description}
+        actions={
+          <button
+            onClick={() => router.push(page.ctaRoute)}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#dfff00] px-6 py-3 text-sm font-bold text-[#312d1e] shadow-[0_16px_30px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000]"
+          >
+            {page.cta} →
+          </button>
+        }
+      >
+        <Layout page={page} config={config} slug={slug} />
+        <DetailGrid config={config} />
+      </PublicPageLayout>
+    </>
   );
 }
 

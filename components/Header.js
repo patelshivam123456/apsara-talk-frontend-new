@@ -190,7 +190,7 @@ export default function Header({ profileData }) {
                 className="h-10 w-10 rounded-full object-cover ring-2 ring-[#eef000]/70"
               />
               <span className="text-lg font-bold text-[#4a4844]">
-                ApsaraTalk
+                ApsaraAstro
               </span>
             </Link>
 
@@ -414,7 +414,7 @@ export default function Header({ profileData }) {
                   height={42}
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-[#eef000]/70"
                 />
-                <span className="text-lg font-bold">ApsaraTalk</span>
+                <span className="text-lg font-bold">ApsaraAstro</span>
               </Link>
               <button
                 onClick={() => setDrawerOpen(false)}

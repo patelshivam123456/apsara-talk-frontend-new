@@ -45,7 +45,7 @@ export default function WalletPage() {
     <PublicPageLayout
       eyebrow="Wallet and payments"
       title="Add Money"
-      description="Recharge your ApsaraTalk wallet, review transaction history, and keep your balance ready for chat or call sessions."
+      description="Recharge your ApsaraAstro wallet, review transaction history, and keep your balance ready for chat or call sessions."
     >
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="space-y-4">

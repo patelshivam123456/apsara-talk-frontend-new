@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "@/utils/api";
 import { useLanguage } from "@/context/LanguageContext";
+import OtpVerificationModal, { OTP_LENGTH } from "@/components/OtpVerificationModal";
 
 const ASTROLOGER_ROLE_ID = 3;
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
@@ -34,7 +35,6 @@ const tabDescriptions = [
   "astroReg.desc4",
 ];
 const tabIcons = ["01", "02", "03", "04"];
-
 const initialFormData = {
   fullName: "",
   mobileNumber: "",
@@ -60,9 +60,25 @@ const initialFormData = {
   declarationDate: "",
   password: "",
   confirmPassword: "",
+  otp: "",
 };
 
 const textValue = (value) => value?.trim?.() || "";
+const getPendingAstrologerSignup = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const pendingSignup = JSON.parse(
+      window.sessionStorage.getItem("apsaraPendingSignup") || "null"
+    );
+
+    return pendingSignup?.type === "astrologer" ? pendingSignup : null;
+  } catch {
+    return null;
+  }
+};
 const fileMeta = (files) =>
   files.map((file) => ({
     name: file.name,
@@ -84,9 +100,24 @@ export default function AstrologerRegisterPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(0);
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState(() => {
+    const pendingSignup = getPendingAstrologerSignup();
+
+    return {
+      ...initialFormData,
+      email: pendingSignup?.email || initialFormData.email,
+      mobileNumber: pendingSignup?.phone || initialFormData.mobileNumber,
+      password: pendingSignup?.password || initialFormData.password,
+      confirmPassword:
+        pendingSignup?.confirmPassword || initialFormData.confirmPassword,
+      otp: pendingSignup?.otp || initialFormData.otp,
+    };
+  });
   const [languageDraft, setLanguageDraft] = useState("");
   const [errors, setErrors] = useState({});
+  const [otpModalOpen, setOtpModalOpen] = useState(() =>
+    Boolean(getPendingAstrologerSignup())
+  );
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -236,6 +267,15 @@ export default function AstrologerRegisterPage() {
       if (!nextErrors.pincode && !/^[0-9]{6}$/.test(formData.pincode)) {
         nextErrors.pincode = "Pincode must be 6 digits";
       }
+
+      if (!textValue(formData.otp)) {
+        nextErrors.otp = t("register.required").replace(
+          "{field}",
+          t("signup.otp")
+        );
+      } else if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+        nextErrors.otp = `OTP must be ${OTP_LENGTH} digits`;
+      }
     }
 
     if (tabIndex === 3) {
@@ -257,6 +297,12 @@ export default function AstrologerRegisterPage() {
 
   const goNext = () => {
     if (!validateTab(activeTab)) {
+      if (
+        activeTab === 0 &&
+        !new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)
+      ) {
+        setOtpModalOpen(true);
+      }
       toast.error(t("astroReg.fixFields"));
       return;
     }
@@ -271,11 +317,13 @@ export default function AstrologerRegisterPage() {
   const buildPayload = () => ({
     username: textValue(formData.email),
     password: formData.password,
+    otp: textValue(formData.otp),
     roleId: ASTROLOGER_ROLE_ID,
     astrologerDto: {
       fullName: textValue(formData.fullName),
       mobileNumber: textValue(formData.mobileNumber),
       email: textValue(formData.email),
+      otp: textValue(formData.otp),
       gender: textValue(formData.gender),
       dateOfBirth: textValue(formData.dateOfBirth),
       address: textValue(formData.fullAddress),
@@ -314,6 +362,10 @@ export default function AstrologerRegisterPage() {
 
     const allTabsValid = tabs.every((_, index) => validateTab(index));
     if (!allTabsValid) {
+      if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+        setOtpModalOpen(true);
+        setActiveTab(0);
+      }
       toast.error(t("astroReg.fixFields"));
       return;
     }
@@ -350,22 +402,59 @@ export default function AstrologerRegisterPage() {
         t("astroReg.success")
       );
 
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem("apsaraPendingSignup");
+      }
+
       setTimeout(() => router.push("/login"), 1200);
     } catch (error) {
-      toast.error(
+      const errorMessage =
         error?.response?.data?.errorDescription ||
-          error?.response?.data?.message ||
-          error?.message ||
-          t("astroReg.unableSubmit")
-      );
+        error?.response?.data?.message ||
+        error?.message ||
+        t("astroReg.unableSubmit");
+
+      toast.error(errorMessage);
+
+      if (errorMessage.toLowerCase().includes("otp")) {
+        setErrors((prev) => ({ ...prev, otp: errorMessage }));
+        setActiveTab(0);
+        setOtpModalOpen(true);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleOtpChange = (otp) => {
+    setFormData((prev) => ({ ...prev, otp }));
+    setErrors((prev) => ({ ...prev, otp: "" }));
+  };
+
+  const handleOtpVerify = () => {
+    if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+      setErrors((prev) => ({
+        ...prev,
+        otp: `OTP must be ${OTP_LENGTH} digits`,
+      }));
+      return;
+    }
+
+    setOtpModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#f6ead7] px-3 py-3 text-stone-900 md:py-5">
       <ToastContainer position="top-right" autoClose={3000} />
+      <OtpVerificationModal
+        open={otpModalOpen}
+        email={formData.email}
+        otp={formData.otp}
+        error={errors.otp}
+        signupType="astrologer"
+        onChange={handleOtpChange}
+        onVerify={handleOtpVerify}
+      />
       <div className="mx-auto max-w-5xl">
         <div className="mb-3 overflow-hidden rounded-lg border border-amber-200 bg-[#fff9ef] shadow-lg shadow-amber-900/10">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr]">

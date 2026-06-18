@@ -174,7 +174,7 @@ export default function SignupPage() {
             </div>
             <Link
               href="/register"
-              className="h-9 sm:w-[30%] rounded-md border border-amber-200 bg-white px-2 py-2 text-center text-sm text-stone-700 shadow-sm transition hover:border-amber-400 hover:text-amber-800"
+              className="h-9 rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-3 py-2 text-center text-sm font-black text-[#3f3a15] shadow-sm transition hover:bg-[#f5efbf] sm:w-[30%]"
             >
               {t("register.changeType")}
             </Link>
@@ -214,7 +214,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#c94f00] text-sm font-semibold text-white shadow-sm transition hover:bg-[#b94600] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#dfff00] text-sm font-black text-[#211704] shadow-[0_14px_26px_rgba(151,165,0,0.18)] transition hover:bg-[#cdf000] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>

@@ -54,7 +54,7 @@ export default function WalletPage() {
             <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#dfff00]">
               Current balance
             </p>
-            <h2 className="mt-4 text-5xl font-black">₹ {Number(balance || 0).toFixed(2)}</h2>
+            <h2 className="mt-4 text-3xl text-[#f4e7bd] font-black">₹ {Number(balance || 0).toFixed(2)}</h2>
             <p className="mt-3 text-sm text-[#f4e7bd]">
               Last updated: {transactions[0]?.date ?? "No transactions yet"}
             </p>

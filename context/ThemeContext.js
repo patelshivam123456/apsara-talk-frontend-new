@@ -15,11 +15,16 @@ const getResolvedTheme = (mode) => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [themeMode, setThemeMode] = useState(() => {
-    if (typeof window === "undefined") return "auto";
-    return window.localStorage.getItem("theme-mode") || "auto";
-  });
+  const [themeMode, setThemeMode] = useState("day");
   const [, setAutoTick] = useState(0);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setThemeMode(window.localStorage.getItem("theme-mode") || "auto");
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     if (themeMode !== "auto") return undefined;

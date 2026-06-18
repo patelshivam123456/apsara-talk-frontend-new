@@ -164,7 +164,12 @@ export default function SignupPage() {
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-stone-950">
                 {t("signup.title")}{" "}
-                <span className="text-rose-600">ApsaraAstro</span>
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </h1>
               <p className="mt-2 text-sm text-stone-600">
                 {isAstrologer
@@ -174,7 +179,7 @@ export default function SignupPage() {
             </div>
             <Link
               href="/register"
-              className="h-9 rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-3 py-2 text-center text-sm font-black text-[#3f3a15] shadow-sm transition hover:bg-[#f5efbf] sm:w-[30%]"
+              className="h-9 rounded-full border border-[#d8ce76] bg-[#fbf8cc] px-3 py-2 text-center text-sm font-black text-[#3f3a15] shadow-sm transition hover:bg-[#f5efbf] sm:w-[35%]"
             >
               {t("register.changeType")}
             </Link>

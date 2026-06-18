@@ -77,6 +77,7 @@ export default function ProfilePage({
 
   const [formData, setFormData] = useState(profileData || {});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [openSelectField, setOpenSelectField] = useState("");
 
   useEffect(() => {
     if (!isAuthLoaded || !isLoggedIn) {
@@ -133,10 +134,12 @@ export default function ProfilePage({
       ...prev,
       [field]: value,
     }));
+    setOpenSelectField("");
   };
 
   const handleEditToggle = () => {
     setIsEditing((prev) => !prev);
+    setOpenSelectField("");
   };
 
   const handleUpdateProfile = async () => {
@@ -260,7 +263,12 @@ export default function ProfilePage({
     { label: "Last Name", field: "lastName" },
     { label: "Email", field: "email", disabled: true },
     { label: "Mobile", field: "mobileNo" },
-    { label: "Gender", field: "gender" },
+    {
+      label: "Gender",
+      field: "gender",
+      type: "select",
+      options: ["Male", "Female", "Other"],
+    },
   ];
 
   const birthFields = [
@@ -322,27 +330,58 @@ export default function ProfilePage({
       </label>
 
       {isEditing && !disabled && type === "select" ? (
-        <select
-          value={formData?.[field] || ""}
-          onChange={(e) => handleChange(field, e.target.value)}
-          className="mt-2 h-10 w-full bg-transparent text-sm font-semibold text-[#211704] outline-none"
-        >
-          <option value="">Select</option>
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        <div className="relative mt-2">
+          <button
+            type="button"
+            onClick={() =>
+              setOpenSelectField((current) => (current === field ? "" : field))
+            }
+            className="profile-dropdown-control flex h-10 w-full items-center justify-between text-left text-sm font-semibold outline-none"
+          >
+            <span>{formData?.[field] || "Select"}</span>
+            <span aria-hidden="true" className="text-xs">
+              ▼
+            </span>
+          </button>
+
+          {openSelectField === field && (
+            <div className="profile-dropdown-menu absolute bg-white left-0 top-full z-[160] mt-1 w-full overflow-hidden rounded-sm border shadow-xl">
+              <button
+                type="button"
+                onClick={() => handleChange(field, "")}
+                className="profile-dropdown-option w-full px-3 py-2 text-left text-sm"
+              >
+                Select
+              </button>
+              {options.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handleChange(field, option)}
+                  className={`profile-dropdown-option w-full px-3 py-2 text-left text-sm ${
+                    formData?.[field] === option ? "is-selected" : ""
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       ) : isEditing && !disabled ? (
         <input
           type={type}
+          placeholder={`Enter ${label}`}
           value={formData?.[field] || ""}
           onChange={(e) => handleChange(field, e.target.value)}
           className="mt-2 h-10 w-full bg-transparent text-sm font-semibold text-[#211704] outline-none placeholder:text-[#8a7a55]"
         />
       ) : (
-        <p className="mt-2 min-h-6 break-words text-sm font-semibold text-[#211704]">
+        <p className={`mt-2 min-h-6 break-words text-sm ${
+           formData?.[field]
+           ? "font-normal text-[#211704]"
+           : "font-normal text-gray-400"
+           }`}>
           {formData?.[field] || "Not added"}
         </p>
       )}
@@ -380,7 +419,7 @@ export default function ProfilePage({
       profileData={profileData}
     >
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="w-[90%] max-w-md rounded-[24px] border border-[#eadcae] bg-white p-6 text-[#211704] shadow-xl">
             <h2 className="mb-2 text-lg font-extrabold">
               Deactivate Profile
@@ -450,16 +489,6 @@ export default function ProfilePage({
                       {isEditing ? "Cancel Editing" : "Edit Profile"}
                     </button>
 
-                    {isEditing && (
-                      <button
-                        onClick={handleUpdateProfile}
-                        disabled={isSaving}
-                        className="cursor-pointer rounded-full bg-[#211704] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#3a2909] disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {isSaving ? "Saving..." : "Save Changes"}
-                      </button>
-                    )}
-
                     <Link
                       href="/change-password"
                       className="rounded-full border border-[#d8ce76] bg-[#fffdf8] px-5 py-2.5 text-sm font-bold text-[#60481f] transition hover:bg-[#fff8dc]"
@@ -503,7 +532,7 @@ export default function ProfilePage({
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {renderSection(
-            "Account Details",
+            "Personal Details",
             "Primary identity and contact information for your account.",
             accountFields
           )}
@@ -523,6 +552,18 @@ export default function ProfilePage({
             familyFields
           )}
         </div>
+
+        {isEditing && (
+          <div className="flex justify-end">
+            <button
+              onClick={handleUpdateProfile}
+              disabled={isSaving}
+              className="w-full cursor-pointer rounded-full bg-[#dfff00] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#3a2909] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        )}
 
         <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_0.8fr]">
           <div className="rounded-[24px] border border-[#eadcae] bg-white/92 p-5 shadow-[0_18px_42px_rgba(107,82,12,0.10)]">

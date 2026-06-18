@@ -118,6 +118,7 @@ export default function AstrologerRegisterPage() {
   const [otpModalOpen, setOtpModalOpen] = useState(() =>
     Boolean(getPendingAstrologerSignup())
   );
+  const [resendOtpLoading, setResendOtpLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -443,10 +444,62 @@ export default function AstrologerRegisterPage() {
     setOtpModalOpen(false);
   };
 
+  const handleResendOtp = async () => {
+    const username = textValue(formData.email);
+    const password = formData.password;
+
+    if (!username) {
+      const message = t("auth.usernameRequired");
+      setErrors((prev) => ({ ...prev, otp: message }));
+      toast.error(message);
+      return false;
+    }
+
+    if (!password) {
+      const message = t("auth.passwordRequired");
+      setErrors((prev) => ({ ...prev, otp: message }));
+      toast.error(message);
+      return false;
+    }
+
+    try {
+      setResendOtpLoading(true);
+      const res = await api.post(
+        "/authorization/auth/sign-up",
+        { username, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+        }
+      );
+
+      if (res?.success === false) {
+        throw new Error(res?.message || "Failed to resend OTP");
+      }
+
+      toast.success(res?.message || "OTP sent successfully");
+      return true;
+    } catch (error) {
+      const message =
+        error?.response?.data?.errorDescription ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to resend OTP";
+
+      toast.error(message);
+      return false;
+    } finally {
+      setResendOtpLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f6ead7] px-3 py-3 text-stone-900 md:py-5">
       <ToastContainer position="top-right" autoClose={3000} />
       <OtpVerificationModal
+        key={`astrologer-otp-${otpModalOpen ? "open" : "closed"}-${formData.email}`}
         open={otpModalOpen}
         email={formData.email}
         otp={formData.otp}
@@ -454,6 +507,8 @@ export default function AstrologerRegisterPage() {
         signupType="astrologer"
         onChange={handleOtpChange}
         onVerify={handleOtpVerify}
+        onResend={handleResendOtp}
+        resendLoading={resendOtpLoading}
       />
       <div className="mx-auto max-w-5xl">
         <div className="mb-3 overflow-hidden rounded-lg border border-amber-200 bg-[#fff9ef] shadow-lg shadow-amber-900/10">

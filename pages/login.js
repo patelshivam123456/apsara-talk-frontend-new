@@ -247,7 +247,7 @@ export default function LoginPage({ mode = "client" }) {
     <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
       <ToastContainer position="top-right" autoClose={2500} />
       {forgotPasswordOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/30 px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-lg border border-amber-200 bg-white p-5 shadow-xl shadow-stone-900/20">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -350,8 +350,12 @@ export default function LoginPage({ mode = "client" }) {
             <h1 className="mt-1 text-2xl font-semibold text-stone-950">
               {isAstrologerLogin ? t("auth.astrologerLogin") : t("auth.loginTitle")}{" "}
               <span className="text-xl font-semibold md:text-2xl">
-                Apsara
-                <span className="text-rose-600">Talk</span>
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </span>
             </h1>
             <p className="mt-2 text-sm text-stone-600">

@@ -67,7 +67,7 @@ export default function AppSidebar({ currentRoute }) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden cursor-pointer"
+          className="fixed inset-0 z-40 cursor-pointer bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setOpen(false)}
         />
       )}
@@ -92,7 +92,10 @@ export default function AppSidebar({ currentRoute }) {
             <div className="w-9 h-9 rounded-full border border-[#ffb86c] flex items-center justify-center text-[#ffb86c] text-lg">
               ✦
             </div>
-            <span className="text-sm font-semibold text-white">ApsaraAstro</span>
+            <span className="text-sm font-semibold">
+              <span className="text-white">Apsara</span>
+              <span className="text-[#dfff00]">Astro</span>
+            </span>
           </div>
           <button
             onClick={() => setOpen(false)}

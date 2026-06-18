@@ -184,13 +184,18 @@ export default function Header({ profileData }) {
             <Link href="/" className="flex shrink-0 items-center gap-2">
               <Image
                 src="/logo_apsara.jpeg"
-                alt="Apsara Talk Logo"
+                alt="ApsaraAstro Logo"
                 width={42}
                 height={42}
                 className="h-10 w-10 rounded-full object-cover ring-2 ring-[#eef000]/70"
               />
-              <span className="text-lg font-bold text-[#4a4844]">
-                ApsaraAstro
+              <span className="text-lg font-bold">
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </span>
             </Link>
 
@@ -409,12 +414,19 @@ export default function Header({ profileData }) {
               >
                 <Image
                   src="/logo_apsara.jpeg"
-                  alt="Apsara Talk Logo"
+                  alt="ApsaraAstro Logo"
                   width={42}
                   height={42}
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-[#eef000]/70"
                 />
-                <span className="text-lg font-bold">ApsaraAstro</span>
+                <span className="text-lg font-bold">
+                  <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                    Apsara
+                  </span>
+                  <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                    Astro
+                  </span>
+                </span>
               </Link>
               <button
                 onClick={() => setDrawerOpen(false)}

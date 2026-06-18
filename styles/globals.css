@@ -506,3 +506,72 @@ select:disabled,
 [aria-disabled="true"] {
   cursor: not-allowed;
 }
+
+.profile-select {
+  color-scheme: light;
+}
+
+.profile-select option {
+  background-color: #fffdf8;
+  color: #211704;
+}
+
+.profile-select option:checked {
+  background-color: #dfff00;
+  color: #211704;
+}
+
+[data-theme="dark-gold"] .profile-select,
+[data-theme="dark-gold"] .profile-select option {
+  color: #211704 !important;
+}
+
+[data-theme="dark-gold"] .profile-select option {
+  background-color: #fffdf8 !important;
+}
+
+[data-theme="dark-gold"] .profile-select option:checked {
+  background-color: #dfff00 !important;
+}
+
+.profile-dropdown-control {
+  color: #211704;
+}
+
+.profile-dropdown-menu {
+  background-color: #fffdf8;
+  border-color: #d8ce76;
+  color: #211704;
+}
+
+.profile-dropdown-option {
+  background-color: #fffdf8;
+  color: #211704;
+}
+
+.profile-dropdown-option:hover,
+.profile-dropdown-option.is-selected {
+  background-color: #dfff00;
+  color: #211704;
+}
+
+[data-theme="dark-gold"] .profile-dropdown-control {
+  color: #fdf3e3 !important;
+}
+
+[data-theme="dark-gold"] .profile-dropdown-menu,
+[data-theme="dark-gold"] .profile-dropdown-option,
+[data-theme="dark-gold"] .profile-dropdown-option:hover,
+[data-theme="dark-gold"] .profile-dropdown-option.is-selected {
+  color: #211704 !important;
+}
+
+[data-theme="dark-gold"] .profile-dropdown-menu,
+[data-theme="dark-gold"] .profile-dropdown-option {
+  background-color: #fffdf8 !important;
+}
+
+[data-theme="dark-gold"] .profile-dropdown-option:hover,
+[data-theme="dark-gold"] .profile-dropdown-option.is-selected {
+  background-color: #dfff00 !important;
+}

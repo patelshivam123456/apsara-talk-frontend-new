@@ -10,9 +10,9 @@ const faqs = [
       "Astrology accuracy comes from thousands of years of careful observation linking planetary movements to human experiences. Experienced astrologers study birth charts that map cosmic influences at your exact birth moment, providing personalized insights rather than generic predictions for everyone.",
   },
   {
-    question: "Why Should You Choose Apsara Talk For An Astrology Horoscope?",
+    question: "Why Should You Choose ApsaraAstro For An Astrology Horoscope?",
     answer:
-      "Apsara Talk helps you connect with astrologers for focused guidance on love, career, health, family, and timing decisions.",
+      "ApsaraAstro helps you connect with astrologers for focused guidance on love, career, health, family, and timing decisions.",
   },
   {
     question: "Is Astrology Prediction True?",
@@ -25,12 +25,12 @@ const faqs = [
       "Online astrology gives you fast access to horoscope, kundli, compatibility, and personalized consultation tools from wherever you are.",
   },
   {
-    question: "How reliable is the Apsara Talk app?",
+    question: "How reliable is the ApsaraAstro app?",
     answer:
       "The experience is designed around verified profiles, private sessions, and simple wallet/session flows so you can focus on the conversation.",
   },
   {
-    question: "How much does Apsara Talk cost?",
+    question: "How much does ApsaraAstro cost?",
     answer:
       "Costs can vary by service and astrologer. Check the selected consultation or wallet screen before starting a paid session.",
   },

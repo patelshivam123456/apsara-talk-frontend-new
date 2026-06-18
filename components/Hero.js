@@ -13,7 +13,7 @@ import {
 const carouselSlides = [
   {
     src: "/Astro_Banner.jpg",
-    alt: "Apsara Talk astrology guidance banner",
+    alt: "ApsaraAstro astrology guidance banner",
     eyebrow: "Live astrology",
     title: "Instant clarity from trusted astrologers",
     body: "Chat, call, and find direction for love, career, money, and family questions.",
@@ -21,7 +21,7 @@ const carouselSlides = [
   },
   {
     src: "/Astrosignup.jpg",
-    alt: "Apsara Talk spiritual consultation banner",
+    alt: "ApsaraAstro spiritual consultation banner",
     eyebrow: "Personal readings",
     title: "Your questions deserve a clear answer",
     body: "Choose an expert, start privately, and continue only when the guidance feels right.",
@@ -29,7 +29,7 @@ const carouselSlides = [
   },
   {
     src: "/Astro_Banner.jpg",
-    alt: "Apsara Talk horoscope and birth chart banner",
+    alt: "ApsaraAstro horoscope and birth chart banner",
     eyebrow: "Daily insight",
     title: "Horoscope, kundli, and compatibility in one place",
     body: "Follow your day with warmer perspective and practical next steps.",
@@ -37,7 +37,7 @@ const carouselSlides = [
   },
   {
     src: "/Astrosignup.jpg",
-    alt: "Apsara Talk relationship and career guidance banner",
+    alt: "ApsaraAstro relationship and career guidance banner",
     eyebrow: "Private support",
     title: "Start with a free chat, continue with confidence",
     body: "A calm, simple way to connect when you need help deciding what comes next.",

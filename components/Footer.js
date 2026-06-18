@@ -87,14 +87,19 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <Image
               src="/logo_apsara.jpeg"
-              alt="Apsara Talk Logo"
+              alt="ApsaraAstro Logo"
               width={44}
               height={44}
               className="h-11 w-11 rounded-2xl object-cover ring-1 ring-white/35"
             />
             <div>
               <p className="font-extrabold">
-                Apsara<span className={isNight ? "text-[#dfff00]" : "text-[#9a6f08]"}>Talk</span>
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </p>
               <p className={`text-xs ${isNight ? "text-[#d6caa7]" : "text-[#6f5930]"}`}>
                 {t("brand.tagline")}

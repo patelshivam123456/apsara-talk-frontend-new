@@ -39,6 +39,7 @@ export default function RegisterPage() {
   const [otpModalOpen, setOtpModalOpen] = useState(() =>
     Boolean(getPendingClientSignup())
   );
+  const [resendOtpLoading, setResendOtpLoading] = useState(false);
   const [robotChecked, setRobotChecked] = useState(false);
 
   // ALL FIELDS (UNCHANGED - for API payload)
@@ -296,6 +297,57 @@ export default function RegisterPage() {
     setOtpModalOpen(false);
   };
 
+  const handleResendOtp = async () => {
+    const username = textValue(formData.username);
+    const password = formData.password;
+
+    if (!username) {
+      const message = t("auth.usernameRequired");
+      setErrors((prev) => ({ ...prev, otp: message }));
+      toast.error(message);
+      return false;
+    }
+
+    if (!password) {
+      const message = t("auth.passwordRequired");
+      setErrors((prev) => ({ ...prev, otp: message }));
+      toast.error(message);
+      return false;
+    }
+
+    try {
+      setResendOtpLoading(true);
+      const res = await api.post(
+        "/authorization/auth/sign-up",
+        { username, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+        }
+      );
+
+      if (res?.success === false) {
+        throw new Error(res?.message || "Failed to resend OTP");
+      }
+
+      toast.success(res?.message || "OTP sent successfully");
+      return true;
+    } catch (error) {
+      const message =
+        error?.response?.data?.errorDescription ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to resend OTP";
+
+      toast.error(message);
+      return false;
+    } finally {
+      setResendOtpLoading(false);
+    }
+  };
+
   const selectedRegistrationType =
     registrationType || (router.query.type === "client" ? "client" : "");
 
@@ -313,7 +365,12 @@ export default function RegisterPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#fff7e8] via-[#fff7e8]/80 to-[#fff7e8]/35" />
             <div className="relative flex h-full min-h-40 flex-col justify-end">
               <p className="text-xs font-semibold uppercase text-amber-700">
-                ApsaraAstro
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </p>
               <h1 className="mt-2 max-w-sm text-2xl font-semibold text-stone-950 md:text-3xl">
                 {t("register.startPath")}
@@ -396,6 +453,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#f6ead7] px-3 py-4 text-stone-900 md:py-6">
       <ToastContainer position="top-right" autoClose={3000} />
       <OtpVerificationModal
+        key={`client-otp-${otpModalOpen ? "open" : "closed"}-${formData.username}`}
         open={otpModalOpen}
         email={formData.username}
         otp={formData.otp}
@@ -403,6 +461,8 @@ export default function RegisterPage() {
         signupType="client"
         onChange={handleOtpChange}
         onVerify={handleOtpVerify}
+        onResend={handleResendOtp}
+        resendLoading={resendOtpLoading}
       />
       <div className="grid w-full max-w-5xl overflow-hidden rounded-lg border border-amber-200 bg-white shadow-lg shadow-amber-900/10 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="relative hidden min-h-[560px] overflow-hidden bg-[#fff4df] lg:block">
@@ -435,8 +495,12 @@ export default function RegisterPage() {
             <h1 className="mt-1 text-2xl font-semibold text-stone-950">
               {t("register.welcomeTo")}{" "}
               <span className="text-xl font-semibold md:text-2xl">
-                Apsara
-                <span className="text-rose-600">Talk</span>
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </span>
             </h1>
             <p className="mt-1 text-sm text-stone-600">
@@ -489,6 +553,7 @@ export default function RegisterPage() {
               value={formData.username}
               onChange={handleChange}
               error={errors.username}
+              disabled
             />
 
             <Input
@@ -546,6 +611,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 error={errors.password}
                 inputClassName="pr-16"
+                disabled
               />
 
               <button
@@ -567,6 +633,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 error={errors.confirmPassword}
                 inputClassName="pr-16"
+                disabled
               />
 
               <button

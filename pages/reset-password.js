@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
         <div className="relative hidden min-h-[520px] overflow-hidden bg-[#fff4df] md:block">
           <Image
             src="/Astrosignup.jpg"
-            alt="Apsara Talk password reset"
+            alt="ApsaraAstro password reset"
             fill
             sizes="(min-width: 768px) 45vw, 100vw"
             className="object-cover"
@@ -125,7 +125,12 @@ export default function ResetPasswordPage() {
             <h1 className="mt-1 text-2xl font-semibold text-stone-950">
               Change your{" "}
               <span className="text-xl font-semibold md:text-2xl">
-                Apsara<span className="text-rose-600">Talk</span>
+                <span className="text-white [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Apsara
+                </span>
+                <span className="text-[#dfff00] [text-shadow:0_1px_3px_rgba(33,23,4,0.65)]">
+                  Astro
+                </span>
               </span>{" "}
               password
             </h1>

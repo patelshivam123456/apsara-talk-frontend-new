@@ -49,7 +49,7 @@ export default function ChatPanel() {
       
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50 cursor-pointer"
+        className="absolute inset-0 cursor-pointer bg-black/50 backdrop-blur-sm"
         onClick={() => setChatOpen(false)}
       />
 

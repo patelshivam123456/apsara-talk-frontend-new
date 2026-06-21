@@ -4,6 +4,7 @@ export const CLIENT_ROLE = "ROLE_CLIENT";
 
 export const ASTROLOGER_ALLOWED_ROUTES = new Set([
   "/astrologer-profile",
+  "/losu",
   "/chat",
   "/activity",
 ]);

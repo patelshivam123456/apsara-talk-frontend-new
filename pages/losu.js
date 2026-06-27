@@ -21,6 +21,8 @@ function formatDobForApi(value) {
 }
 
 export default function LosuPage() {
+  const [fullName, setFullName] = useState("");
+  const [gender, setGender] = useState("");
   const [dob, setDob] = useState("");
   const [losuResult, setLosuResult] = useState(null);
   const [personalYearResult, setPersonalYearResult] = useState(null);
@@ -53,8 +55,60 @@ export default function LosuPage() {
     },
   ];
 
+  const summaryCardsSecond = [
+    {
+      label: "kua Number",
+      value: losuResult?.kuaNumber,
+      detail: losuResult?.driverAddedToGrid
+        ? "Added to grid"
+        : "Not added to grid",
+    },
+    {
+      label: "Name Number",
+      value: losuResult?.nameNumber,
+      detail: losuResult?.driverAddedToGrid
+        ? "Added to grid"
+        : "Not added to grid",
+    },
+    {
+      label: "Running Age",
+      value: losuResult?.runningAge,
+      detail: losuResult?.destinyAddedToGrid
+        ? "Added to grid"
+        : "Not added to grid",
+    },
+    {
+      label: "Zodiac Number",
+      value: losuResult?.zodiacNumber,
+      detail: losuResult?.destinyAddedToGrid
+        ? "Added to grid"
+        : "Not added to grid",
+    },
+    {
+      label: "Zodiac Sign",
+      value: losuResult?.zodiacSign,
+      detail: losuResult?.destinyAddedToGrid
+        ? "Added to grid"
+        : "Not added to grid",
+    },
+  ];
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!fullName.trim()) {
+      const nextMessage = "Please enter full name.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    if (!gender.trim()) {
+      const nextMessage = "Please select gender.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
 
     if (!dob.trim()) {
       const nextMessage = "Please enter date of birth.";
@@ -71,15 +125,19 @@ export default function LosuPage() {
       const normalizedDob = formatDobForApi(dob.trim());
 
       const response = await fetch(
-        "/api/astro-proxy/astrology-services/home-page/lo-su",
+        "/api/astro-proxy/astrology-services/home-page/lo-shu-grid",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ dob: normalizedDob }),
-        }
+          body: JSON.stringify({
+            dob: normalizedDob,
+            fullName: fullName.trim(),
+            gender,
+          }),
+        },
       );
       const result = await response.json();
 
@@ -101,15 +159,19 @@ export default function LosuPage() {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ dob: normalizedDob }),
-        }
+          body: JSON.stringify({
+            dob: normalizedDob,
+            fullName: fullName.trim(),
+            gender,
+          }),
+        },
       );
       const personalYearResult = await personalYearResponse.json();
 
       if (!personalYearResponse.ok) {
         throw new Error(
           personalYearResult?.message ||
-            "Unable to generate personal year details."
+            "Unable to generate personal year details.",
         );
       }
 
@@ -124,7 +186,7 @@ export default function LosuPage() {
       ) {
         throw new Error(
           personalYearResult?.message ||
-            "Invalid personal year details response."
+            "Invalid personal year details response.",
         );
       }
 
@@ -150,22 +212,67 @@ export default function LosuPage() {
         <section className="rounded-xl border border-white/10 bg-[#0f1535] p-3 shadow-lg">
           <form
             onSubmit={handleSubmit}
-            className="rounded-lg border border-white/10 bg-[#17112f] p-2.5 transition-all duration-200 hover:scale-[1.01]"
+            className="rounded-lg  p-2.5 transition-all duration-200 hover:scale-[1.01]"
           >
-            <label
-              htmlFor="losu-dob"
-              className="text-xs uppercase tracking-[0.14em] text-gray-400"
-            >
-              Enter DOB
-            </label>
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                id="losu-dob"
-                type="date"
-                value={dob}
-                onChange={(event) => setDob(event.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70 sm:w-48"
-              />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label
+                  htmlFor="losu-fullname"
+                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
+                >
+                  Full Name
+                </label>
+
+                <input
+                  id="losu-fullname"
+                  type="text"
+                  placeholder="Enter Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="losu-gender"
+                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
+                >
+                  Gender
+                </label>
+
+                <select
+                  id="losu-gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm outline-none transition focus:border-[#d8a84a]/70"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="losu-dob"
+                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
+                >
+                  Enter DOB
+                </label>
+
+                <input
+                  id="losu-dob"
+                  type="date"
+                  value={dob}
+                  onChange={(event) => setDob(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-center sm:justify-end">
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -174,7 +281,7 @@ export default function LosuPage() {
                 {isSubmitting ? "Generating..." : "Submit"}
               </button>
             </div>
-            {message && <p className="mt-2 text-xs text-gray-300">{message}</p>}
+            {message && <p className="mt-2 text-xs text-green-700 sm:text-end">{message}</p>}
           </form>
 
           {hasResults && (
@@ -317,6 +424,25 @@ export default function LosuPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="grid grid-cols-1  gap-2 sm:grid-cols-3 lg:grid-cols-2">
+                  {summaryCardsSecond.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-lg border border-[#d8a84a]/40 bg-[#fff8ee] p-2.5 transition-all duration-200 hover:scale-[1.01]"
+                    >
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#8a6106]">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-lg font-bold text-[#211704]">
+                        {item.value}
+                      </p>
+                      {/* <p className="mt-0.5 text-xs text-[#665d4d]">
+                        {item.detail}
+                      </p> */}
+                    </div>
+                  ))}
+                </div>
             </div>
           )}
         </section>

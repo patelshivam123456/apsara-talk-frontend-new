@@ -7,8 +7,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useDispatch } from "react-redux";
 import api from "@/utils/api";
 import { useLanguage } from "@/context/LanguageContext";
+import { saveSignupDraft } from "@/redux/slices/signupDraftSlice";
 
 const validTypes = ["client", "astrologer"];
 
@@ -21,6 +23,7 @@ const textValue = (value) => value?.trim?.() || "";
 
 export default function SignupPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { t } = useLanguage();
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
@@ -91,10 +94,17 @@ export default function SignupPage() {
       return;
     }
 
-    setLoading(true);
-
     try {
       const payload = buildSignupPayload();
+
+      if (!isAstrologer) {
+        dispatch(saveSignupDraft(payload));
+        router.push("/register?type=client");
+        return;
+      }
+
+      setLoading(true);
+
       const res = await api.post("/authorization/auth/sign-up", payload, {
         headers: {
           "Content-Type": "application/json",
@@ -229,7 +239,7 @@ export default function SignupPage() {
               ) : isAstrologer ? (
                 t("signup.continueAstrologer")
               ) : (
-                t("signup.continueClient")
+                "Next"
               )}
             </button>
 

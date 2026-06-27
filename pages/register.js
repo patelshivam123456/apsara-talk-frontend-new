@@ -2,60 +2,47 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useDispatch, useSelector } from "react-redux";
 import api from "@/utils/api";
 import { useLanguage } from "@/context/LanguageContext";
 import OtpVerificationModal, { OTP_LENGTH } from "@/components/OtpVerificationModal";
+import { clearSignupDraft } from "@/redux/slices/signupDraftSlice";
 
 const CLIENT_ROLE_ID = 2;
 const textValue = (value) => value?.trim?.() || "";
-const getPendingClientSignup = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const pendingSignup = JSON.parse(
-      window.sessionStorage.getItem("apsaraPendingSignup") || "null"
-    );
-
-    return pendingSignup?.type === "client" ? pendingSignup : null;
-  } catch {
-    return null;
-  }
-};
 
 export default function RegisterPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const signupDraft = useSelector((state) => state.signupDraft);
   const { t } = useLanguage();
+  const hasSignupDraft = Boolean(
+    textValue(signupDraft?.username) && signupDraft?.password
+  );
 
   const [registrationType, setRegistrationType] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [otpModalOpen, setOtpModalOpen] = useState(() =>
-    Boolean(getPendingClientSignup())
-  );
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [resendOtpLoading, setResendOtpLoading] = useState(false);
   const [robotChecked, setRobotChecked] = useState(false);
 
   // ALL FIELDS (UNCHANGED - for API payload)
-  const [formData, setFormData] = useState(() => {
-    const pendingSignup = getPendingClientSignup();
-
-    return {
-    username: "",
-    password: "",
-    confirmPassword: pendingSignup?.confirmPassword || "",
+  const [formData, setFormData] = useState(() => ({
+    username: textValue(signupDraft?.username),
+    password: signupDraft?.password || "",
+    confirmPassword: signupDraft?.password || "",
     firstName: "",
     middleName: "",
     lastName: "",
 
-    email: pendingSignup?.email || "",
-    phone: pendingSignup?.phone || "",
+    email: textValue(signupDraft?.username),
+    phone: "",
 
     address: "",
     city: "",
@@ -90,18 +77,21 @@ export default function RegisterPage() {
 
     childName: "",
 
-    otp: pendingSignup?.otp || "",
-    ...(pendingSignup
-      ? {
-          username: pendingSignup.email || "",
-          password: pendingSignup.password || "",
-        }
-      : {}),
-    };
-  });
+    otp: "",
+  }));
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    if (!router.isReady || router.query.type !== "client") {
+      return;
+    }
+
+    if (!hasSignupDraft) {
+      router.replace("/signup?type=client");
+    }
+  }, [hasSignupDraft, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -117,7 +107,7 @@ export default function RegisterPage() {
     });
   };
 
-  const validateForm = () => {
+  const validateForm = ({ includeOtp = true } = {}) => {
     let newErrors = {};
 
     const fieldLabels = {
@@ -129,8 +119,11 @@ export default function RegisterPage() {
       placeOfBirth: t("register.birthPlace"),
       password: t("auth.password"),
       confirmPassword: t("register.confirmPassword"),
-      otp: t("signup.otp"),
     };
+
+    if (includeOtp) {
+      fieldLabels.otp = t("signup.otp");
+    }
 
     const requiredFields = Object.keys(fieldLabels);
 
@@ -165,7 +158,11 @@ export default function RegisterPage() {
       newErrors.confirmPassword = t("register.passwordsMismatch");
     }
 
-    if (formData.otp && !new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
+    if (
+      includeOtp &&
+      formData.otp &&
+      !new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)
+    ) {
       newErrors.otp = `OTP must be ${OTP_LENGTH} digits`;
     }
 
@@ -178,72 +175,65 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const buildCreateUserPayload = () => ({
+    username: textValue(formData.username),
+    password: formData.password,
+    otp: textValue(formData.otp),
+    roleId: CLIENT_ROLE_ID,
 
-    if (!validateForm()) {
-      if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
-        setOtpModalOpen(true);
-      }
-      return;
-    }
+    clientDto: {
+      publicId: "",
 
+      firstName: textValue(formData.firstName),
+      middleName: textValue(formData.middleName),
+      lastName: textValue(formData.lastName),
+
+      email: textValue(formData.username),
+      phone: textValue(formData.phone),
+      otp: textValue(formData.otp),
+
+      gender: textValue(formData.gender),
+
+      dateOfBirth: textValue(formData.dateOfBirth),
+      placeOfBirth: textValue(formData.placeOfBirth),
+
+      // keep backend-required structure intact
+      timeOfBirth: "",
+      countryOfBirth: "",
+
+      address: "",
+      city: "",
+      state: "",
+      pinCode: "",
+      country: "India",
+
+      dateOfDeath: "",
+      timeOfDeath: "",
+
+      dateOfJoining: "",
+      timeOfJoining: "",
+
+      religion: "",
+      caste: "",
+      gotra: "",
+      motherTongue: "",
+      language: "",
+
+      fatherName: "",
+      motherName: "",
+
+      spouseName: "",
+      spouseRelationship: "",
+
+      childName: "",
+    },
+  });
+
+  const createUser = async () => {
     setLoading(true);
 
     try {
-      const payload = {
-        username: textValue(formData.username),
-        password: formData.password,
-        otp: textValue(formData.otp),
-        roleId: CLIENT_ROLE_ID,
-
-        clientDto: {
-          publicId: "",
-
-          firstName: textValue(formData.firstName),
-          middleName: textValue(formData.middleName),
-          lastName: textValue(formData.lastName),
-
-          email: textValue(formData.username),
-          phone: textValue(formData.phone),
-          otp: textValue(formData.otp),
-
-          gender: textValue(formData.gender),
-
-          dateOfBirth: textValue(formData.dateOfBirth),
-          placeOfBirth: textValue(formData.placeOfBirth),
-
-          // keep backend-required structure intact
-          timeOfBirth: "",
-          countryOfBirth: "",
-
-          address: "",
-          city: "",
-          state: "",
-          pinCode: "",
-          country: "India",
-
-          dateOfDeath: "",
-          timeOfDeath: "",
-
-          dateOfJoining: "",
-          timeOfJoining: "",
-
-          religion: "",
-          caste: "",
-          gotra: "",
-          motherTongue: "",
-          language: "",
-
-          fatherName: "",
-          motherName: "",
-
-          spouseName: "",
-          spouseRelationship: "",
-
-          childName: "",
-        },
-      };
+      const payload = buildCreateUserPayload();
 
       const res = await api.post("/authorization/auth/create-user", payload, {
         headers: {
@@ -257,10 +247,8 @@ export default function RegisterPage() {
       }
 
       toast.success(res?.message || t("register.success"));
-      if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem("apsaraPendingSignup");
-      }
-      router.push("/login");
+      await router.push("/login");
+      dispatch(clearSignupDraft());
     } catch (error) {
       console.error(error);
       const errorMessage =
@@ -280,12 +268,56 @@ export default function RegisterPage() {
     }
   };
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm({ includeOtp: false })) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const signupPayload = {
+        username: textValue(signupDraft.username),
+        password: signupDraft.password,
+      };
+      const mergedPayload = {
+        ...buildCreateUserPayload(),
+        ...signupPayload,
+      };
+
+      const res = await api.post("/authorization/auth/sign-up", mergedPayload, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "*/*",
+        },
+      });
+
+      if (res?.success === false) {
+        throw new Error(res?.message || t("signup.failed"));
+      }
+
+      toast.success(res?.message || t("signup.detailsSaved"));
+      setOtpModalOpen(true);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.errorDescription ||
+          error?.response?.data?.message ||
+          error?.message ||
+          t("signup.failed")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOtpChange = (otp) => {
     setFormData((prev) => ({ ...prev, otp }));
     setErrors((prev) => ({ ...prev, otp: "" }));
   };
 
-  const handleOtpVerify = () => {
+  const handleOtpVerify = async () => {
     if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
       setErrors((prev) => ({
         ...prev,
@@ -295,6 +327,7 @@ export default function RegisterPage() {
     }
 
     setOtpModalOpen(false);
+    await createUser();
   };
 
   const handleResendOtp = async () => {
@@ -350,6 +383,10 @@ export default function RegisterPage() {
 
   const selectedRegistrationType =
     registrationType || (router.query.type === "client" ? "client" : "");
+
+  if (router.isReady && router.query.type === "client" && !hasSignupDraft) {
+    return null;
+  }
 
   if (!selectedRegistrationType) {
     return (
@@ -510,6 +547,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => {
+                dispatch(clearSignupDraft());
                 setRegistrationType("");
                 router.push("/register");
               }}

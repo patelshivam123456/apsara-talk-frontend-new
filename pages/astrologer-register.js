@@ -7,9 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "@/utils/api";
 import { useLanguage } from "@/context/LanguageContext";
-import OtpVerificationModal, { OTP_LENGTH } from "@/components/OtpVerificationModal";
 
-const ASTROLOGER_ROLE_ID = 3;
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
 const expertiseOptions = [
   "Astrology",
@@ -26,21 +24,22 @@ const tabs = [
   "astroReg.tab1",
   "astroReg.tab2",
   "astroReg.tab3",
-  "astroReg.tab4",
 ];
 const tabDescriptions = [
   "astroReg.desc1",
   "astroReg.desc2",
   "astroReg.desc3",
-  "astroReg.desc4",
 ];
-const tabIcons = ["01", "02", "03", "04"];
+const tabIcons = ["01", "02", "03"];
 const initialFormData = {
   fullName: "",
+  displayName: "",
   mobileNumber: "",
   email: "",
   gender: "",
   dateOfBirth: "",
+  religion: "",
+  specialization: "",
   fullAddress: "",
   pincode: "",
   city: "",
@@ -49,85 +48,46 @@ const initialFormData = {
   expertise: [],
   aboutYourself: "",
   consultationModes: [],
+  aadhaarNo: "",
   aadharFront: [],
-  aadharBack: [],
+  educationalQualification: "",
+  yearsOfExperience: "",
   educationalCertificates: [],
   certificateDocuments: [],
   experienceLetter: [],
   passportPhoto: [],
-  declarationAccepted: false,
-  digitalSignature: "",
-  declarationDate: "",
-  password: "",
-  confirmPassword: "",
-  otp: "",
 };
 
 const textValue = (value) => value?.trim?.() || "";
-const getPendingAstrologerSignup = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const pendingSignup = JSON.parse(
-      window.sessionStorage.getItem("apsaraPendingSignup") || "null"
-    );
-
-    return pendingSignup?.type === "astrologer" ? pendingSignup : null;
-  } catch {
-    return null;
-  }
-};
-const fileMeta = (files) =>
-  files.map((file) => ({
-    name: file.name,
-    size: file.size,
-    type: file.type,
-  }));
 const requiredFields = [
-  ["fullName", "astroReg.fullName"],
-  ["email", "astroReg.emailAddress"],
-  ["mobileNumber", "astroReg.mobileNumber"],
-  ["pincode", "astroReg.pincode"],
-  ["city", "astroReg.city"],
-  ["state", "astroReg.state"],
-  ["gender", "register.gender"],
-  ["dateOfBirth", "register.dateOfBirth"],
+  ["fullName", "Full Name"],
+  ["displayName", "Display Name"],
+  ["mobileNumber", "Mobile Number"],
+  ["email", "Email Address"],
+  ["gender", "Gender"],
+  ["dateOfBirth", "Date of Birth"],
+  ["religion", "Religion"],
+  ["specialization", "Specialization"],
+  ["pincode", "Pincode"],
+  ["city", "City"],
+  ["state", "State"],
 ];
 
 export default function AstrologerRegisterPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState(0);
-  const [formData, setFormData] = useState(() => {
-    const pendingSignup = getPendingAstrologerSignup();
-
-    return {
-      ...initialFormData,
-      email: pendingSignup?.email || initialFormData.email,
-      mobileNumber: pendingSignup?.phone || initialFormData.mobileNumber,
-      password: pendingSignup?.password || initialFormData.password,
-      confirmPassword:
-        pendingSignup?.confirmPassword || initialFormData.confirmPassword,
-      otp: pendingSignup?.otp || initialFormData.otp,
-    };
-  });
+  const [formData, setFormData] = useState(initialFormData);
   const [languageDraft, setLanguageDraft] = useState("");
   const [errors, setErrors] = useState({});
-  const [otpModalOpen, setOtpModalOpen] = useState(() =>
-    Boolean(getPendingAstrologerSignup())
-  );
-  const [resendOtpLoading, setResendOtpLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const progress = useMemo(
     () => Math.round(((activeTab + 1) / tabs.length) * 100),
     [activeTab]
   );
+
   const updateField = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -248,11 +208,11 @@ export default function AstrologerRegisterPage() {
     const nextErrors = {};
 
     if (tabIndex === 0) {
-      requiredFields.forEach(([name, labelKey]) => {
+      requiredFields.forEach(([name, label]) => {
         if (!textValue(formData[name])) {
           nextErrors[name] = t("register.required").replace(
             "{field}",
-            t(labelKey)
+            label
           );
         }
       });
@@ -268,27 +228,41 @@ export default function AstrologerRegisterPage() {
       if (!nextErrors.pincode && !/^[0-9]{6}$/.test(formData.pincode)) {
         nextErrors.pincode = "Pincode must be 6 digits";
       }
+    }
 
-      if (!textValue(formData.otp)) {
-        nextErrors.otp = t("register.required").replace(
+    if (tabIndex === 1) {
+      if (!textValue(formData.aadhaarNo)) {
+        nextErrors.aadhaarNo = t("register.required").replace(
           "{field}",
-          t("signup.otp")
+          "Aadhaar Number"
         );
-      } else if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
-        nextErrors.otp = `OTP must be ${OTP_LENGTH} digits`;
+      } else if (!/^[0-9]{12}$/.test(formData.aadhaarNo)) {
+        nextErrors.aadhaarNo = "Aadhaar number must be 12 digits";
+      }
+
+      if (!formData.aadharFront.length) {
+        nextErrors.aadharFront = t("register.required").replace(
+          "{field}",
+          t("astroReg.aadharFront")
+        );
       }
     }
 
-    if (tabIndex === 3) {
-      if (formData.password && formData.password.length < 6) {
-        nextErrors.password = t("auth.passwordMin");
+    if (tabIndex === 2) {
+      if (!textValue(formData.educationalQualification)) {
+        nextErrors.educationalQualification = t("register.required").replace(
+          "{field}",
+          "Educational Qualification"
+        );
       }
 
-      if (
-        (formData.password || formData.confirmPassword) &&
-        formData.confirmPassword !== formData.password
-      ) {
-        nextErrors.confirmPassword = t("register.passwordsMismatch");
+      if (!textValue(formData.yearsOfExperience)) {
+        nextErrors.yearsOfExperience = t("register.required").replace(
+          "{field}",
+          "Years Of Experience"
+        );
+      } else if (!/^[0-9]+$/.test(formData.yearsOfExperience)) {
+        nextErrors.yearsOfExperience = "Years Of Experience must be a number";
       }
     }
 
@@ -298,12 +272,6 @@ export default function AstrologerRegisterPage() {
 
   const goNext = () => {
     if (!validateTab(activeTab)) {
-      if (
-        activeTab === 0 &&
-        !new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)
-      ) {
-        setOtpModalOpen(true);
-      }
       toast.error(t("astroReg.fixFields"));
       return;
     }
@@ -315,58 +283,11 @@ export default function AstrologerRegisterPage() {
     setActiveTab((prev) => Math.max(prev - 1, 0));
   };
 
-  const buildPayload = () => ({
-    username: textValue(formData.email),
-    password: formData.password,
-    otp: textValue(formData.otp),
-    roleId: ASTROLOGER_ROLE_ID,
-    astrologerDto: {
-      fullName: textValue(formData.fullName),
-      mobileNumber: textValue(formData.mobileNumber),
-      email: textValue(formData.email),
-      otp: textValue(formData.otp),
-      gender: textValue(formData.gender),
-      dateOfBirth: textValue(formData.dateOfBirth),
-      address: textValue(formData.fullAddress),
-      pincode: textValue(formData.pincode),
-      city: textValue(formData.city),
-      state: textValue(formData.state),
-      languagesKnown: formData.languagesKnown.join(", "),
-      expertise: formData.expertise,
-      aboutYourself: textValue(formData.aboutYourself),
-      consultationModes: formData.consultationModes,
-      identityVerification: {
-        aadharFront: fileMeta(formData.aadharFront),
-        aadharBack: fileMeta(formData.aadharBack),
-      },
-      educationCertification: {
-        educationalCertificates: fileMeta(formData.educationalCertificates),
-        certificateDocuments: fileMeta(formData.certificateDocuments),
-      },
-      experienceDocuments: {
-        experienceLetter: fileMeta(formData.experienceLetter),
-        passportPhoto: fileMeta(formData.passportPhoto),
-      },
-      declaration: {
-        accepted: formData.declarationAccepted,
-        digitalSignature: textValue(formData.digitalSignature),
-        date: textValue(formData.declarationDate),
-        text:
-          "I hereby declare that all information provided is true and I have no criminal record.",
-      },
-      verificationStatus: "PENDING",
-    },
-  });
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const allTabsValid = tabs.every((_, index) => validateTab(index));
     if (!allTabsValid) {
-      if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
-        setOtpModalOpen(true);
-        setActiveTab(0);
-      }
       toast.error(t("astroReg.fixFields"));
       return;
     }
@@ -374,40 +295,79 @@ export default function AstrologerRegisterPage() {
     setLoading(true);
 
     try {
-      const payload = buildPayload();
-      const res = await api.post("/authorization/auth/create-user", payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
+      const formdata = new FormData();
+      const aadhaarFile = formData.aadharFront[0];
+      const educationalQualificationFile =
+        formData.educationalCertificates[0] || formData.certificateDocuments[0];
+      const experienceFile = formData.experienceLetter[0] || formData.passportPhoto[0];
+
+      formdata.append("fullName", textValue(formData.fullName));
+      formdata.append("email", textValue(formData.email));
+      formdata.append("mobileNo", textValue(formData.mobileNumber));
+      formdata.append("dateOfBirth", textValue(formData.dateOfBirth));
+      formdata.append("gender", textValue(formData.gender));
+      formdata.append("address", textValue(formData.fullAddress));
+      formdata.append("city", textValue(formData.city));
+      formdata.append("state", textValue(formData.state));
+      formdata.append("pinCode", textValue(formData.pincode));
+      formdata.append("country", "India");
+      formData.languagesKnown.forEach((language, index) => {
+        formdata.append(`languagesKnown[${index}]`, language);
       });
+      formdata.append("religion", textValue(formData.religion));
+      formdata.append("specialization", textValue(formData.specialization));
+      formData.expertise.forEach((expertise, index) => {
+        formdata.append(`expertise[${index}]`, expertise);
+      });
+      formdata.append("aboutYourself", textValue(formData.aboutYourself));
+      formdata.append("displayName", textValue(formData.displayName));
+      formdata.append("yearsOfExperience", textValue(formData.yearsOfExperience));
+      formData.consultationModes.forEach((mode, index) => {
+        formdata.append(`consultationModes[${index}]`, mode);
+      });
+      formdata.append("aadhaarNo", textValue(formData.aadhaarNo));
+      formdata.append(
+        "educationalQualification",
+        textValue(formData.educationalQualification)
+      );
+
+      if (aadhaarFile) {
+        formdata.append("aadhaarFile", aadhaarFile, aadhaarFile.name);
+      }
+
+      if (educationalQualificationFile) {
+        formdata.append(
+          "educationalQualificationFile",
+          educationalQualificationFile,
+          educationalQualificationFile.name
+        );
+      }
+
+      if (experienceFile) {
+        formdata.append("experienceFile", experienceFile, experienceFile.name);
+      }
+
+      const res = await api.post(
+        "/authorization/auth/astrologer-registration",
+        formdata,
+        {
+          headers: {
+            Accept: "*/*",
+          },
+        }
+      );
 
       if (!res?.success) {
         throw new Error(res?.message || t("astroReg.failed"));
-      }
-
-      if (typeof window !== "undefined") {
-        const savedApplications = JSON.parse(
-          window.localStorage.getItem("astrologerApplications") || "[]"
-        );
-        window.localStorage.setItem(
-          "astrologerApplications",
-          JSON.stringify([
-            ...savedApplications,
-            { ...payload.astrologerDto, submittedAt: new Date().toISOString() },
-          ])
-        );
       }
 
       toast.success(
         t("astroReg.success")
       );
 
-      if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem("apsaraPendingSignup");
-      }
-
-      setTimeout(() => router.push("/login"), 1200);
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
     } catch (error) {
       const errorMessage =
         error?.response?.data?.errorDescription ||
@@ -416,100 +376,14 @@ export default function AstrologerRegisterPage() {
         t("astroReg.unableSubmit");
 
       toast.error(errorMessage);
-
-      if (errorMessage.toLowerCase().includes("otp")) {
-        setErrors((prev) => ({ ...prev, otp: errorMessage }));
-        setActiveTab(0);
-        setOtpModalOpen(true);
-      }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOtpChange = (otp) => {
-    setFormData((prev) => ({ ...prev, otp }));
-    setErrors((prev) => ({ ...prev, otp: "" }));
-  };
-
-  const handleOtpVerify = () => {
-    if (!new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(formData.otp)) {
-      setErrors((prev) => ({
-        ...prev,
-        otp: `OTP must be ${OTP_LENGTH} digits`,
-      }));
-      return;
-    }
-
-    setOtpModalOpen(false);
-  };
-
-  const handleResendOtp = async () => {
-    const username = textValue(formData.email);
-    const password = formData.password;
-
-    if (!username) {
-      const message = t("auth.usernameRequired");
-      setErrors((prev) => ({ ...prev, otp: message }));
-      toast.error(message);
-      return false;
-    }
-
-    if (!password) {
-      const message = t("auth.passwordRequired");
-      setErrors((prev) => ({ ...prev, otp: message }));
-      toast.error(message);
-      return false;
-    }
-
-    try {
-      setResendOtpLoading(true);
-      const res = await api.post(
-        "/authorization/auth/sign-up",
-        { username, password },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "*/*",
-          },
-        }
-      );
-
-      if (res?.success === false) {
-        throw new Error(res?.message || "Failed to resend OTP");
-      }
-
-      toast.success(res?.message || "OTP sent successfully");
-      return true;
-    } catch (error) {
-      const message =
-        error?.response?.data?.errorDescription ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to resend OTP";
-
-      toast.error(message);
-      return false;
-    } finally {
-      setResendOtpLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#f6ead7] px-3 py-3 text-stone-900 md:py-5">
       <ToastContainer position="top-right" autoClose={3000} />
-      <OtpVerificationModal
-        key={`astrologer-otp-${otpModalOpen ? "open" : "closed"}-${formData.email}`}
-        open={otpModalOpen}
-        email={formData.email}
-        otp={formData.otp}
-        error={errors.otp}
-        signupType="astrologer"
-        onChange={handleOtpChange}
-        onVerify={handleOtpVerify}
-        onResend={handleResendOtp}
-        resendLoading={resendOtpLoading}
-      />
       <div className="mx-auto max-w-5xl">
         <div className="mb-3 overflow-hidden rounded-lg border border-amber-200 bg-[#fff9ef] shadow-lg shadow-amber-900/10">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr]">
@@ -632,14 +506,17 @@ export default function AstrologerRegisterPage() {
             {activeTab === 0 && (
               <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <Input required label={t("astroReg.fullName")} name="fullName" value={formData.fullName} onChange={updateField} error={errors.fullName} />
+                <Input required label="Display Name" name="displayName" value={formData.displayName} onChange={updateField} error={errors.displayName} />
                 <Input required label={t("astroReg.mobileNumber")} name="mobileNumber" value={formData.mobileNumber} maxLength={10} onChange={(name, value) => updateField(name, value.replace(/\D/g, ""))} error={errors.mobileNumber} />
                 <Input required label={t("astroReg.emailAddress")} name="email" value={formData.email} onChange={updateField} error={errors.email} />
+                <Select required label={t("register.gender")} name="gender" value={formData.gender} onChange={updateField} options={["Male", "Female", "Other"]} error={errors.gender} />
+                <Input required label={t("register.dateOfBirth")} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={updateField} error={errors.dateOfBirth} />
+                <Input required label="Religion" name="religion" value={formData.religion} onChange={updateField} error={errors.religion} />
+                <Input required label="Specialization" name="specialization" value={formData.specialization} onChange={updateField} error={errors.specialization} />
+                <Textarea className="md:col-span-2" label={t("register.fullAddress")} name="fullAddress" value={formData.fullAddress} onChange={updateField} error={errors.fullAddress} />
                 <Input required label={t("astroReg.pincode")} name="pincode" value={formData.pincode} maxLength={6} onChange={updatePincode} error={errors.pincode} helper={pincodeLoading ? t("astroReg.fetchingLocation") : ""} />
                 <Input required label={t("astroReg.city")} name="city" value={formData.city} onChange={updateField} error={errors.city} />
                 <Input required label={t("astroReg.state")} name="state" value={formData.state} onChange={updateField} error={errors.state} />
-                <Select required label={t("register.gender")} name="gender" value={formData.gender} onChange={updateField} options={["Male", "Female", "Other"]} error={errors.gender} />
-                <Input required label={t("register.dateOfBirth")} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={updateField} error={errors.dateOfBirth} />
-                <Textarea className="md:col-span-2" label={t("register.fullAddress")} name="fullAddress" value={formData.fullAddress} onChange={updateField} error={errors.fullAddress} />
                 <LanguageInput label={t("astroReg.languagesKnown")} value={languageDraft} badges={formData.languagesKnown} onChange={setLanguageDraft} onAdd={addLanguage} onRemove={removeLanguage} error={errors.languagesKnown} />
                 <CheckboxGroup label={t("astroReg.consultationModes")} name="consultationModes" values={formData.consultationModes} options={consultationOptions} onChange={toggleArrayValue} error={errors.consultationModes} />
                 <CheckboxGroup className="md:col-span-2" label={t("astroReg.expertise")} name="expertise" values={formData.expertise} options={expertiseOptions} onChange={toggleArrayValue} error={errors.expertise} />
@@ -649,66 +526,19 @@ export default function AstrologerRegisterPage() {
 
             {activeTab === 1 && (
               <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <Input required label="Aadhaar Number" name="aadhaarNo" value={formData.aadhaarNo} maxLength={12} onChange={(name, value) => updateField(name, value.replace(/\D/g, ""))} error={errors.aadhaarNo} />
                 <FileUpload label={t("astroReg.aadharFront")} name="aadharFront" files={formData.aadharFront} onChange={updateFiles} onRemove={removeFile} error={errors.aadharFront} />
-                <FileUpload label={t("astroReg.aadharBack")} name="aadharBack" files={formData.aadharBack} onChange={updateFiles} onRemove={removeFile} error={errors.aadharBack} />
               </section>
             )}
 
             {activeTab === 2 && (
               <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <Input required label="Educational Qualification" name="educationalQualification" value={formData.educationalQualification} onChange={updateField} error={errors.educationalQualification} />
+                <Input required label={t("astroReg.yearsExperience")} name="yearsOfExperience" value={formData.yearsOfExperience} onChange={(name, value) => updateField(name, value.replace(/\D/g, ""))} error={errors.yearsOfExperience} />
                 <FileUpload label={t("astroReg.educationalCertificate")} name="educationalCertificates" files={formData.educationalCertificates} onChange={updateFiles} onRemove={removeFile} />
                 <FileUpload label={t("astroReg.certificateDocuments")} name="certificateDocuments" files={formData.certificateDocuments} onChange={updateFiles} onRemove={removeFile} multiple maxFiles={3} />
                 <FileUpload label={t("astroReg.experienceLetter")} name="experienceLetter" files={formData.experienceLetter} onChange={updateFiles} onRemove={removeFile} />
                 <FileUpload label={t("astroReg.passportPhoto")} name="passportPhoto" files={formData.passportPhoto} onChange={updateFiles} onRemove={removeFile} />
-              </section>
-            )}
-
-            {activeTab === 3 && (
-              <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="relative">
-                  <Input label={t("auth.password")} name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={updateField} error={errors.password} inputClassName="pr-12" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-7 flex h-8 w-8 items-center justify-center rounded-full text-amber-800 transition hover:bg-amber-50 hover:text-amber-950"
-                    aria-label={showPassword ? t("register.hide") : t("register.show")}
-                  >
-                    <PasswordVisibilityIcon visible={showPassword} />
-                  </button>
-                </div>
-                <div className="relative">
-                  <Input label={t("register.confirmPassword")} name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={updateField} error={errors.confirmPassword} inputClassName="pr-12" />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2 top-7 flex h-8 w-8 items-center justify-center rounded-full text-amber-800 transition hover:bg-amber-50 hover:text-amber-950"
-                    aria-label={showConfirmPassword ? t("register.hide") : t("register.show")}
-                  >
-                    <PasswordVisibilityIcon visible={showConfirmPassword} />
-                  </button>
-                </div>
-                <div className="md:col-span-2 rounded-lg border border-amber-100 bg-[#fffbf5] p-3">
-                  <label className="flex items-start gap-3 text-xs leading-5 text-stone-600">
-                    <input
-                      type="checkbox"
-                      checked={formData.declarationAccepted}
-                      onChange={(event) =>
-                        updateField("declarationAccepted", event.target.checked)
-                      }
-                      className="mt-1 h-4 w-4 accent-amber-600"
-                    />
-                    <span>
-                      {t("astroReg.declaration")}
-                    </span>
-                  </label>
-                  {errors.declarationAccepted && (
-                    <p className="text-red-600 text-xs mt-2">
-                      {errors.declarationAccepted}
-                    </p>
-                  )}
-                </div>
-                <Input label={t("astroReg.digitalSignature")} name="digitalSignature" value={formData.digitalSignature} onChange={updateField} error={errors.digitalSignature} />
-                <Input label={t("astroReg.date")} name="declarationDate" type="date" value={formData.declarationDate} onChange={updateField} error={errors.declarationDate} />
               </section>
             )}
 
@@ -782,35 +612,6 @@ function Input({
       {helper && !error && <p className="mt-1 text-xs text-amber-700">{helper}</p>}
       {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
     </div>
-  );
-}
-
-function PasswordVisibilityIcon({ visible }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      {visible ? (
-        <>
-          <path d="M2 2l20 20" />
-          <path d="M10.6 10.6a2 2 0 002.8 2.8" />
-          <path d="M9.9 4.2A10.6 10.6 0 0112 4c5 0 9 4 10 8a11.8 11.8 0 01-3.1 4.8" />
-          <path d="M6.6 6.6A11.8 11.8 0 002 12c.6 2.1 2.1 4.1 4.1 5.5A10.5 10.5 0 0012 20a10.8 10.8 0 004.1-.8" />
-        </>
-      ) : (
-        <>
-          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-          <circle cx="12" cy="12" r="3" />
-        </>
-      )}
-    </svg>
   );
 }
 

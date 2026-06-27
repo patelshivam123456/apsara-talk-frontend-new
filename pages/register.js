@@ -434,7 +434,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 gap-3">
             <button
               type="button"
-              onClick={() => router.push("/signup?type=astrologer")}
+              onClick={() => router.push("/astrologer-register")}
               className="group rounded-2xl border border-[#d8ce76] bg-[#fbf8cc] p-4 text-left shadow-[0_10px_24px_rgba(151,165,0,0.12)] transition hover:bg-[#f5efbf] focus:outline-none focus:ring-2 focus:ring-[#dfff00]/40"
             >
               <span className="flex items-start justify-between gap-4">

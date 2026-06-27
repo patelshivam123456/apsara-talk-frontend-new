@@ -5,10 +5,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch } from "react-redux";
-import api from "@/utils/api";
 import { useLanguage } from "@/context/LanguageContext";
 import { saveSignupDraft } from "@/redux/slices/signupDraftSlice";
 
@@ -27,7 +26,7 @@ export default function SignupPage() {
   const { t } = useLanguage();
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const loading = false;
   const [showPassword, setShowPassword] = useState(false);
 
   const signupType = useMemo(() => {
@@ -43,6 +42,11 @@ export default function SignupPage() {
     }
 
     const type = String(router.query.type || "").toLowerCase();
+
+    if (type === "astrologer") {
+      router.replace("/astrologer-register");
+      return;
+    }
 
     if (!validTypes.includes(type)) {
       router.replace("/signup?type=client");
@@ -94,64 +98,9 @@ export default function SignupPage() {
       return;
     }
 
-    try {
-      const payload = buildSignupPayload();
-
-      if (!isAstrologer) {
-        dispatch(saveSignupDraft(payload));
-        router.push("/register?type=client");
-        return;
-      }
-
-      setLoading(true);
-
-      const res = await api.post("/authorization/auth/sign-up", payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-      });
-
-      if (res?.success === false) {
-        throw new Error(res?.message || t("signup.failed"));
-      }
-
-      const pendingSignup = {
-        type: signupType,
-        username: payload.username,
-        email: payload.username,
-        phone: "",
-        password: payload.password,
-        confirmPassword: payload.password,
-        otp: "",
-      };
-
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(
-          "apsaraPendingSignup",
-          JSON.stringify(pendingSignup)
-        );
-      }
-
-      toast.success(res?.message || t("signup.detailsSaved"));
-
-      setTimeout(() => {
-        router.push(
-          isAstrologer
-            ? "/astrologer-register?fromSignup=1"
-            : "/register?type=client"
-        );
-      }, 1200);
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.errorDescription ||
-          error?.response?.data?.message ||
-          error?.message ||
-          t("signup.failed")
-      );
-    } finally {
-      setLoading(false);
-    }
+    const payload = buildSignupPayload();
+    dispatch(saveSignupDraft(payload));
+    router.push(isAstrologer ? "/astrologer-register" : "/register?type=client");
   };
 
   return (

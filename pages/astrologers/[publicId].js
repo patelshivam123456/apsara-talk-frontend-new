@@ -21,6 +21,19 @@ function getInitials(firstName, lastName) {
   return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
 }
 
+function getLanguages(astro) {
+  const value = astro?.language ?? astro?.languagesKnown;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export default function AstrologerDetailPage({astrologerData=[]}) {
   const router = useRouter();
   const { publicId } = router.query;
@@ -75,7 +88,11 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
     );
   }
 
-  const languages = astro.language.split(",").map((l) => l.trim());
+  const languages = getLanguages(astro);
+  const displayName =
+    astro.displayName ||
+    [astro.firstName, astro.middleName, astro.lastName].filter(Boolean).join(" ") ||
+    "Astrologer";
 
   return (
     <>
@@ -83,7 +100,7 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
 
       <PublicPageLayout
         eyebrow={astro.specialization || "Astrologer profile"}
-        title={astro.displayName}
+        title={displayName}
         description={astro.bio || "View astrologer details, experience, languages, and consultation options."}
       >
 
@@ -96,7 +113,7 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
             </div>
 
             <div>
-              <h2 className="text-xl font-extrabold">{astro.displayName}</h2>
+              <h2 className="text-xl font-extrabold">{displayName}</h2>
               <p className="mt-0.5 text-sm font-medium text-[#6f5930]">
                 {astro.firstName} {astro.middleName} {astro.lastName}
               </p>
@@ -111,16 +128,18 @@ export default function AstrologerDetailPage({astrologerData=[]}) {
               </span>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {languages.map((lang) => (
+            {languages.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {languages.map((lang) => (
                 <span
                   key={lang}
                   className="rounded-full bg-[#f4ecd0] px-2 py-1 text-[11px] font-bold text-[#5d4a1b]"
                 >
                   {lang}
                 </span>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <p className="max-w-md text-sm leading-relaxed text-[#60481f]">
               {astro.bio}

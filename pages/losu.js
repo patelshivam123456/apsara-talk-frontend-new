@@ -11,6 +11,32 @@ const rowOrder = [
   ["bottomRow", "Bottom Row"],
 ];
 
+const currentYear = new Date().getFullYear();
+
+const calculationOptions = [
+  { value: "lo-shu-grid", label: "Lo Shu Grid (1)" },
+  { value: "vedic-grid", label: "Vedic Grid (2)" },
+  { value: "pythagoras-grid", label: "Pythagoras Grid (3)" },
+  { value: "name-frequency", label: "Name Frequency (4)" },
+  { value: "daily-numeroscope", label: "Daily Numeroscope (5)" },
+  { value: "relationship", label: "Relationship (6)" },
+  { value: "mobile-number-numerology", label: "Mobile Number Numerology (7)" },
+  { value: "switch-code", label: "Switch Code (8)" },
+  { value: "yantra", label: "Yantra (9)" },
+];
+
+const personalYearReadingDetails = [
+  "This year will require a lot of hard work & results will be according to your hard work.",
+  "Lot of hard work will be required to achieve your goals.",
+  "It's a favourable time for you to buy or sell property.",
+  "You may become workaholic this year and may invest significant time & energy of getting the work done.",
+  "Health issues may also be occur, so better to take care of yourself.",
+  "If any fund is stuck somewhere or with someone, this is the best time to recover your fund.",
+  "Avoid business expansion this year and focus on strengthening the existing venture.",
+  "Valuable connections with people may be established.",
+  "Hard work done this year will give result in coming year.",
+];
+
 function formatList(values) {
   return values?.length ? values.join(", ") : "None";
 }
@@ -20,12 +46,21 @@ function formatDobForApi(value) {
   return `${day}-${month}-${year}`;
 }
 
+function normalizeMatrixResult(result) {
+  const data = result?.data || result;
+  return Array.isArray(data) ? data : data?.matrix || data?.years || [];
+}
+
 export default function LosuPage() {
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState("");
   const [dob, setDob] = useState("");
+  const [fromYear, setFromYear] = useState(String(currentYear));
+  const [toYear, setToYear] = useState(String(currentYear + 10));
+  const [calculationType, setCalculationType] = useState("lo-shu-grid");
   const [losuResult, setLosuResult] = useState(null);
   const [personalYearResult, setPersonalYearResult] = useState(null);
+  const [personalYearMatrix, setPersonalYearMatrix] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -96,6 +131,13 @@ export default function LosuPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (calculationType !== "lo-shu-grid") {
+      const nextMessage = "Please select Lu Shu Grid.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
     if (!fullName.trim()) {
       const nextMessage = "Please enter full name.";
       setMessage(nextMessage);
@@ -117,11 +159,43 @@ export default function LosuPage() {
       return;
     }
 
+    if (!fromYear.trim() || !toYear.trim()) {
+      const nextMessage = "Please enter from year and to year.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    const fromYearNumber = Number(fromYear);
+    const toYearNumber = Number(toYear);
+
+    if (!Number.isInteger(fromYearNumber) || !Number.isInteger(toYearNumber)) {
+      const nextMessage = "Please enter valid years.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    if (toYearNumber < fromYearNumber) {
+      const nextMessage = "To Year must be greater than or equal to From Year.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    if (toYearNumber - fromYearNumber > 10) {
+      const nextMessage = "Maximum gap between From Year and To Year is 10 years.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setMessage("");
       setLosuResult(null);
       setPersonalYearResult(null);
+      setPersonalYearMatrix([]);
       const normalizedDob = formatDobForApi(dob.trim());
 
       const response = await fetch(
@@ -190,8 +264,38 @@ export default function LosuPage() {
         );
       }
 
+      const matrixQuery = new URLSearchParams({
+        dob: normalizedDob,
+        fromYear: String(fromYearNumber),
+        toYear: String(toYearNumber),
+      });
+      const matrixResponse = await fetch(
+        `/api/astro-proxy/astrology-services/home-page/personal-year-matrix?${matrixQuery.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+      const matrixResult = await matrixResponse.json();
+
+      if (!matrixResponse.ok) {
+        throw new Error(
+          matrixResult?.message || "Unable to generate personal year matrix.",
+        );
+      }
+
+      const nextMatrixResult = normalizeMatrixResult(matrixResult);
+
+      if (!Array.isArray(nextMatrixResult)) {
+        throw new Error(
+          matrixResult?.message || "Invalid personal year matrix response.",
+        );
+      }
+
       setLosuResult(nextResult);
       setPersonalYearResult(nextPersonalYearResult);
+      setPersonalYearMatrix(nextMatrixResult);
       const nextMessage = "Lo Shu Data generated successfully.";
       setMessage(nextMessage);
       toast.success(result?.message || nextMessage);
@@ -208,13 +312,13 @@ export default function LosuPage() {
   return (
     <PageLayout title="Lo Shu Details" icon="🔢">
       <ToastContainer position="top-right" autoClose={2500} theme="dark" />
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-7xl">
         <section className="rounded-xl border border-white/10 bg-[#0f1535] p-3 shadow-lg">
           <form
             onSubmit={handleSubmit}
             className="rounded-lg  p-2.5 transition-all duration-200 hover:scale-[1.01]"
           >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
               <div>
                 <label
                   htmlFor="losu-fullname"
@@ -269,6 +373,64 @@ export default function LosuPage() {
                   onChange={(event) => setDob(event.target.value)}
                   className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
                 />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="losu-from-year"
+                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
+                >
+                  From Year
+                </label>
+
+                <input
+                  id="losu-from-year"
+                  type="number"
+                  inputMode="numeric"
+                  value={fromYear}
+                  onChange={(event) => setFromYear(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="losu-to-year"
+                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
+                >
+                  To Year
+                </label>
+
+                <input
+                  id="losu-to-year"
+                  type="number"
+                  inputMode="numeric"
+                  value={toYear}
+                  onChange={(event) => setToYear(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="losu-calculation-type"
+                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
+                >
+                  Calculation
+                </label>
+
+                <select
+                  id="losu-calculation-type"
+                  value={calculationType}
+                  onChange={(event) => setCalculationType(event.target.value)}
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm outline-none transition focus:border-[#d8a84a]/70"
+                >
+                  {calculationOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -443,6 +605,107 @@ export default function LosuPage() {
                     </div>
                   ))}
                 </div>
+
+              <div className="grid grid-cols-1 gap-3 lg:col-span-2 lg:grid-cols-[4fr_2fr]">
+                <div className="overflow-hidden rounded-sm border-2 border-[#1f3c2d] bg-[#fffed5] p-2 text-[#111]">
+                  <h3 className="mb-2 inline-block rounded border border-[#1f8b39] bg-[#c8f5b3] px-3 py-1 text-base font-bold shadow-[0_0_4px_rgba(22,120,45,0.7)]">
+                    Matrix for Personal Year & Month
+                  </h3>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[760px] border-collapse text-center text-sm font-semibold">
+                      <thead>
+                        <tr>
+                          <th
+                            rowSpan="2"
+                            className="border border-[#333] bg-[#ffd957] px-3 py-3"
+                          >
+                            Year
+                          </th>
+                          <th
+                            rowSpan="2"
+                            className="border border-[#333] bg-[#ffd957] px-3 py-3"
+                          >
+                            Personal
+                            <br />
+                            Year
+                          </th>
+                          <th
+                            colSpan="12"
+                            className="border border-[#333] bg-[#ffd957] px-3 py-3"
+                          >
+                            Personal Month
+                          </th>
+                        </tr>
+                        <tr>
+                          {[
+                            "Jan",
+                            "Feb",
+                            "Mar",
+                            "Apr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Aug",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dec",
+                          ].map((month) => (
+                            <th
+                              key={month}
+                              className="border border-[#333] bg-[#f7f7f7] px-3 py-2"
+                            >
+                              {month}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {personalYearMatrix.map((item) => (
+                          <tr key={item.year}>
+                            <td className="border border-[#333] bg-[#f7f7f7] px-3 py-2">
+                              {item.year}
+                            </td>
+                            <td className="border border-[#333] bg-[#f7f7f7] px-3 py-2 text-lg">
+                              <span className="text-red-600">
+                                {String(item.personalYear || "").split("/")[0]?.trim()}
+                              </span>
+                              <span className="px-1 text-black">/</span>
+                              <span className="text-green-700">
+                                {String(item.personalYear || "").split("/")[1]?.trim()}
+                              </span>
+                            </td>
+                            {item.months?.map((month) => (
+                              <td
+                                key={`${item.year}-${month.month}`}
+                                className="border border-[#333] bg-[#f7f7f7] px-3 py-2 text-base"
+                              >
+                                {month.personalMonth}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <aside className="rounded-sm border-2 border-[#1f3c2d] bg-[#fffed5] p-3 text-[#111]">
+                  <h3 className="text-2xl font-bold leading-tight">
+                    Personal Year reading
+                  </h3>
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-base leading-tight">
+                    <li>
+                      Your running personal year is{" "}
+                      {personalYearResult.personalYear}.
+                    </li>
+                    {personalYearReadingDetails.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </aside>
+              </div>
             </div>
           )}
         </section>

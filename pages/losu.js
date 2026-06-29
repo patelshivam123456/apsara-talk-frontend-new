@@ -14,7 +14,7 @@ const rowOrder = [
 const currentYear = new Date().getFullYear();
 
 const calculationOptions = [
-  { value: "lo-shu-grid", label: "Lo Shu Grid (1)" },
+  { value: "lo-shu-grid", label: "Lu Shu Grid (1)" },
   { value: "vedic-grid", label: "Vedic Grid (2)" },
   { value: "pythagoras-grid", label: "Pythagoras Grid (3)" },
   { value: "name-frequency", label: "Name Frequency (4)" },
@@ -72,7 +72,7 @@ export default function LosuPage() {
     {
       label: "Date of Birth",
       value: losuResult?.dob,
-      detail: "Source date used for Lo Shu calculation",
+      detail: "Source date used for numerology calculation",
     },
     {
       label: "Driver Number",
@@ -216,13 +216,13 @@ export default function LosuPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result?.message || "Unable to generate Lo Shu grid.");
+        throw new Error(result?.message || "Unable to generate numerology grid.");
       }
 
       const nextResult = result?.data || result;
 
       if (!nextResult?.grid || !nextResult?.counts) {
-        throw new Error(result?.message || "Invalid Lo Shu grid response.");
+        throw new Error(result?.message || "Invalid numerology grid response.");
       }
 
       const personalYearResponse = await fetch(
@@ -296,12 +296,12 @@ export default function LosuPage() {
       setLosuResult(nextResult);
       setPersonalYearResult(nextPersonalYearResult);
       setPersonalYearMatrix(nextMatrixResult);
-      const nextMessage = "Lo Shu Data generated successfully.";
+      const nextMessage = "Numerology data generated successfully.";
       setMessage(nextMessage);
       toast.success(result?.message || nextMessage);
     } catch (error) {
       const nextMessage =
-        error?.message || "Unable to generate Lo Shu Data. Please try again.";
+        error?.message || "Unable to generate numerology data. Please try again.";
       setMessage(nextMessage);
       toast.error(nextMessage);
     } finally {
@@ -309,8 +309,92 @@ export default function LosuPage() {
     }
   };
 
+ const personalYearMatrixApi = async () => {
+  if (!fromYear.trim() || !toYear.trim()) {
+      const nextMessage = "Please enter from year and to year.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    const fromYearNumber = Number(fromYear);
+    const toYearNumber = Number(toYear);
+
+    if (!Number.isInteger(fromYearNumber) || !Number.isInteger(toYearNumber)) {
+      const nextMessage = "Please enter valid years.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    if (toYearNumber < fromYearNumber) {
+      const nextMessage = "To Year must be greater than or equal to From Year.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    if (toYearNumber - fromYearNumber > 10) {
+      const nextMessage = "Maximum gap between From Year and To Year is 10 years.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const normalizedDob = formatDobForApi(dob.trim());
+
+    const matrixQuery = new URLSearchParams({
+      dob: normalizedDob,
+      fromYear: String(fromYearNumber),
+      toYear: String(toYearNumber),
+    });
+
+    const matrixResponse = await fetch(
+      `/api/astro-proxy/astrology-services/home-page/personal-year-matrix?${matrixQuery.toString()}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const matrixResult = await matrixResponse.json();
+
+    if (!matrixResponse.ok) {
+      throw new Error(
+        matrixResult?.message || "Unable to generate personal year matrix."
+      );
+    }
+
+    const nextMatrixResult = normalizeMatrixResult(matrixResult);
+
+    if (!Array.isArray(nextMatrixResult)) {
+      throw new Error(
+        matrixResult?.message || "Invalid personal year matrix response."
+      );
+    }
+
+    setPersonalYearMatrix(nextMatrixResult);
+
+    const nextMessage = "Personal year matrix generated successfully.";
+    setMessage(nextMessage);
+    toast.success(matrixResult?.message || nextMessage);
+  } catch (error) {
+    const nextMessage =
+      error?.message ||
+      "Unable to generate personal year matrix. Please try again.";
+
+    setMessage(nextMessage);
+    toast.error(nextMessage);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
   return (
-    <PageLayout title="Lo Shu Details" icon="🔢">
+    <PageLayout title="Numerology Details" icon="🔢">
       <ToastContainer position="top-right" autoClose={2500} theme="dark" />
       <div className="mx-auto max-w-7xl">
         <section className="rounded-xl border border-white/10 bg-[#0f1535] p-3 shadow-lg">
@@ -318,7 +402,7 @@ export default function LosuPage() {
             onSubmit={handleSubmit}
             className="rounded-lg  p-2.5 transition-all duration-200 hover:scale-[1.01]"
           >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div>
                 <label
                   htmlFor="losu-fullname"
@@ -377,42 +461,6 @@ export default function LosuPage() {
 
               <div>
                 <label
-                  htmlFor="losu-from-year"
-                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
-                >
-                  From Year
-                </label>
-
-                <input
-                  id="losu-from-year"
-                  type="number"
-                  inputMode="numeric"
-                  value={fromYear}
-                  onChange={(event) => setFromYear(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="losu-to-year"
-                  className="text-xs uppercase tracking-[0.14em] text-gray-400"
-                >
-                  To Year
-                </label>
-
-                <input
-                  id="losu-to-year"
-                  type="number"
-                  inputMode="numeric"
-                  value={toYear}
-                  onChange={(event) => setToYear(event.target.value)}
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none transition focus:border-[#d8a84a]/70"
-                />
-              </div>
-
-              <div>
-                <label
                   htmlFor="losu-calculation-type"
                   className="text-xs uppercase tracking-[0.14em] text-gray-400"
                 >
@@ -433,6 +481,52 @@ export default function LosuPage() {
                 </select>
               </div>
             </div>
+
+            {/* <div className="mt-4 rounded-lg border border-[#d8a84a]/30 bg-[#fff8ee] p-3 text-[#211704]">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-[#8a6106]">
+                  Matrix for Personal Year & Month
+                </h3>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:w-[360px]">
+                  <div>
+                    <label
+                      htmlFor="losu-from-year"
+                      className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8a6106]"
+                    >
+                      From Year
+                    </label>
+
+                    <input
+                      id="losu-from-year"
+                      type="number"
+                      inputMode="numeric"
+                      value={fromYear}
+                      onChange={(event) => setFromYear(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#d8a84a]/50 bg-white px-3 py-2 text-sm text-[#211704] outline-none transition focus:border-[#8a6106]"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="losu-to-year"
+                      className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8a6106]"
+                    >
+                      To Year
+                    </label>
+
+                    <input
+                      id="losu-to-year"
+                      type="number"
+                      inputMode="numeric"
+                      value={toYear}
+                      onChange={(event) => setToYear(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#d8a84a]/50 bg-white px-3 py-2 text-sm text-[#211704] outline-none transition focus:border-[#8a6106]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div> */}
 
             <div className="mt-4 flex justify-center sm:justify-end">
               <button
@@ -539,7 +633,7 @@ export default function LosuPage() {
                       Grid placement
                     </p>
                     <h3 className="mt-1 text-lg font-semibold text-white">
-                      Right-side Lo Shu Box
+                      Numerology Grid
                     </h3>
                   </div>
                   <span className="rounded-full border border-purple-300/30 bg-purple-500/15 px-3 py-1 text-xs font-semibold text-purple-100">
@@ -606,11 +700,61 @@ export default function LosuPage() {
                   ))}
                 </div>
 
-              <div className="grid grid-cols-1 gap-3 lg:col-span-2 lg:grid-cols-[4fr_2fr]">
+              <div className="grid grid-cols-1 gap-3 lg:col-span-2 xl:grid-cols-[4fr_2fr]">
                 <div className="overflow-hidden rounded-sm border-2 border-[#1f3c2d] bg-[#fffed5] p-2 text-[#111]">
-                  <h3 className="mb-2 inline-block rounded border border-[#1f8b39] bg-[#c8f5b3] px-3 py-1 text-base font-bold shadow-[0_0_4px_rgba(22,120,45,0.7)]">
-                    Matrix for Personal Year & Month
-                  </h3>
+                  <div className="mt-4 rounded-lg border border-[#d8a84a]/30 bg-[#fff8ee] p-3 text-[#211704]">
+             
+                <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-[#8a6106]">
+                  Matrix for Personal Year & Month
+                </h3>
+ <div className="sm:flex justify-between gap-3 lg:flex-row lg:items-end lg:justify-between mt-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:w-[360px]">
+                  <div>
+                    <label
+                      htmlFor="losu-from-year"
+                      className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8a6106]"
+                    >
+                      From Year
+                    </label>
+
+                    <input
+                      id="losu-from-year"
+                      type="number"
+                      inputMode="numeric"
+                      value={fromYear}
+                      onChange={(event) => setFromYear(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#d8a84a]/50 bg-white px-3 py-2 text-sm text-[#211704] outline-none transition focus:border-[#8a6106]"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="losu-to-year"
+                      className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8a6106]"
+                    >
+                      To Year
+                    </label>
+
+                    <input
+                      id="losu-to-year"
+                      type="number"
+                      inputMode="numeric"
+                      value={toYear}
+                      onChange={(event) => setToYear(event.target.value)}
+                      className="mt-2 w-full rounded-lg border border-[#d8a84a]/50 bg-white px-3 py-2 text-sm text-[#211704] outline-none transition focus:border-[#8a6106]"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 sm:mt-0">
+              <button
+                onClick={()=>personalYearMatrixApi()}
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:opacity-60"
+              >
+                {isSubmitting ? "Generating..." : "Submit"}
+              </button>
+            </div>
+              </div>
+            </div>
 
                   <div className="overflow-x-auto">
                     <table className="min-w-[760px] border-collapse text-center text-sm font-semibold">

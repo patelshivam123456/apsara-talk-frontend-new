@@ -290,7 +290,7 @@ const translations = {
     "menu.walletPayments": "Wallet & Payments",
     "menu.profileSettings": "Profile & Settings",
     "menu.ourProfile": "Our Profile",
-    "menu.losuGrid": "Lo Shu Grid",
+    "menu.losuGrid": "Numerology",
     "menu.ourClients": "Our Clients",
   },
   hi: {
@@ -551,7 +551,7 @@ const translations = {
     "menu.walletPayments": "वॉलेट और भुगतान",
     "menu.profileSettings": "प्रोफ़ाइल और सेटिंग्स",
     "menu.ourProfile": "हमारी प्रोफ़ाइल",
-    "menu.losuGrid": "लो शू ग्रिड",
+    "menu.losuGrid": "न्यूमरोलॉजी",
     "menu.ourClients": "हमारे क्लाइंट",
   },
 };

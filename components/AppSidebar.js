@@ -29,7 +29,7 @@ const sidebarMenus = [
 
 const astrologerMenus = [
   { labelKey: "menu.ourProfile", icon: "🔭", route: "/astrologer-profile" },
-  { labelKey: "menu.losuGrid", icon: "🔢", route: "/losu" },
+  { labelKey: "menu.losuGrid", icon: "🔢", route: "/numerology" },
   { labelKey: "menu.ourClients", icon: "💬", route: "/chat" },
   { labelKey: "menu.myActivity", icon: "📊", route: "/activity" },
 ];

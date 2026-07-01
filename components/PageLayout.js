@@ -117,14 +117,15 @@ export default function PageLayout({
   }
 
   const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ""}${
-      lastName?.charAt(0) || ""
-    }`.toUpperCase();
+    return `${firstName?.charAt(0)}`.toUpperCase();
   };
-  const displayFirstName = user?.firstName || user?.username || user?.name;
-  const displayLastName = user?.lastName;
+
+  console.log(user,"...............");
+  
+  const displayFirstName = user?.fullName || user?.username || user?.name;
+  // const displayLastName = user?.lastName;
   const displayName =
-    [displayFirstName, displayLastName].filter(Boolean).join(" ") || "User";
+    [displayFirstName].filter(Boolean).join(" ") || "User";
   const profileRoute = getProfileRoute(roles);
 
   return (
@@ -155,7 +156,7 @@ export default function PageLayout({
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="bg-white/5 cursor-pointer rounded-full text-black w-10 h-10 flex justify-center items-center"
               >
-                {getInitials(displayFirstName, displayLastName) || "U"}
+                {getInitials(displayFirstName) || "U"}
               </div>
             ) : (
               // <img

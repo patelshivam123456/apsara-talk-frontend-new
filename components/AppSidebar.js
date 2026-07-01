@@ -11,6 +11,7 @@ import {
 } from "@/utils/roleAccess";
 import { getStoredRoles } from "@/utils/tokenStore";
 import { useLanguage } from "@/context/LanguageContext";
+import Image from "next/image";
 
 const sidebarMenus = [
   { labelKey: "menu.home", icon: "🏠", route: "/" },
@@ -90,12 +91,16 @@ export default function AppSidebar({ currentRoute }) {
         {/* Logo row */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full border border-[#ffb86c] flex items-center justify-center text-[#ffb86c] text-lg">
-              ✦
-            </div>
+            <Image
+                  src="/logo_apsara.jpeg"
+                  alt="ApsaraAstro Logo"
+                  width={42}
+                  height={42}
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-[#eef000]/70"
+                />
             <span className="text-sm font-semibold">
               <span className="text-white">Apsara</span>
-              <span className="text-[#dfff00]">Astro</span>
+              <span className="">Astro</span>
             </span>
           </div>
           <button

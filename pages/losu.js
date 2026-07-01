@@ -75,7 +75,7 @@ export default function LosuPage() {
       detail: "Source date used for numerology calculation",
     },
     {
-      label: "Driver Number",
+      label: "Personality Number",
       value: losuResult?.driverNumber,
       detail: losuResult?.driverAddedToGrid
         ? "Added to grid"

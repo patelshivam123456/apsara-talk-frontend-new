@@ -37,6 +37,22 @@ const personalYearReadingDetails = [
   "Hard work done this year will give result in coming year.",
 ];
 
+const personalityDestinyTabs = [
+  { key: "personality", label: "Personality", type: "PERSONALITY" },
+  { key: "destiny", label: "Destiny", type: "DESTINY" },
+];
+
+const preferredPersonalityDestinySections = [
+  { key: "coreCharacteristics", label: "Core Characteristics" },
+  { key: "commonPitfalls", label: "Common Pitfalls" },
+  {
+    key: "primaryHealthVulnerabilities",
+    label: "Primary Health Vulnerabilities",
+  },
+  { key: "topCareerRoles", label: "Top Career Roles" },
+  { key: "topCareerSectors", label: "Top Career Sectors" },
+];
+
 function formatList(values) {
   return values?.length ? values.join(", ") : "None";
 }
@@ -51,6 +67,79 @@ function normalizeMatrixResult(result) {
   return Array.isArray(data) ? data : data?.matrix || data?.years || [];
 }
 
+function formatPersonalityDestinySectionLabel(key) {
+  const preferredSection = preferredPersonalityDestinySections.find(
+    (section) => section.key === key,
+  );
+
+  if (preferredSection) {
+    return preferredSection.label;
+  }
+
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (letter) => letter.toUpperCase())
+    .trim();
+}
+
+function normalizePersonalityDestinyResult(result) {
+  const data = result?.data || result || {};
+  const preferredKeys = preferredPersonalityDestinySections.map(
+    (section) => section.key,
+  );
+
+  return Object.entries(data)
+    .filter(([, value]) => Array.isArray(value))
+    .sort(([keyA], [keyB]) => {
+      const indexA = preferredKeys.indexOf(keyA);
+      const indexB = preferredKeys.indexOf(keyB);
+
+      if (indexA === -1 && indexB === -1) {
+        return keyA.localeCompare(keyB);
+      }
+
+      if (indexA === -1) {
+        return 1;
+      }
+
+      if (indexB === -1) {
+        return -1;
+      }
+
+      return indexA - indexB;
+    })
+    .map(([key, value]) => ({
+      key,
+      label: formatPersonalityDestinySectionLabel(key),
+      items: value.filter((item) => item?.value),
+    }));
+}
+
+async function fetchPersonalityDestinyDetails(type, number) {
+  const query = new URLSearchParams({
+    type,
+    number: String(number),
+  });
+
+  const response = await fetch(
+    `/api/astro-proxy/astrology-services/home-page/personality-destiny-details?${query.toString()}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    },
+  );
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.message || `Unable to generate ${type.toLowerCase()} details.`,
+    );
+  }
+
+  return normalizePersonalityDestinyResult(result);
+}
+
 export default function LosuPage() {
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState("");
@@ -61,6 +150,12 @@ export default function LosuPage() {
   const [losuResult, setLosuResult] = useState(null);
   const [personalYearResult, setPersonalYearResult] = useState(null);
   const [personalYearMatrix, setPersonalYearMatrix] = useState([]);
+  const [personalityDestinyDetails, setPersonalityDestinyDetails] = useState({
+    personality: null,
+    destiny: null,
+  });
+  const [activePersonalityDestinyTab, setActivePersonalityDestinyTab] =
+    useState("personality");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -127,6 +222,16 @@ export default function LosuPage() {
         : "Not added to grid",
     },
   ];
+  const activePersonalityDestinyDetails =
+    personalityDestinyDetails[activePersonalityDestinyTab];
+  const activePersonalityDestinyMeta =
+    personalityDestinyTabs.find(
+      (tab) => tab.key === activePersonalityDestinyTab,
+    ) || personalityDestinyTabs[0];
+  const activePersonalityDestinyNumber =
+    activePersonalityDestinyTab === "personality"
+      ? losuResult?.driverNumber
+      : losuResult?.destinyNumber;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -196,6 +301,11 @@ export default function LosuPage() {
       setLosuResult(null);
       setPersonalYearResult(null);
       setPersonalYearMatrix([]);
+      setPersonalityDestinyDetails({
+        personality: null,
+        destiny: null,
+      });
+      setActivePersonalityDestinyTab("personality");
       const normalizedDob = formatDobForApi(dob.trim());
 
       const response = await fetch(
@@ -225,7 +335,7 @@ export default function LosuPage() {
         throw new Error(result?.message || "Invalid numerology grid response.");
       }
 
-      const personalYearResponse = await fetch(
+      const personalYearRequest = fetch(
         "/api/astro-proxy/astrology-services/home-page/personal-year",
         {
           method: "POST",
@@ -240,6 +350,39 @@ export default function LosuPage() {
           }),
         },
       );
+      const matrixQuery = new URLSearchParams({
+        dob: normalizedDob,
+        fromYear: String(fromYearNumber),
+        toYear: String(toYearNumber),
+      });
+      const matrixRequest = fetch(
+        `/api/astro-proxy/astrology-services/home-page/personal-year-matrix?${matrixQuery.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+      const personalityRequest = fetchPersonalityDestinyDetails(
+        "PERSONALITY",
+        nextResult.driverNumber,
+      );
+      const destinyRequest = fetchPersonalityDestinyDetails(
+        "DESTINY",
+        nextResult.destinyNumber,
+      );
+
+      const [
+        personalYearResponse,
+        matrixResponse,
+        personalityDetails,
+        destinyDetails,
+      ] = await Promise.all([
+        personalYearRequest,
+        matrixRequest,
+        personalityRequest,
+        destinyRequest,
+      ]);
       const personalYearResult = await personalYearResponse.json();
 
       if (!personalYearResponse.ok) {
@@ -264,19 +407,6 @@ export default function LosuPage() {
         );
       }
 
-      const matrixQuery = new URLSearchParams({
-        dob: normalizedDob,
-        fromYear: String(fromYearNumber),
-        toYear: String(toYearNumber),
-      });
-      const matrixResponse = await fetch(
-        `/api/astro-proxy/astrology-services/home-page/personal-year-matrix?${matrixQuery.toString()}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        },
-      );
       const matrixResult = await matrixResponse.json();
 
       if (!matrixResponse.ok) {
@@ -296,6 +426,10 @@ export default function LosuPage() {
       setLosuResult(nextResult);
       setPersonalYearResult(nextPersonalYearResult);
       setPersonalYearMatrix(nextMatrixResult);
+      setPersonalityDestinyDetails({
+        personality: personalityDetails,
+        destiny: destinyDetails,
+      });
       const nextMessage = "Numerology data generated successfully.";
       setMessage(nextMessage);
       toast.success(result?.message || nextMessage);
@@ -700,6 +834,85 @@ export default function LosuPage() {
                   ))}
                 </div>
 
+              <div className="lg:col-span-2 mt-5">
+                <div className="mb-3 astro-dark-surface rounded-xl border border-white/10 bg-[#090d22]/80 p-3 transition-all duration-200 hover:scale-[1.01] flex justify-between flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-200">
+                      Numerology insight
+                    </p>
+                    <h3 className="mt-1 text-lg font-semibold text-white">
+                      Personality and Destiny Details
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 overflow-hidden rounded-lg border border-[#d8a84a]/40 bg-white/5 p-1">
+                    {personalityDestinyTabs.map((tab) => {
+                      const isActive = activePersonalityDestinyTab === tab.key;
+
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setActivePersonalityDestinyTab(tab.key)}
+                          className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+                            isActive
+                              ? "bg-[#d8a84a] text-[#211704]"
+                              : "text-white hover:bg-white/10"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {(activePersonalityDestinyDetails || []).map((section) => {
+                    return (
+                      <article
+                        key={section.key}
+                        className="rounded-sm border-2 border-[#39d74a] bg-[#fffed5] p-3 text-[#111] shadow-[0_0_0_1px_rgba(255,255,255,0.2)]"
+                      >
+                        <div className="rounded-md border border-[#39d74a]/70 bg-[#cff5bd] px-3 py-2 text-center">
+                          <h4 className="text-sm font-bold leading-tight text-[#075a22]">
+                            {section.label} of {activePersonalityDestinyMeta.label}{" "}
+                            Number {activePersonalityDestinyNumber}
+                          </h4>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#075a22]">
+                          {section.items[0]?.lord && (
+                            <span className="text-[10px] rounded-full border border-[#39d74a]/60 bg-white/70 px-2 py-1">
+                              Lord: {section.items[0].lord}
+                            </span>
+                          )}
+                          {section.items[0]?.colour && (
+                            <span className="text-[10px] rounded-full border border-[#39d74a]/60 bg-white/70 px-2 py-1">
+                              Colour: {section.items[0].colour}
+                            </span>
+                          )}
+                        </div>
+
+                        {section.items.length > 0 ? (
+                          <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[12px] leading-snug">
+                            {section.items.map((item, index) => (
+                              <li key={`${section.key}-${index}`}>
+                                {item.value}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="mt-3 text-sm font-semibold text-[#665d4d]">
+                            No details available for this number.
+                          </p>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 gap-3 lg:col-span-2 xl:grid-cols-[4fr_2fr]">
                 <div className="overflow-hidden rounded-sm border-2 border-[#1f3c2d] bg-[#fffed5] p-2 text-[#111]">
                   <div className="mt-4 rounded-lg border border-[#d8a84a]/30 bg-[#fff8ee] p-3 text-[#211704]">
@@ -836,16 +1049,16 @@ export default function LosuPage() {
                 </div>
 
                 <aside className="rounded-sm border-2 border-[#1f3c2d] bg-[#fffed5] p-3 text-[#111]">
-                  <h3 className="text-2xl font-bold leading-tight">
+                  <h3 className="text-lg font-semibold leading-tight">
                     Personal Year reading
                   </h3>
                   <ul className="mt-1 list-disc space-y-1 pl-5 text-base leading-tight">
-                    <li>
+                    <li className="text-[13px]">
                       Your running personal year is{" "}
                       {personalYearResult.personalYear}.
                     </li>
                     {personalYearReadingDetails.map((item) => (
-                      <li key={item}>{item}</li>
+                      <li className="text-[13px]" key={item}>{item}</li>
                     ))}
                   </ul>
                 </aside>

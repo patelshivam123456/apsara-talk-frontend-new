@@ -1,5 +1,6 @@
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL_ASTRO || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL_ASTRO ||
+  "http://66.116.242.35:8085";
 
 function buildTargetUrl(req) {
   const path = Array.isArray(req.query.path)

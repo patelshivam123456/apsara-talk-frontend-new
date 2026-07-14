@@ -1,1 +1,1 @@
-export { default } from "./losu";
+export { default } from "@/components/Numerology/NumerologyPage";

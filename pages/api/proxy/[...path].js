@@ -1,5 +1,6 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const REQUEST_TIMEOUT_MS = 30000;
 
 function getSetCookieHeaders(headers) {
   if (typeof headers.getSetCookie === "function") {
@@ -52,6 +53,8 @@ function buildTargetUrl(req) {
 
 export default async function handler(req, res) {
   const targetUrl = buildTargetUrl(req);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const headers = {
     accept: req.headers.accept || "*/*",
     ...(req.headers["content-type"]
@@ -76,6 +79,7 @@ export default async function handler(req, res) {
           }
         : {}),
       redirect: "follow",
+      signal: controller.signal,
     });
 
     const setCookie = getSetCookieHeaders(response.headers).map(normalizeSetCookie);
@@ -94,12 +98,30 @@ export default async function handler(req, res) {
 
     return res.status(response.status).send(text);
   } catch (error) {
-    console.log("[api proxy] request failed", error);
+    console.error("[api proxy] request failed", {
+      targetUrl,
+      message: error?.message,
+      code: error?.cause?.code,
+      cause: error?.cause?.message,
+    });
 
-    return res.status(500).json({
+    const isTimeout = error?.name === "AbortError";
+    const isDevelopment = process.env.NODE_ENV !== "production";
+
+    return res.status(isTimeout ? 504 : 502).json({
       success: false,
       message: "API proxy request failed",
+      ...(isDevelopment
+        ? {
+            error: error?.message,
+            code: error?.cause?.code,
+            cause: error?.cause?.message,
+            targetUrl,
+          }
+        : {}),
     });
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

@@ -21,11 +21,17 @@ import {
   getUserRoles,
 } from "@/utils/roleAccess";
 
-const withServiceRoutes = (labels) =>
-  labels.map((label) => ({
-    label,
-    route: `/services/${slugifyServiceLabel(label)}`,
-  }));
+const withServiceRoutes = (items) =>
+  items.map((item) => {
+    if (typeof item === "string") {
+      return {
+        label: item,
+        route: `/services/${slugifyServiceLabel(item)}`,
+      };
+    }
+
+    return item;
+  });
 
 const consultationItems = withServiceRoutes([
   "Chat with Astrologer",
@@ -33,19 +39,18 @@ const consultationItems = withServiceRoutes([
 ]);
 
 const horoscopeItems = withServiceRoutes([
-  "Daily Horoscope",
-  "Tomorrow's Horoscope",
-  "Yesterday's Horoscope",
-  "Weekly Horoscope",
-  "Monthly Horoscope",
-  "Yearly Horoscope",
+  { label: "Daily Horoscope", route: "/horoscope/daily" },
+  { label: "Weekly Horoscope", route: "/horoscope/weekly" },
+  { label: "Monthly Horoscope", route: "/horoscope/monthly" },
+  { label: "Yearly Horoscope", route: "/horoscope/yearly" },
 ]);
 
 const freeServiceItems = withServiceRoutes([
-  "Free Kundli",
+  { label: "Kundli PDF", route: "/kundali-pdf" },
   "Kundli Matching",
   "Compatibility",
   "Tarot",
+  { label: "Apsara Astro Profile", route: "/astro-profile" },
 ]);
 
 const calculatorItems = withServiceRoutes([

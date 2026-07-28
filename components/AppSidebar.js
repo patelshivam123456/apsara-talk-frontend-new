@@ -18,7 +18,7 @@ const sidebarMenus = [
   { labelKey: "menu.exploreAstrologers", icon: "🔭", route: "/astrologers" },
   { labelKey: "menu.chatSessions", icon: "💬", route: "/chat" },
   { labelKey: "menu.kundliReports", icon: "📜", route: "/kundli" },
-  { labelKey: "menu.dailyHoroscope", icon: "⭐", route: "/horoscope" },
+  { labelKey: "menu.dailyHoroscope", icon: "⭐", route: "/horoscope/daily" },
   { labelKey: "menu.compatibility", icon: "❤️", route: "/compatibility" },
   { labelKey: "menu.askUniverse", icon: "🤖", route: "/ask-universe" },
   { labelKey: "menu.voiceGuidance", icon: "🎙️", route: "/voice-guidance" },
@@ -30,6 +30,7 @@ const sidebarMenus = [
 
 const astrologerMenus = [
   { labelKey: "menu.astrologerDashboard", icon: "📋", route: "/astrologer-dashboard" },
+  // { labelKey: "menu.kundaliPdf", icon: "📄", route: "/astrologer/kundali-pdf" },
   { labelKey: "menu.ourProfile", icon: "🔭", route: "/astrologer-profile" },
   { labelKey: "menu.losuGrid", icon: "🔢", route: "/numerology" },
   { labelKey: "menu.ourClients", icon: "💬", route: "/chat" },

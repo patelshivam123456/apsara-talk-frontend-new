@@ -120,8 +120,6 @@ export default function PageLayout({
     return `${firstName?.charAt(0)}`.toUpperCase();
   };
 
-  console.log(user,"...............");
-  
   const displayFirstName = user?.fullName || user?.username || user?.name;
   // const displayLastName = user?.lastName;
   const displayName =

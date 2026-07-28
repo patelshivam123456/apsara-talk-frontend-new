@@ -281,6 +281,7 @@ const translations = {
     "menu.exploreAstrologers": "Explore Astrologers",
     "menu.chatSessions": "Chat / Sessions",
     "menu.kundliReports": "Kundli / Reports",
+    "menu.kundaliPdf": "Kundali PDF",
     "menu.dailyHoroscope": "Daily Horoscope",
     "menu.compatibility": "Compatibility",
     "menu.askUniverse": "Ask the Universe (AI)",

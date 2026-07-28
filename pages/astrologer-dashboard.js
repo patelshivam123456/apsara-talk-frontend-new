@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import PageLayout from "@/components/PageLayout";
 
@@ -10,6 +11,7 @@ const dashboardTabs = [
     id: "kundali-pdf",
     label: "Kundali PDF",
     icon: "📄",
+    route: "/astrologer/kundali-pdf",
   },
   {
     id: "horoscope",
@@ -25,14 +27,15 @@ const dashboardTabs = [
     id: "apsara-profile",
     label: "Apsara Astro Profile",
     icon: "🔭",
+    route: "/astrologer/astro-profile",
   },
 ];
 
 const horoscopePeriods = [
-  "Daily",
-  "Weekly",
-  "Monthly",
-  "Yearly",
+  ["Daily", "/horoscope/daily"],
+  ["Weekly", "/horoscope/weekly"],
+  ["Monthly", "/horoscope/monthly"],
+  ["Yearly", "/horoscope/yearly"],
 ];
 
 function getDisplayName(user) {
@@ -60,6 +63,7 @@ function ActionButton({ children }) {
 
 export default function AstrologerDashboardPage() {
   const [activeTab, setActiveTab] = useState("kundali-pdf");
+  const router = useRouter();
   const { user } = useSelector((state) => state.auth);
   const displayName = useMemo(() => getDisplayName(user), [user]);
 
@@ -109,7 +113,14 @@ export default function AstrologerDashboardPage() {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    if (tab.route) {
+                      router.push(tab.route);
+                      return;
+                    }
+
+                    setActiveTab(tab.id);
+                  }}
                   className={`flex items-center justify-center gap-2 rounded-md border px-3 py-3 text-sm font-semibold transition ${
                     active
                       ? "border-[#d8a84a] bg-[#fff8ee] text-[#211704]"
@@ -156,7 +167,12 @@ export default function AstrologerDashboardPage() {
                     place.
                   </p>
                   <div className="mt-4">
-                    <ActionButton>Generate PDF</ActionButton>
+                    <Link
+                      href="/astrologer/kundali-pdf"
+                      className="inline-flex rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
+                    >
+                      Generate PDF
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -169,7 +185,7 @@ export default function AstrologerDashboardPage() {
                   Prepare horoscope readings by period.
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {horoscopePeriods.map((period) => (
+                  {horoscopePeriods.map(([period, route]) => (
                     <div
                       key={period}
                       className="rounded-md border border-[#d8a84a]/30 bg-white p-4"
@@ -179,7 +195,12 @@ export default function AstrologerDashboardPage() {
                         Review predictions, remedies, lucky color, and guidance.
                       </p>
                       <div className="mt-4">
-                        <ActionButton>Open {period}</ActionButton>
+                        <Link
+                          href={route}
+                          className="inline-flex rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
+                        >
+                          Open {period}
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -256,7 +277,7 @@ export default function AstrologerDashboardPage() {
                     Update your public profile and client-facing details.
                   </p>
                   <Link
-                    href="/astrologer-profile"
+                    href="/astrologer/astro-profile"
                     className="mt-4 inline-flex rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
                   >
                     Open Profile

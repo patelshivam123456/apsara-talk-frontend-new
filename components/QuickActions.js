@@ -14,7 +14,7 @@ const actions = [
     titleKey: "quick.horoscope",
     description: "Read your daily insight",
     icon: "★",
-    route: "/horoscope",
+    route: "/horoscope/daily",
   },
   {
     titleKey: "quick.kundli",

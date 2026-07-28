@@ -4,6 +4,8 @@ export const CLIENT_ROLE = "ROLE_CLIENT";
 
 export const ASTROLOGER_ALLOWED_ROUTES = new Set([
   "/astrologer-dashboard",
+  "/astrologer/astro-profile",
+  "/astrologer/kundali-pdf",
   "/astrologer-profile",
   "/losu",
   "/numerology",
@@ -13,12 +15,15 @@ export const ASTROLOGER_ALLOWED_ROUTES = new Set([
 
 export const ASTROLOGER_ONLY_ROUTES = new Set([
   "/astrologer-dashboard",
+  "/astrologer/astro-profile",
+  "/astrologer/kundali-pdf",
   "/astrologer-profile",
 ]);
 
 const PUBLIC_ROUTE_PREFIXES = [
   "/services/",
   "/astrologers/",
+  "/horoscope/",
 ];
 
 const PUBLIC_ROUTES = new Set([
@@ -26,6 +31,8 @@ const PUBLIC_ROUTES = new Set([
   "/astrologers",
   "/horoscope",
   "/kundli",
+  "/astro-profile",
+  "/kundali-pdf",
   "/compatibility",
   "/ask-universe",
   "/voice-guidance",

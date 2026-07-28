@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import PageLayout from "@/components/PageLayout";
+import apisecond from "@/utils/apisecond";
 import "react-toastify/dist/ReactToastify.css";
 import LushuForm from "./Lushu-grid/LushuForm";
 import LushuGridPage from "./Lushu-grid/LushuGridPage";
@@ -20,18 +21,218 @@ import {
   fetchSectorWiseEffects,
 } from "./Lushu-grid/api";
 
+const defaultDateInputValue = new Date().toISOString().slice(0, 10);
+const maxDashaDisplayDate = "31-12-2060";
+const maxDashaInputDate = "2060-12-31";
+
+function parseDisplayDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parts = String(value).includes("/")
+    ? String(value).split("/")
+    : String(value).split("-");
+
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  let day;
+  let month;
+  let year;
+
+  if (parts[0].length === 4) {
+    [year, month, day] = parts;
+  } else {
+    [day, month, year] = parts;
+  }
+
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function formatDisplayDate(value) {
+  const date = value instanceof Date ? value : parseDisplayDate(value);
+
+  if (!date) {
+    return "";
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear());
+
+  return `${day}-${month}-${year}`;
+}
+
+function formatInputDate(value) {
+  const date = value instanceof Date ? value : parseDisplayDate(value);
+
+  if (!date) {
+    return "";
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear());
+
+  return `${year}-${month}-${day}`;
+}
+
+function compareDates(left, right) {
+  const leftDate = left instanceof Date ? left : parseDisplayDate(left);
+  const rightDate = right instanceof Date ? right : parseDisplayDate(right);
+
+  if (!leftDate || !rightDate) {
+    return Number.NaN;
+  }
+
+  return leftDate.getTime() - rightDate.getTime();
+}
+
+function getYear(value) {
+  const date = value instanceof Date ? value : parseDisplayDate(value);
+  return date ? date.getFullYear() : Number.NaN;
+}
+
+function clampDateToRange(value, min, max) {
+  const date = parseDisplayDate(value);
+  const minDate = parseDisplayDate(min);
+  const maxDate = parseDisplayDate(max);
+
+  if (!date || !minDate || !maxDate) {
+    return "";
+  }
+
+  if (date.getTime() < minDate.getTime()) {
+    return formatInputDate(minDate);
+  }
+
+  if (date.getTime() > maxDate.getTime()) {
+    return formatInputDate(maxDate);
+  }
+
+  return formatInputDate(date);
+}
+
+function isDateWithinRange(value, min, max) {
+  return compareDates(value, min) >= 0 && compareDates(value, max) <= 0;
+}
+
+function formatDateForPratyantarApi(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-");
+    return `${day}-${month}-${year}`;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    return value.replaceAll("/", "-");
+  }
+
+  return value;
+}
+
+function normalizePratyantarDashaResult(result) {
+  const data = result?.data || result;
+  return Array.isArray(data) ? data : [];
+}
+
+function normalizeDashaCalculationResult(result) {
+  return result?.data || result || {};
+}
+
+function flattenDashaRows(mahadashas = [], selectedFromDate, selectedToDate) {
+  const selectedFrom = parseDisplayDate(selectedFromDate);
+  const selectedTo = parseDisplayDate(selectedToDate);
+  const seenRows = new Set();
+
+  if (!selectedFrom || !selectedTo) {
+    return [];
+  }
+
+  return mahadashas
+    .flatMap((mahadasha, mahaIndex) =>
+      (mahadasha.antardashas || []).map((antardasha, antarIndex) => {
+        const startDate = parseDisplayDate(antardasha.startDate);
+        const endDate = parseDisplayDate(antardasha.endDate);
+
+        return {
+          id: `${mahaIndex}-${antarIndex}-${antardasha.startDate}-${antardasha.endDate}`,
+          fromDate: antardasha.startDate,
+          toDate: antardasha.endDate,
+          mahadashaNumber:
+            antardasha.mahadashaNumber ?? mahadasha.mahadashaNumber,
+          antardashaNumber: antardasha.antardashaNumber,
+          startTimestamp: startDate?.getTime(),
+          endTimestamp: endDate?.getTime(),
+        };
+      }),
+    )
+    .filter((row) => {
+      if (
+        !Number.isFinite(row.startTimestamp) ||
+        !Number.isFinite(row.endTimestamp)
+      ) {
+        return false;
+      }
+
+      return (
+        row.startTimestamp <= selectedTo.getTime() &&
+        row.endTimestamp >= selectedFrom.getTime()
+      );
+    })
+    .sort((left, right) => left.startTimestamp - right.startTimestamp)
+    .filter((row) => {
+      const rowKey = [
+        row.fromDate,
+        row.toDate,
+        row.mahadashaNumber,
+        row.antardashaNumber,
+      ].join("|");
+
+      if (seenRows.has(rowKey)) {
+        return false;
+      }
+
+      seenRows.add(rowKey);
+      return true;
+    });
+}
+
 export default function NumerologyPage() {
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState("");
   const [dob, setDob] = useState("");
   const [fromYear, setFromYear] = useState(String(currentYear));
   const [toYear, setToYear] = useState(String(currentYear + 10));
+  const [pratyantarFromDate, setPratyantarFromDate] = useState(
+    defaultDateInputValue,
+  );
+  const [pratyantarYears, setPratyantarYears] = useState("10");
+  const [dashaFromDate, setDashaFromDate] = useState("");
+  const [dashaToDate, setDashaToDate] = useState(maxDashaInputDate);
+  const [dashaRows, setDashaRows] = useState([]);
   const [calculationType, setCalculationType] = useState("lo-shu-grid");
   const [activeResultType, setActiveResultType] = useState("");
   const [losuResult, setLosuResult] = useState(null);
   const [vedicResult, setVedicResult] = useState(null);
   const [personalYearResult, setPersonalYearResult] = useState(null);
   const [personalYearMatrix, setPersonalYearMatrix] = useState([]);
+  const [pratyantarDasha, setPratyantarDasha] = useState([]);
   const [personalityDestinyDetails, setPersonalityDestinyDetails] = useState({
     personality: null,
     destiny: null,
@@ -45,6 +246,8 @@ export default function NumerologyPage() {
     useState("careerEffect");
   const [genericResult, setGenericResult] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDashaSubmitting, setIsDashaSubmitting] = useState(false);
+  const [isPratyantarSubmitting, setIsPratyantarSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
   const resetResults = () => {
@@ -53,6 +256,8 @@ export default function NumerologyPage() {
     setVedicResult(null);
     setPersonalYearResult(null);
     setPersonalYearMatrix([]);
+    setPratyantarDasha([]);
+    setDashaRows([]);
     setPersonalityDestinyDetails({
       personality: null,
       destiny: null,
@@ -107,6 +312,125 @@ export default function NumerologyPage() {
   const showValidationError = (nextMessage) => {
     setMessage(nextMessage);
     toast.error(nextMessage);
+  };
+
+  const validatePratyantarFields = () => {
+    if (!pratyantarFromDate.trim()) {
+      return "Please enter from date.";
+    }
+
+    if (!pratyantarYears.trim()) {
+      return "Please enter years.";
+    }
+
+    const yearsNumber = Number(pratyantarYears);
+
+    if (!Number.isInteger(yearsNumber) || yearsNumber < 1) {
+      return "Please enter valid years.";
+    }
+
+    return "";
+  };
+
+  const validateDashaDateFields = (sourceDob, fromDate, toDate) => {
+    const displayDob = formatDisplayDate(sourceDob);
+    const displayFromDate = formatDisplayDate(fromDate);
+    const displayToDate = formatDisplayDate(toDate);
+
+    if (!displayFromDate) {
+      return "Please select a valid From Date.";
+    }
+
+    if (!displayToDate) {
+      return "Please select a valid To Date.";
+    }
+
+    if (getYear(displayToDate) > 2060) {
+      return "To Date cannot be later than 31-12-2060.";
+    }
+
+    if (!isDateWithinRange(displayFromDate, displayDob, maxDashaDisplayDate)) {
+      return "From Date cannot be earlier than Date of Birth.";
+    }
+
+    if (compareDates(displayFromDate, displayToDate) > 0) {
+      return "From Date cannot be later than To Date.";
+    }
+
+    if (compareDates(displayToDate, maxDashaDisplayDate) > 0) {
+      return "To Date cannot be later than 31-12-2060.";
+    }
+
+    return "";
+  };
+
+  const fetchDashaCalculation = async (sourceDob, fromDate, toDate) => {
+    const displayDob = formatDisplayDate(sourceDob);
+    const displayFromDate = formatDisplayDate(fromDate);
+    const displayToDate = formatDisplayDate(toDate);
+
+    const dashaError = validateDashaDateFields(
+      displayDob,
+      displayFromDate,
+      displayToDate,
+    );
+
+    if (dashaError) {
+      throw new Error(dashaError);
+    }
+
+    const result = await apisecond.get(
+      "/astrology-services/home-page/numerology/dasha-calculation",
+      {
+        params: {
+          dateOfBirth: displayDob,
+          fromDate: displayFromDate,
+          toDate: displayToDate,
+        },
+      },
+    );
+    const nextResult = normalizeDashaCalculationResult(result);
+    const nextRows = flattenDashaRows(
+      nextResult.mahadashas,
+      displayFromDate,
+      displayToDate,
+    );
+
+    return nextRows;
+  };
+
+  const fetchPratyantarDasha = async (sourceDob) => {
+    const query = new URLSearchParams({
+      dateOfBirth: formatDateForPratyantarApi(sourceDob),
+      fromDate: formatDateForPratyantarApi(pratyantarFromDate),
+      years: String(Number(pratyantarYears)),
+    });
+
+    const response = await fetch(
+      `/api/astro-proxy/astrology-services/home-page/numerology/pratyantar-dasha?${query.toString()}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      },
+    );
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.message || "Unable to generate Pratyantar Dasha chart.",
+      );
+    }
+
+    const nextResult = normalizePratyantarDashaResult(result);
+
+    if (!Array.isArray(nextResult)) {
+      throw new Error(
+        result?.message || "Invalid Pratyantar Dasha chart response.",
+      );
+    }
+
+    return nextResult;
   };
 
   const generateLoShuGrid = async (normalizedDob, fromYearNumber, toYearNumber) => {
@@ -311,7 +635,31 @@ export default function NumerologyPage() {
       throw new Error(result?.message || "Invalid Vedic grid response.");
     }
 
+    const displayDob = formatDisplayDate(nextResult.dob || normalizedDob);
+    const defaultFromDate = clampDateToRange(
+      displayDob,
+      displayDob,
+      maxDashaDisplayDate,
+    );
+    const defaultToDate = maxDashaInputDate;
+
+    setDashaFromDate(defaultFromDate);
+    setDashaToDate(defaultToDate);
+
+    const [
+      nextNumberRelationships,
+      nextPratyantarDasha,
+      nextDashaRows,
+    ] = await Promise.all([
+      fetchNumberRelationships(nextResult.driverNumber, nextResult.destinyNumber),
+      fetchPratyantarDasha(nextResult.dob || normalizedDob),
+      fetchDashaCalculation(displayDob, defaultFromDate, defaultToDate),
+    ]);
+
     setVedicResult(nextResult);
+    setNumberRelationships(nextNumberRelationships);
+    setPratyantarDasha(nextPratyantarDasha);
+    setDashaRows(nextDashaRows);
     setActiveResultType("vedic-grid");
     return result?.message || "Vedic grid generated successfully.";
   };
@@ -433,6 +781,92 @@ export default function NumerologyPage() {
     }
   };
 
+  const pratyantarDashaApi = async () => {
+    if (!vedicResult) {
+      showValidationError("Please generate Vedic grid first.");
+      return;
+    }
+
+    const pratyantarError = validatePratyantarFields();
+    if (pratyantarError) {
+      showValidationError(pratyantarError);
+      return;
+    }
+
+    try {
+      setIsPratyantarSubmitting(true);
+      const nextPratyantarDasha = await fetchPratyantarDasha(
+        vedicResult.dob || formatDobForApi(dob.trim()),
+      );
+
+      setPratyantarDasha(nextPratyantarDasha);
+
+      const nextMessage = "Pratyantar Dasha chart generated successfully.";
+      setMessage(nextMessage);
+      toast.success(nextMessage);
+    } catch (error) {
+      const nextMessage =
+        error?.message ||
+        "Unable to generate Pratyantar Dasha chart. Please try again.";
+
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+    } finally {
+      setIsPratyantarSubmitting(false);
+    }
+  };
+
+  const dashaCalculationApi = async () => {
+    if (!vedicResult) {
+      showValidationError("Please generate Vedic grid first.");
+      return;
+    }
+
+    const sourceDob = vedicResult.dob || formatDobForApi(dob.trim());
+    const dashaError = validateDashaDateFields(
+      sourceDob,
+      dashaFromDate,
+      dashaToDate,
+    );
+
+    if (dashaError) {
+      showValidationError(dashaError);
+      return;
+    }
+
+    try {
+      setIsDashaSubmitting(true);
+      const nextDashaRows = await fetchDashaCalculation(
+        sourceDob,
+        dashaFromDate,
+        dashaToDate,
+      );
+
+      setDashaRows(nextDashaRows);
+
+      const nextMessage = nextDashaRows.length
+        ? "Mahadasha and Antardasha chart generated successfully."
+        : "No Dasha data is available for the selected date range.";
+
+      setMessage(nextMessage);
+
+      if (nextDashaRows.length) {
+        toast.success(nextMessage);
+      } else {
+        toast.info(nextMessage);
+      }
+    } catch (error) {
+      const nextMessage =
+        error?.message ||
+        "Unable to generate Mahadasha and Antardasha chart.";
+
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+    } finally {
+      setIsDashaSubmitting(false);
+    }
+  };
+
   return (
     <PageLayout title="Numerology Details" icon="🔢">
       <ToastContainer position="top-right" autoClose={2500} theme="dark" />
@@ -476,7 +910,25 @@ export default function NumerologyPage() {
           )}
 
           {activeResultType === "vedic-grid" && vedicResult && (
-            <VedicGridPage vedicResult={vedicResult} />
+            <VedicGridPage
+              vedicResult={vedicResult}
+              numberRelationships={numberRelationships}
+              pratyantarDasha={pratyantarDasha}
+              pratyantarFromDate={pratyantarFromDate}
+              setPratyantarFromDate={setPratyantarFromDate}
+              pratyantarYears={pratyantarYears}
+              setPratyantarYears={setPratyantarYears}
+              pratyantarDashaApi={pratyantarDashaApi}
+              dashaRows={dashaRows}
+              dashaFromDate={dashaFromDate}
+              setDashaFromDate={setDashaFromDate}
+              dashaToDate={dashaToDate}
+              setDashaToDate={setDashaToDate}
+              dashaCalculationApi={dashaCalculationApi}
+              maxDashaInputDate={maxDashaInputDate}
+              isDashaSubmitting={isDashaSubmitting}
+              isPratyantarSubmitting={isPratyantarSubmitting}
+            />
           )}
 
           {activeResultType &&

@@ -1,10 +1,44 @@
 import { rowOrder } from "../Lushu-grid/constants";
-import { formatList } from "../Lushu-grid/helpers";
+import {
+  formatList,
+  formatNumberGroup,
+  getNumberRelationshipType,
+} from "../Lushu-grid/helpers";
+import MahadashaAntardashaChart from "./MahadashaAntardashaChart";
+import PratyantarDashaChart from "./PratyantarDashaChart";
 
-export default function VedicGridPage({ vedicResult }) {
+export default function VedicGridPage({
+  vedicResult,
+  numberRelationships = [],
+  pratyantarDasha = [],
+  pratyantarFromDate,
+  setPratyantarFromDate,
+  pratyantarYears,
+  setPratyantarYears,
+  pratyantarDashaApi,
+  dashaRows = [],
+  dashaFromDate,
+  setDashaFromDate,
+  dashaToDate,
+  setDashaToDate,
+  dashaCalculationApi,
+  maxDashaInputDate,
+  isDashaSubmitting,
+  isPratyantarSubmitting,
+}) {
   const countEntries = vedicResult?.counts
     ? Object.entries(vedicResult.counts)
     : [];
+  const personalityRelationship = numberRelationships.find(
+    (item) => Number(item.planetNumber) === Number(vedicResult?.driverNumber),
+  );
+  const destinyRelationship = numberRelationships.find(
+    (item) => Number(item.planetNumber) === Number(vedicResult?.destinyNumber),
+  );
+  const relationType = getNumberRelationshipType(
+    personalityRelationship,
+    vedicResult?.destinyNumber,
+  );
   const summaryCards = [
     {
       label: "Date of Birth",
@@ -169,6 +203,111 @@ export default function VedicGridPage({ vedicResult }) {
             </p>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 lg:col-span-2">
+        <div className="overflow-hidden rounded-lg bg-[#fffdf2] p-3 text-[#111] shadow-lg shadow-black/15">
+          <table className="w-full table-fixed border-separate border-spacing-1 text-center text-[9px] font-medium sm:text-xs md:text-sm">
+            <colgroup>
+              <col className="w-[22%]" />
+              <col className="w-[8%]" />
+              <col className="w-[21%]" />
+              <col className="w-[21%]" />
+              <col className="w-[28%]" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th
+                  colSpan="2"
+                  className="rounded-md bg-[#dff7d8] px-1 py-2 text-sm font-semibold leading-none sm:px-2 sm:text-base md:text-lg"
+                >
+                  Number
+                </th>
+                <th className="rounded-md bg-[#dff7d8] px-1 py-2 text-[10px] font-semibold sm:px-2 sm:text-sm md:text-base">
+                  Friend
+                </th>
+                <th className="rounded-md bg-[#dff7d8] px-1 py-2 text-[10px] font-semibold sm:px-2 sm:text-sm md:text-base">
+                  Enemy
+                </th>
+                <th className="rounded-md bg-[#dff7d8] px-1 py-2 text-[10px] font-semibold sm:px-2 sm:text-sm md:text-base">
+                  Neutral
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                {
+                  label: "Personality",
+                  number: vedicResult.driverNumber,
+                  record: personalityRelationship,
+                },
+                {
+                  label: "Destiny",
+                  number: vedicResult.destinyNumber,
+                  record: destinyRelationship,
+                },
+              ].map((row) => (
+                <tr key={row.label}>
+                  <td className="whitespace-normal rounded-md bg-[#edf8d9] px-1 py-2 text-left text-[10px] sm:px-2 sm:text-sm md:text-base">
+                    {row.label}
+                  </td>
+                  <td className="whitespace-normal rounded-md bg-white px-1 py-2 text-[10px] shadow-sm shadow-black/5 sm:text-sm">
+                    {row.number}
+                  </td>
+                  <td className="whitespace-normal rounded-md bg-white px-1 py-2 text-[10px] text-green-600 shadow-sm shadow-black/5 sm:px-2 sm:text-sm">
+                    {formatNumberGroup(row.record?.friendNumbers)}
+                  </td>
+                  <td className="whitespace-normal rounded-md bg-white px-1 py-2 text-[10px] text-red-600 shadow-sm shadow-black/5 sm:px-2 sm:text-sm">
+                    {formatNumberGroup(row.record?.enemyNumbers)}
+                  </td>
+                  <td className="whitespace-normal rounded-md bg-white px-1 py-2 text-[10px] text-gray-500 shadow-sm shadow-black/5 sm:px-2 sm:text-sm">
+                    {formatNumberGroup(row.record?.neutralNumbers)}
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <td
+                  colSpan="2"
+                  className="whitespace-normal rounded-md bg-[#e7f2fb] px-1 py-2 text-[10px] leading-tight text-[#075a22] sm:px-2 sm:text-xs md:text-sm"
+                >
+                  <span className="block">Relation in</span>
+                  <span className="block">Personality &</span>
+                  <span className="block">Destiny Number</span>
+                </td>
+                <td
+                  colSpan="3"
+                  className="whitespace-normal rounded-md bg-white px-1 py-2 text-sm font-semibold shadow-sm shadow-black/5 sm:px-2 sm:text-base md:text-lg"
+                >
+                  {vedicResult.driverNumber}:{vedicResult.destinyNumber} ={" "}
+                  {relationType}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <MahadashaAntardashaChart
+            dashaRows={dashaRows}
+            dashaFromDate={dashaFromDate}
+            setDashaFromDate={setDashaFromDate}
+            dashaToDate={dashaToDate}
+            setDashaToDate={setDashaToDate}
+            dashaCalculationApi={dashaCalculationApi}
+            isSubmitting={isDashaSubmitting}
+            maxDashaInputDate={maxDashaInputDate}
+            vedicDob={vedicResult?.dob}
+          />
+          <PratyantarDashaChart
+            pratyantarDasha={pratyantarDasha}
+            pratyantarFromDate={pratyantarFromDate}
+            setPratyantarFromDate={setPratyantarFromDate}
+            pratyantarYears={pratyantarYears}
+            setPratyantarYears={setPratyantarYears}
+            pratyantarDashaApi={pratyantarDashaApi}
+            isSubmitting={isPratyantarSubmitting}
+          />
+        </div>
       </div>
     </div>
   );

@@ -3,11 +3,17 @@ export const ASTROLOGER_ROLE = "ROLE_ASTROLOGER";
 export const CLIENT_ROLE = "ROLE_CLIENT";
 
 export const ASTROLOGER_ALLOWED_ROUTES = new Set([
+  "/astrologer-dashboard",
   "/astrologer-profile",
   "/losu",
   "/numerology",
   "/chat",
   "/activity",
+]);
+
+export const ASTROLOGER_ONLY_ROUTES = new Set([
+  "/astrologer-dashboard",
+  "/astrologer-profile",
 ]);
 
 const PUBLIC_ROUTE_PREFIXES = [
@@ -54,7 +60,7 @@ export function hasRole(roles, role) {
 
 export function getPrimaryDashboardRoute(roles = []) {
   if (hasRole(roles, ASTROLOGER_ROLE) && !hasRole(roles, ADMIN_ROLE)) {
-    return "/astrologer-profile";
+    return "/astrologer-dashboard";
   }
 
   return "/";
@@ -78,6 +84,10 @@ export function canAccessRoute(pathname, roles = []) {
 
   if (!roles.length || hasRole(roles, ADMIN_ROLE)) {
     return true;
+  }
+
+  if (ASTROLOGER_ONLY_ROUTES.has(pathname)) {
+    return hasRole(roles, ASTROLOGER_ROLE);
   }
 
   if (hasRole(roles, ASTROLOGER_ROLE)) {

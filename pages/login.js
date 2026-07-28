@@ -158,7 +158,7 @@ export default function LoginPage({ mode = "client" }) {
 
       const tokenPayload = decodeAccessToken(accessToken);
       const isAstrologer = hasAstrologerRole(tokenPayload);
-      const destination = isAstrologer ? "/astrologer-profile" : "/";
+      const destination = isAstrologer ? "/astrologer-dashboard" : "/";
 
       if (isAstrologerLogin && !isAstrologer) {
         toast.info(t("auth.clientDetected"));
@@ -439,7 +439,7 @@ export default function LoginPage({ mode = "client" }) {
                   {t("auth.signingIn")}
                 </>
               ) : isAstrologerLogin ? (
-                t("auth.openAstrologerProfile")
+                "Open Astrologer Dashboard"
               ) : (
                 t("auth.login")
               )}

@@ -289,6 +289,7 @@ const translations = {
     "menu.savedInsights": "Saved Insights",
     "menu.walletPayments": "Wallet & Payments",
     "menu.profileSettings": "Profile & Settings",
+    "menu.astrologerDashboard": "Dashboard",
     "menu.ourProfile": "Our Profile",
     "menu.losuGrid": "Numerology",
     "menu.ourClients": "Our Clients",

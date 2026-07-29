@@ -11,20 +11,9 @@ export default function VedicGridPage({
   vedicResult,
   numberRelationships = [],
   pratyantarDasha = [],
-  pratyantarFromDate,
-  setPratyantarFromDate,
-  pratyantarYears,
-  setPratyantarYears,
-  pratyantarDashaApi,
+  setPratyantarDasha,
+  fetchPratyantarDasha,
   dashaRows = [],
-  dashaFromDate,
-  setDashaFromDate,
-  dashaToDate,
-  setDashaToDate,
-  dashaCalculationApi,
-  maxDashaInputDate,
-  isDashaSubmitting,
-  isPratyantarSubmitting,
 }) {
   const countEntries = vedicResult?.counts
     ? Object.entries(vedicResult.counts)
@@ -288,24 +277,16 @@ export default function VedicGridPage({
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <MahadashaAntardashaChart
+            key={vedicResult?.dob || "dasha-chart"}
             dashaRows={dashaRows}
-            dashaFromDate={dashaFromDate}
-            setDashaFromDate={setDashaFromDate}
-            dashaToDate={dashaToDate}
-            setDashaToDate={setDashaToDate}
-            dashaCalculationApi={dashaCalculationApi}
-            isSubmitting={isDashaSubmitting}
-            maxDashaInputDate={maxDashaInputDate}
             vedicDob={vedicResult?.dob}
           />
           <PratyantarDashaChart
+            key={vedicResult?.dob || "pratyantar-chart"}
             pratyantarDasha={pratyantarDasha}
-            pratyantarFromDate={pratyantarFromDate}
-            setPratyantarFromDate={setPratyantarFromDate}
-            pratyantarYears={pratyantarYears}
-            setPratyantarYears={setPratyantarYears}
-            pratyantarDashaApi={pratyantarDashaApi}
-            isSubmitting={isPratyantarSubmitting}
+            setPratyantarDasha={setPratyantarDasha}
+            fetchPratyantarDasha={fetchPratyantarDasha}
+            vedicDob={vedicResult?.dob}
           />
         </div>
       </div>

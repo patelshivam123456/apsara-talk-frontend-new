@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import PageLayout from "@/components/PageLayout";
 import apisecond from "@/utils/apisecond";
@@ -21,9 +21,9 @@ import {
   fetchSectorWiseEffects,
 } from "./Lushu-grid/api";
 
-const defaultDateInputValue = new Date().toISOString().slice(0, 10);
 const maxDashaDisplayDate = "31-12-2060";
-const maxDashaInputDate = "2060-12-31";
+const defaultPratyantarFromDate = "01-01-2021";
+const fixedPratyantarYears = "10";
 
 function parseDisplayDate(value) {
   if (!value) {
@@ -75,20 +75,6 @@ function formatDisplayDate(value) {
   return `${day}-${month}-${year}`;
 }
 
-function formatInputDate(value) {
-  const date = value instanceof Date ? value : parseDisplayDate(value);
-
-  if (!date) {
-    return "";
-  }
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = String(date.getFullYear());
-
-  return `${year}-${month}-${day}`;
-}
-
 function compareDates(left, right) {
   const leftDate = left instanceof Date ? left : parseDisplayDate(left);
   const rightDate = right instanceof Date ? right : parseDisplayDate(right);
@@ -103,26 +89,6 @@ function compareDates(left, right) {
 function getYear(value) {
   const date = value instanceof Date ? value : parseDisplayDate(value);
   return date ? date.getFullYear() : Number.NaN;
-}
-
-function clampDateToRange(value, min, max) {
-  const date = parseDisplayDate(value);
-  const minDate = parseDisplayDate(min);
-  const maxDate = parseDisplayDate(max);
-
-  if (!date || !minDate || !maxDate) {
-    return "";
-  }
-
-  if (date.getTime() < minDate.getTime()) {
-    return formatInputDate(minDate);
-  }
-
-  if (date.getTime() > maxDate.getTime()) {
-    return formatInputDate(maxDate);
-  }
-
-  return formatInputDate(date);
 }
 
 function isDateWithinRange(value, min, max) {
@@ -144,6 +110,19 @@ function formatDateForPratyantarApi(value) {
   }
 
   return value;
+}
+
+function getPratyantarInitialFromDate(sourceDob) {
+  const dobDate = parseDisplayDate(sourceDob);
+  const defaultDate = parseDisplayDate(defaultPratyantarFromDate);
+
+  if (!dobDate || !defaultDate) {
+    return defaultPratyantarFromDate;
+  }
+
+  return dobDate.getTime() > defaultDate.getTime()
+    ? formatDisplayDate(dobDate)
+    : defaultPratyantarFromDate;
 }
 
 function normalizePratyantarDashaResult(result) {
@@ -219,12 +198,6 @@ export default function NumerologyPage() {
   const [dob, setDob] = useState("");
   const [fromYear, setFromYear] = useState(String(currentYear));
   const [toYear, setToYear] = useState(String(currentYear + 10));
-  const [pratyantarFromDate, setPratyantarFromDate] = useState(
-    defaultDateInputValue,
-  );
-  const [pratyantarYears, setPratyantarYears] = useState("10");
-  const [dashaFromDate, setDashaFromDate] = useState("");
-  const [dashaToDate, setDashaToDate] = useState(maxDashaInputDate);
   const [dashaRows, setDashaRows] = useState([]);
   const [calculationType, setCalculationType] = useState("lo-shu-grid");
   const [activeResultType, setActiveResultType] = useState("");
@@ -246,8 +219,6 @@ export default function NumerologyPage() {
     useState("careerEffect");
   const [genericResult, setGenericResult] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDashaSubmitting, setIsDashaSubmitting] = useState(false);
-  const [isPratyantarSubmitting, setIsPratyantarSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
   const resetResults = () => {
@@ -312,24 +283,6 @@ export default function NumerologyPage() {
   const showValidationError = (nextMessage) => {
     setMessage(nextMessage);
     toast.error(nextMessage);
-  };
-
-  const validatePratyantarFields = () => {
-    if (!pratyantarFromDate.trim()) {
-      return "Please enter from date.";
-    }
-
-    if (!pratyantarYears.trim()) {
-      return "Please enter years.";
-    }
-
-    const yearsNumber = Number(pratyantarYears);
-
-    if (!Number.isInteger(yearsNumber) || yearsNumber < 1) {
-      return "Please enter valid years.";
-    }
-
-    return "";
   };
 
   const validateDashaDateFields = (sourceDob, fromDate, toDate) => {
@@ -399,11 +352,14 @@ export default function NumerologyPage() {
     return nextRows;
   };
 
-  const fetchPratyantarDasha = async (sourceDob) => {
+  const fetchPratyantarDasha = useCallback(async (
+    sourceDob,
+    fromDate = defaultPratyantarFromDate,
+  ) => {
     const query = new URLSearchParams({
       dateOfBirth: formatDateForPratyantarApi(sourceDob),
-      fromDate: formatDateForPratyantarApi(pratyantarFromDate),
-      years: String(Number(pratyantarYears)),
+      fromDate: formatDateForPratyantarApi(fromDate),
+      years: fixedPratyantarYears,
     });
 
     const response = await fetch(
@@ -431,7 +387,7 @@ export default function NumerologyPage() {
     }
 
     return nextResult;
-  };
+  }, []);
 
   const generateLoShuGrid = async (normalizedDob, fromYearNumber, toYearNumber) => {
     const response = await fetch(
@@ -636,15 +592,8 @@ export default function NumerologyPage() {
     }
 
     const displayDob = formatDisplayDate(nextResult.dob || normalizedDob);
-    const defaultFromDate = clampDateToRange(
-      displayDob,
-      displayDob,
-      maxDashaDisplayDate,
-    );
-    const defaultToDate = maxDashaInputDate;
-
-    setDashaFromDate(defaultFromDate);
-    setDashaToDate(defaultToDate);
+    const defaultFromDate = displayDob;
+    const defaultToDate = maxDashaDisplayDate;
 
     const [
       nextNumberRelationships,
@@ -652,7 +601,10 @@ export default function NumerologyPage() {
       nextDashaRows,
     ] = await Promise.all([
       fetchNumberRelationships(nextResult.driverNumber, nextResult.destinyNumber),
-      fetchPratyantarDasha(nextResult.dob || normalizedDob),
+      fetchPratyantarDasha(
+        nextResult.dob || normalizedDob,
+        getPratyantarInitialFromDate(nextResult.dob || normalizedDob),
+      ),
       fetchDashaCalculation(displayDob, defaultFromDate, defaultToDate),
     ]);
 
@@ -781,92 +733,6 @@ export default function NumerologyPage() {
     }
   };
 
-  const pratyantarDashaApi = async () => {
-    if (!vedicResult) {
-      showValidationError("Please generate Vedic grid first.");
-      return;
-    }
-
-    const pratyantarError = validatePratyantarFields();
-    if (pratyantarError) {
-      showValidationError(pratyantarError);
-      return;
-    }
-
-    try {
-      setIsPratyantarSubmitting(true);
-      const nextPratyantarDasha = await fetchPratyantarDasha(
-        vedicResult.dob || formatDobForApi(dob.trim()),
-      );
-
-      setPratyantarDasha(nextPratyantarDasha);
-
-      const nextMessage = "Pratyantar Dasha chart generated successfully.";
-      setMessage(nextMessage);
-      toast.success(nextMessage);
-    } catch (error) {
-      const nextMessage =
-        error?.message ||
-        "Unable to generate Pratyantar Dasha chart. Please try again.";
-
-      setMessage(nextMessage);
-      toast.error(nextMessage);
-    } finally {
-      setIsPratyantarSubmitting(false);
-    }
-  };
-
-  const dashaCalculationApi = async () => {
-    if (!vedicResult) {
-      showValidationError("Please generate Vedic grid first.");
-      return;
-    }
-
-    const sourceDob = vedicResult.dob || formatDobForApi(dob.trim());
-    const dashaError = validateDashaDateFields(
-      sourceDob,
-      dashaFromDate,
-      dashaToDate,
-    );
-
-    if (dashaError) {
-      showValidationError(dashaError);
-      return;
-    }
-
-    try {
-      setIsDashaSubmitting(true);
-      const nextDashaRows = await fetchDashaCalculation(
-        sourceDob,
-        dashaFromDate,
-        dashaToDate,
-      );
-
-      setDashaRows(nextDashaRows);
-
-      const nextMessage = nextDashaRows.length
-        ? "Mahadasha and Antardasha chart generated successfully."
-        : "No Dasha data is available for the selected date range.";
-
-      setMessage(nextMessage);
-
-      if (nextDashaRows.length) {
-        toast.success(nextMessage);
-      } else {
-        toast.info(nextMessage);
-      }
-    } catch (error) {
-      const nextMessage =
-        error?.message ||
-        "Unable to generate Mahadasha and Antardasha chart.";
-
-      setMessage(nextMessage);
-      toast.error(nextMessage);
-    } finally {
-      setIsDashaSubmitting(false);
-    }
-  };
-
   return (
     <PageLayout title="Numerology Details" icon="🔢">
       <ToastContainer position="top-right" autoClose={2500} theme="dark" />
@@ -914,20 +780,9 @@ export default function NumerologyPage() {
               vedicResult={vedicResult}
               numberRelationships={numberRelationships}
               pratyantarDasha={pratyantarDasha}
-              pratyantarFromDate={pratyantarFromDate}
-              setPratyantarFromDate={setPratyantarFromDate}
-              pratyantarYears={pratyantarYears}
-              setPratyantarYears={setPratyantarYears}
-              pratyantarDashaApi={pratyantarDashaApi}
+              setPratyantarDasha={setPratyantarDasha}
+              fetchPratyantarDasha={fetchPratyantarDasha}
               dashaRows={dashaRows}
-              dashaFromDate={dashaFromDate}
-              setDashaFromDate={setDashaFromDate}
-              dashaToDate={dashaToDate}
-              setDashaToDate={setDashaToDate}
-              dashaCalculationApi={dashaCalculationApi}
-              maxDashaInputDate={maxDashaInputDate}
-              isDashaSubmitting={isDashaSubmitting}
-              isPratyantarSubmitting={isPratyantarSubmitting}
             />
           )}
 

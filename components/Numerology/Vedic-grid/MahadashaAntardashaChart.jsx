@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const windowYearSpan = 10;
+const timelineEndYear = 2060;
 
 function formatChartDate(value) {
   if (!value) {
@@ -21,29 +24,6 @@ function formatChartDate(value) {
   }
 
   return `${day}/${month}/${year}`;
-}
-
-function formatDateInputValue(value) {
-  if (!value) {
-    return "";
-  }
-
-  const separator = String(value).includes("/") ? "/" : "-";
-  const parts = String(value).split(separator);
-
-  if (parts.length !== 3) {
-    return "";
-  }
-
-  const [first, second, third] = parts;
-  const [day, month, year] =
-    first.length === 4 ? [third, second, first] : [first, second, third];
-
-  if (!year || !month || !day) {
-    return "";
-  }
-
-  return `${year}-${month}-${day}`;
 }
 
 function parseChartDate(value) {
@@ -80,33 +60,66 @@ function addYears(date, years) {
   return nextDate;
 }
 
+function clamp(number, min, max) {
+  return Math.min(Math.max(number, min), max);
+}
+
+function getYearFromDate(value) {
+  const date = value instanceof Date ? value : parseChartDate(value);
+  return date ? date.getFullYear() : Number.NaN;
+}
+
 function getRowTimestamp(row, key, fallbackDateKey) {
   return row[key] ?? parseChartDate(row[fallbackDateKey])?.getTime();
 }
 
 export default function MahadashaAntardashaChart({
   dashaRows = [],
-  dashaFromDate,
-  setDashaFromDate,
-  dashaToDate,
-  setDashaToDate,
-  dashaCalculationApi,
-  isSubmitting,
-  maxDashaInputDate,
   vedicDob,
 }) {
   const dashaScrollRef = useRef(null);
   const dashaHeaderRef = useRef(null);
   const dashaScrollTargetRef = useRef(null);
+  const topSentinelRef = useRef(null);
+  const bottomSentinelRef = useRef(null);
+  const pendingScrollRestoreRef = useRef(null);
+  const hasInitialScrolledRef = useRef(false);
   const today = useMemo(() => new Date(), []);
   const fiveYearsBeforeToday = useMemo(() => addYears(today, -5), [today]);
   const fiveYearsAfterToday = useMemo(() => addYears(today, 5), [today]);
-  const vedicDobInputDate = formatDateInputValue(vedicDob);
+  const dobYear = getYearFromDate(vedicDob);
+  const minYear = Number.isFinite(dobYear) ? dobYear : 1900;
+  const maxYear = timelineEndYear;
+  const initialCenterYear = clamp(today.getFullYear(), minYear, maxYear);
+  const initialStartYear = clamp(initialCenterYear - 5, minYear, maxYear);
+  const initialEndYear = clamp(initialStartYear + windowYearSpan, minYear, maxYear);
+  const [visibleYears, setVisibleYears] = useState({
+    start: initialStartYear,
+    end: initialEndYear,
+  });
+  const [timelineLoading, setTimelineLoading] = useState("");
+
+  const visibleRows = useMemo(() => {
+    const windowStart = new Date(visibleYears.start, 0, 1).getTime();
+    const windowEnd = new Date(visibleYears.end, 11, 31, 23, 59, 59).getTime();
+
+    return dashaRows.filter((row) => {
+      const startTimestamp = getRowTimestamp(row, "startTimestamp", "fromDate");
+      const endTimestamp = getRowTimestamp(row, "endTimestamp", "toDate");
+
+      return (
+        Number.isFinite(startTimestamp) &&
+        Number.isFinite(endTimestamp) &&
+        startTimestamp <= windowEnd &&
+        endTimestamp >= windowStart
+      );
+    });
+  }, [dashaRows, visibleYears]);
 
   const currentDashaRowId = useMemo(() => {
     const todayTimestamp = today.getTime();
 
-    return dashaRows.find((row) => {
+    return visibleRows.find((row) => {
       const startTimestamp = getRowTimestamp(
         row,
         "startTimestamp",
@@ -121,11 +134,11 @@ export default function MahadashaAntardashaChart({
         endTimestamp >= todayTimestamp
       );
     })?.id;
-  }, [dashaRows, today]);
+  }, [today, visibleRows]);
 
   const currentDashaRowIndex = useMemo(
-    () => dashaRows.findIndex((row) => row.id === currentDashaRowId),
-    [currentDashaRowId, dashaRows],
+    () => visibleRows.findIndex((row) => row.id === currentDashaRowId),
+    [currentDashaRowId, visibleRows],
   );
 
   const dashaScrollTargetIndex = useMemo(() => {
@@ -134,7 +147,7 @@ export default function MahadashaAntardashaChart({
     }
 
     const windowStartTimestamp = fiveYearsBeforeToday.getTime();
-    const firstWindowRowIndex = dashaRows.findIndex((row) => {
+    const firstWindowRowIndex = visibleRows.findIndex((row) => {
       const endTimestamp = getRowTimestamp(row, "endTimestamp", "toDate");
 
       return (
@@ -144,7 +157,7 @@ export default function MahadashaAntardashaChart({
     });
 
     return firstWindowRowIndex >= 0 ? firstWindowRowIndex : 0;
-  }, [currentDashaRowIndex, dashaRows, fiveYearsBeforeToday]);
+  }, [currentDashaRowIndex, fiveYearsBeforeToday, visibleRows]);
 
   const isNearCurrentDateWindow = (row) => {
     const startTimestamp = getRowTimestamp(row, "startTimestamp", "fromDate");
@@ -159,7 +172,11 @@ export default function MahadashaAntardashaChart({
   };
 
   useEffect(() => {
-    if (!dashaScrollRef.current || !dashaScrollTargetRef.current) {
+    if (
+      hasInitialScrolledRef.current ||
+      !dashaScrollRef.current ||
+      !dashaScrollTargetRef.current
+    ) {
       return;
     }
 
@@ -171,7 +188,76 @@ export default function MahadashaAntardashaChart({
       top: Math.max(targetRow.offsetTop - headerHeight, 0),
       behavior: "auto",
     });
-  }, [dashaRows.length, dashaScrollTargetIndex]);
+    hasInitialScrolledRef.current = true;
+  }, [dashaScrollTargetIndex, visibleRows.length]);
+
+  useEffect(() => {
+    if (!dashaScrollRef.current || !pendingScrollRestoreRef.current) {
+      return;
+    }
+
+    const scrollArea = dashaScrollRef.current;
+    const restore = pendingScrollRestoreRef.current;
+    pendingScrollRestoreRef.current = null;
+
+    scrollArea.scrollTop =
+      scrollArea.scrollHeight - restore.previousScrollHeight + restore.previousScrollTop;
+  }, [visibleRows.length]);
+
+  useEffect(() => {
+    const scrollArea = dashaScrollRef.current;
+
+    if (!scrollArea || !dashaRows.length) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          if (entry.target === topSentinelRef.current && visibleYears.start > minYear) {
+            pendingScrollRestoreRef.current = {
+              previousScrollHeight: scrollArea.scrollHeight,
+              previousScrollTop: scrollArea.scrollTop,
+            };
+            setTimelineLoading("previous");
+            setVisibleYears((current) => ({
+              ...current,
+              start: clamp(current.start - 11, minYear, maxYear),
+            }));
+            window.setTimeout(() => setTimelineLoading(""), 160);
+          }
+
+          if (entry.target === bottomSentinelRef.current && visibleYears.end < maxYear) {
+            setTimelineLoading("next");
+            setVisibleYears((current) => ({
+              ...current,
+              end: clamp(current.end + 11, minYear, maxYear),
+            }));
+            window.setTimeout(() => setTimelineLoading(""), 160);
+          }
+        });
+      },
+      {
+        root: scrollArea,
+        rootMargin: "80px 0px",
+        threshold: 0.01,
+      },
+    );
+
+    if (topSentinelRef.current) {
+      observer.observe(topSentinelRef.current);
+    }
+
+    if (bottomSentinelRef.current) {
+      observer.observe(bottomSentinelRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [dashaRows.length, maxYear, minYear, visibleYears]);
 
   return (
     <div className="overflow-hidden rounded-sm border-2 border-[#1f3c2d] bg-[#fffed5] p-2 text-[#111]">
@@ -179,50 +265,10 @@ export default function MahadashaAntardashaChart({
         <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-[#8a6106]">
           Mahadasha & Antardasha
         </h3>
-        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end lg:grid-cols-1 xl:grid-cols-[1fr_1fr_auto]">
-          <div>
-            <label
-              htmlFor="vedic-dasha-from-date"
-              className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8a6106]"
-            >
-              From Date
-            </label>
-            <input
-              id="vedic-dasha-from-date"
-              type="date"
-              min={vedicDobInputDate || undefined}
-              max={dashaToDate || maxDashaInputDate}
-              value={dashaFromDate}
-              onChange={(event) => setDashaFromDate(event.target.value)}
-              className="mt-1.5 w-full rounded-md border border-[#d8a84a]/50 bg-white px-2.5 py-2 text-sm text-[#211704] outline-none transition focus:border-[#8a6106]"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="vedic-dasha-to-date"
-              className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8a6106]"
-            >
-              To Date
-            </label>
-            <input
-              id="vedic-dasha-to-date"
-              type="date"
-              min={dashaFromDate}
-              max={maxDashaInputDate}
-              value={dashaToDate}
-              onChange={(event) => setDashaToDate(event.target.value)}
-              className="mt-1.5 w-full rounded-md border border-[#d8a84a]/50 bg-white px-2.5 py-2 text-sm text-[#211704] outline-none transition focus:border-[#8a6106]"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => dashaCalculationApi()}
-            disabled={isSubmitting || !dashaFromDate || !dashaToDate}
-            className="rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:opacity-60"
-          >
-            {isSubmitting ? "Generating..." : "Submit"}
-          </button>
-        </div>
+        <p className="mt-1 text-xs leading-5 text-[#665d4d]">
+          Showing {visibleYears.start} to {visibleYears.end}. Scroll to browse
+          the complete DOB to 31/12/2060 timeline.
+        </p>
       </div>
 
       <div ref={dashaScrollRef} className="mt-3 max-h-[360px] overflow-auto">
@@ -272,8 +318,21 @@ export default function MahadashaAntardashaChart({
             </tr>
           </thead>
           <tbody>
-            {dashaRows.length ? (
-              dashaRows.map((item, index) => {
+            {visibleRows.length ? (
+              <>
+                <tr ref={topSentinelRef}>
+                  <td
+                    colSpan="4"
+                    className="border border-[#333] bg-[#fffed5] px-2 py-1 text-xs text-[#8a6106]"
+                  >
+                    {timelineLoading === "previous"
+                      ? "Loading previous records..."
+                      : visibleYears.start <= minYear
+                        ? "Beginning of Dasha timeline"
+                        : ""}
+                  </td>
+                </tr>
+                {visibleRows.map((item, index) => {
                 const isCurrentRow = item.id === currentDashaRowId;
                 const isNearDateWindow = isNearCurrentDateWindow(item);
                 const rowBackground = isCurrentRow
@@ -316,7 +375,20 @@ export default function MahadashaAntardashaChart({
                     </td>
                   </tr>
                 );
-              })
+              })}
+                <tr ref={bottomSentinelRef}>
+                  <td
+                    colSpan="4"
+                    className="border border-[#333] bg-[#fffed5] px-2 py-1 text-xs text-[#8a6106]"
+                  >
+                    {timelineLoading === "next"
+                      ? "Loading next records..."
+                      : visibleYears.end >= maxYear
+                        ? "End of Dasha timeline"
+                        : ""}
+                  </td>
+                </tr>
+              </>
             ) : (
               <tr>
                 <td

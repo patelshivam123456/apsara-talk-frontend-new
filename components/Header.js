@@ -47,7 +47,7 @@ const horoscopeItems = withServiceRoutes([
 
 const freeServiceItems = withServiceRoutes([
   { label: "Kundli PDF", route: "/kundali-pdf" },
-  "Kundli Matching",
+  { label: "Kundli Matching", route: "/kundali-matching" },
   "Compatibility",
   "Tarot",
   { label: "Apsara Astro Profile", route: "/astro-profile" },

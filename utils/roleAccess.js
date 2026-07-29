@@ -6,6 +6,7 @@ export const ASTROLOGER_ALLOWED_ROUTES = new Set([
   "/astrologer-dashboard",
   "/astrologer/astro-profile",
   "/astrologer/kundali-pdf",
+  "/astrologer/kundali-matching",
   "/astrologer-profile",
   "/losu",
   "/numerology",
@@ -17,6 +18,7 @@ export const ASTROLOGER_ONLY_ROUTES = new Set([
   "/astrologer-dashboard",
   "/astrologer/astro-profile",
   "/astrologer/kundali-pdf",
+  "/astrologer/kundali-matching",
   "/astrologer-profile",
 ]);
 
@@ -33,6 +35,7 @@ const PUBLIC_ROUTES = new Set([
   "/kundli",
   "/astro-profile",
   "/kundali-pdf",
+  "/kundali-matching",
   "/compatibility",
   "/ask-universe",
   "/voice-guidance",

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { searchLocation } from "@/services/kundali.service";
 
 export default function PlaceAutocomplete({
+  id,
+  label = "Birth Place",
   value,
   selectedPlace,
   onInputChange,
@@ -13,6 +15,7 @@ export default function PlaceAutocomplete({
 }) {
   const wrapperRef = useRef(null);
   const requestRef = useRef(null);
+  const cacheRef = useRef(new Map());
   const [options, setOptions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -52,10 +55,23 @@ export default function PlaceAutocomplete({
     const timer = window.setTimeout(async () => {
       try {
         setIsSearching(true);
+        const cacheKey = keyword.toLowerCase();
+
+        if (cacheRef.current.has(cacheKey)) {
+          const cachedPlaces = cacheRef.current.get(cacheKey);
+          setOptions(cachedPlaces);
+          setIsOpen(true);
+          setActiveIndex(cachedPlaces.length ? 0 : -1);
+          setSearchError("");
+          return;
+        }
+
         const places = await searchLocation(keyword, { signal: controller.signal });
+        cacheRef.current.set(cacheKey, places);
         setOptions(places);
         setIsOpen(true);
         setActiveIndex(places.length ? 0 : -1);
+        setSearchError("");
       } catch (err) {
         if (!controller.signal.aborted) {
           setOptions([]);
@@ -126,11 +142,15 @@ export default function PlaceAutocomplete({
 
   return (
     <div ref={wrapperRef} className="relative">
-      <label className="text-xs font-bold uppercase tracking-[0.14em] text-[#8a6106]">
-        Birth Place
+      <label
+        htmlFor={id}
+        className="text-xs font-bold uppercase tracking-[0.14em] text-[#8a6106]"
+      >
+        {label}
       </label>
       <div className="relative mt-2">
         <input
+          id={id}
           value={value}
           onChange={(event) => handleInputChange(event.target.value)}
           onFocus={() => {

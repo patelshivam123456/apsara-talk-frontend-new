@@ -22,6 +22,7 @@ const dashboardTabs = [
     id: "match-making-pdf",
     label: "Match Making PDF",
     icon: "🤝",
+    route: "/astrologer/kundali-matching",
   },
   {
     id: "apsara-profile",
@@ -47,17 +48,6 @@ function getDisplayName(user) {
     [profile.firstName, profile.middleName, profile.lastName].filter(Boolean).join(" ") ||
     profile.username ||
     "Astrologer"
-  );
-}
-
-function ActionButton({ children }) {
-  return (
-    <button
-      type="button"
-      className="rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
-    >
-      {children}
-    </button>
   );
 }
 
@@ -238,7 +228,12 @@ export default function AstrologerDashboardPage() {
                     Generate a client-facing PDF after completing both profiles.
                   </p>
                   <div className="mt-4">
-                    <ActionButton>Generate Match PDF</ActionButton>
+                    <Link
+                      href="/astrologer/kundali-matching"
+                      className="inline-flex rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
+                    >
+                      Generate Match PDF
+                    </Link>
                   </div>
                 </div>
               </div>

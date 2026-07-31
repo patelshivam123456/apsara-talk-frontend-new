@@ -7,6 +7,7 @@ import apisecond from "@/utils/apisecond";
 import "react-toastify/dist/ReactToastify.css";
 import LushuForm from "./Lushu-grid/LushuForm";
 import LushuGridPage from "./Lushu-grid/LushuGridPage";
+import PythorasGridPage from "./Pythoras";
 import VedicGridPage from "./Vedic-grid";
 import GenericNumerologyResult from "./GenericNumerologyResult";
 import { currentYear } from "./Lushu-grid/constants";
@@ -201,6 +202,7 @@ export default function NumerologyPage() {
   const [calculationType, setCalculationType] = useState("lo-shu-grid");
   const [activeResultType, setActiveResultType] = useState("");
   const [losuResult, setLosuResult] = useState(null);
+  const [pythorasResult, setPythorasResult] = useState(null);
   const [vedicResult, setVedicResult] = useState(null);
   const [personalYearResult, setPersonalYearResult] = useState(null);
   const [personalYearMatrix, setPersonalYearMatrix] = useState([]);
@@ -223,6 +225,7 @@ export default function NumerologyPage() {
   const resetResults = () => {
     setActiveResultType("");
     setLosuResult(null);
+    setPythorasResult(null);
     setVedicResult(null);
     setPersonalYearResult(null);
     setPersonalYearMatrix([]);
@@ -562,6 +565,39 @@ export default function NumerologyPage() {
     return result?.message || "Numerology data generated successfully.";
   };
 
+  const generatePythorasGrid = async (normalizedDob) => {
+    const response = await fetch(
+      "/api/astro-proxy/astrology-services/home-page/pythagorean-grid-details",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          dob: normalizedDob,
+          fullName: fullName.trim(),
+          gender,
+        }),
+      },
+    );
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result?.message || "Unable to generate Pythagoras grid.");
+    }
+
+    const nextResult = result?.data || result;
+
+    if (!nextResult?.grid || !nextResult?.counts) {
+      throw new Error(result?.message || "Invalid Pythagoras grid response.");
+    }
+
+    setPythorasResult(nextResult);
+    setActiveResultType("pythagoras-grid");
+    return result?.message || "Pythagoras grid generated successfully.";
+  };
+
   const generateVedicGrid = async (normalizedDob) => {
     const response = await fetch(
       "/api/astro-proxy/astrology-services/home-page/vedic-grid",
@@ -648,6 +684,8 @@ export default function NumerologyPage() {
         );
       } else if (calculationType === "vedic-grid") {
         nextMessage = await generateVedicGrid(normalizedDob);
+      } else if (calculationType === "pythagoras-grid") {
+        nextMessage = await generatePythorasGrid(normalizedDob);
       } else {
         nextMessage = await generateGenericNumerology(normalizedDob);
       }
@@ -785,9 +823,14 @@ export default function NumerologyPage() {
             />
           )}
 
+          {activeResultType === "pythagoras-grid" && pythorasResult && (
+            <PythorasGridPage pythorasResult={pythorasResult} />
+          )}
+
           {activeResultType &&
             activeResultType !== "lo-shu-grid" &&
             activeResultType !== "vedic-grid" &&
+            activeResultType !== "pythagoras-grid" &&
             genericResult && (
               <GenericNumerologyResult
                 calculationType={activeResultType}

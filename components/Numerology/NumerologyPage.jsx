@@ -147,13 +147,13 @@ function flattenDashaRows(mahadashas = [], selectedFromDate, selectedToDate) {
   return mahadashas
     .flatMap((mahadasha, mahaIndex) =>
       (mahadasha.antardashas || []).map((antardasha, antarIndex) => {
-        const startDate = parseDisplayDate(mahadasha.startDate);
-        const endDate = parseDisplayDate(mahadasha.endDate);
+        const startDate = parseDisplayDate(antardasha.startDate);
+        const endDate = parseDisplayDate(antardasha.endDate);
 
         return {
-          id: `${mahaIndex}-${antarIndex}-${mahadasha.startDate}-${mahadasha.endDate}`,
-          fromDate: mahadasha.startDate,
-          toDate: mahadasha.endDate,
+          id: `${mahaIndex}-${antarIndex}-${antardasha.startDate}-${antardasha.endDate}`,
+          fromDate: antardasha.startDate,
+          toDate: antardasha.endDate,
           mahadashaNumber: antardasha.mahadashaNumber,
           antardashaNumber: antardasha.antardashaNumber,
           startTimestamp: startDate?.getTime(),

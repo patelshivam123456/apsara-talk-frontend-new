@@ -41,9 +41,52 @@ export default function PythorasGridPage({ pythorasResult }) {
     ["Missing Numbers", formatList(pythorasResult?.missingNumbers)],
     ["Repeated Numbers", formatList(pythorasResult?.repeatedNumbers)],
   ];
-  const challengeEntries = pythorasResult?.challengeNumber
-    ? Object.entries(pythorasResult.challengeNumber)
-    : [];
+  const challengeNumber = pythorasResult?.challengeNumber || {};
+  const pinnacleNumber = pythorasResult?.pinnacleNumber || {};
+  const challengeEntries = [
+    {
+      label: "Challenge One",
+      value: challengeNumber.firstChallengeNumber,
+      detail: challengeNumber.firstChallengeTimePeriod,
+    },
+    {
+      label: "Challenge Two",
+      value: challengeNumber.secondChallengeNumber,
+      detail: challengeNumber.secondChallengeTimePeriod,
+    },
+    {
+      label: "Challenge Three",
+      value: challengeNumber.thirdChallengeNumber,
+      detail: challengeNumber.thirdChallengeTimePeriod,
+    },
+    {
+      label: "Challenge Four",
+      value: challengeNumber.fourthChallengeNumber,
+      detail: challengeNumber.fourthChallengeTimePeriod,
+    },
+  ];
+  const pinnacleEntries = [
+    {
+      label: "Pinnacle One",
+      value: pinnacleNumber.firstPinnacleNumber,
+      detail: pinnacleNumber.firstChallengeTimePeriod,
+    },
+    {
+      label: "Pinnacle Two",
+      value: pinnacleNumber.secondPinnacleNumber,
+      detail: pinnacleNumber.secondChallengeTimePeriod,
+    },
+    {
+      label: "Pinnacle Three",
+      value: pinnacleNumber.thirdPinnacleNumber,
+      detail: pinnacleNumber.thirdChallengeTimePeriod,
+    },
+    {
+      label: "Pinnacle Four",
+      value: pinnacleNumber.fourthPinnacleNumber,
+      detail: pinnacleNumber.fourthChallengeTimePeriod,
+    },
+  ];
 
   return (
     <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[0.85fr_1fr]">
@@ -163,18 +206,40 @@ export default function PythorasGridPage({ pythorasResult }) {
 
       {challengeEntries.length ? (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4">
-          {challengeEntries.map(([label, value]) => (
+          {challengeEntries.map((item) => (
             <div
-              key={label}
+              key={item.label}
               className="rounded-lg border border-[#d8a84a]/40 bg-[#fff8ee] p-2.5 transition-all duration-200 hover:scale-[1.01]"
             >
               <p className="text-xs uppercase tracking-[0.14em] text-[#8a6106]">
-                {label
-                  .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (letter) => letter.toUpperCase())}
+                {item.label}
               </p>
               <p className="mt-1 text-lg font-bold text-[#211704]">
-                {value ?? "-"}
+                {item.value ?? "-"}
+              </p>
+              <p className="mt-0.5 text-xs text-[#665d4d]">
+                Challenge Time Period: {item.detail ?? "-"}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {pinnacleEntries.length ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4">
+          {pinnacleEntries.map((item) => (
+            <div
+              key={item.label}
+              className="rounded-lg border border-[#d8a84a]/40 bg-[#fff8ee] p-2.5 transition-all duration-200 hover:scale-[1.01]"
+            >
+              <p className="text-xs uppercase tracking-[0.14em] text-[#8a6106]">
+                {item.label}
+              </p>
+              <p className="mt-1 text-lg font-bold text-[#211704]">
+                {item.value ?? "-"}
+              </p>
+              <p className="mt-0.5 text-xs text-[#665d4d]">
+                Challenge Time Period: {item.detail ?? "-"}
               </p>
             </div>
           ))}
